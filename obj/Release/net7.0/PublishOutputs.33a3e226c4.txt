@@ -1,0 +1,12 @@
+C:\Users\dreon\OneDrive\Desktop\CN5\SWP\art-tattoo-be\out\art-tattoo-be.exe
+C:\Users\dreon\OneDrive\Desktop\CN5\SWP\art-tattoo-be\out\appsettings.Development.json
+C:\Users\dreon\OneDrive\Desktop\CN5\SWP\art-tattoo-be\out\appsettings.json
+C:\Users\dreon\OneDrive\Desktop\CN5\SWP\art-tattoo-be\out\art-tattoo-be.dll
+C:\Users\dreon\OneDrive\Desktop\CN5\SWP\art-tattoo-be\out\art-tattoo-be.deps.json
+C:\Users\dreon\OneDrive\Desktop\CN5\SWP\art-tattoo-be\out\art-tattoo-be.runtimeconfig.json
+C:\Users\dreon\OneDrive\Desktop\CN5\SWP\art-tattoo-be\out\art-tattoo-be.pdb
+C:\Users\dreon\OneDrive\Desktop\CN5\SWP\art-tattoo-be\out\Microsoft.AspNetCore.OpenApi.dll
+C:\Users\dreon\OneDrive\Desktop\CN5\SWP\art-tattoo-be\out\Microsoft.OpenApi.dll
+C:\Users\dreon\OneDrive\Desktop\CN5\SWP\art-tattoo-be\out\Swashbuckle.AspNetCore.Swagger.dll
+C:\Users\dreon\OneDrive\Desktop\CN5\SWP\art-tattoo-be\out\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Users\dreon\OneDrive\Desktop\CN5\SWP\art-tattoo-be\out\Swashbuckle.AspNetCore.SwaggerUI.dll

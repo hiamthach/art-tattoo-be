@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\art-tattoo-be.props" />
+</Project>
