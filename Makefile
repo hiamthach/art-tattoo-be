@@ -7,4 +7,10 @@ build:
 docker:
 	docker build -t art-tattoo-be -f Dockerfile .
 
-.PHONY: start build docker
+new-migration:
+	dotnet ef migrations add $(name)
+
+migration:
+	dotnet ef database update
+
+.PHONY: start build docker new-migration migration

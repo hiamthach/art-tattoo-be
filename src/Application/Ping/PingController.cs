@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace art_tattoo_be.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("ping")]
 public class PingController : ControllerBase
 {
   private readonly ILogger<PingController> _logger;
@@ -18,6 +18,6 @@ public class PingController : ControllerBase
   {
     _logger.LogInformation("Ping");
 
-    return Ok("pong");
+    return Ok("{ \"message\": \"pong\"}");
   }
 }

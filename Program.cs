@@ -1,3 +1,5 @@
+using art_tattoo_be.Infrastructure.Database;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -15,6 +17,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseInitializeDatabase();
 
 app.UseHttpsRedirection();
 
