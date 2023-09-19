@@ -16,5 +16,7 @@ WORKDIR /App
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
 
+EXPOSE 8080
+
 COPY --from=build-env /App/out .
 ENTRYPOINT ["dotnet", "art-tattoo-be.dll"]

@@ -1,27 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\dreon\\OneDrive\\Desktop\\CN5\\SWP\\art-tattoo-be\\art-tattoo-be.csproj": {}
+    "D:\\ngocthach\\Projects\\Art Tattoo Lover\\art-tattoo-be\\art-tattoo-be.csproj": {}
   },
   "projects": {
-    "C:\\Users\\dreon\\OneDrive\\Desktop\\CN5\\SWP\\art-tattoo-be\\art-tattoo-be.csproj": {
+    "D:\\ngocthach\\Projects\\Art Tattoo Lover\\art-tattoo-be\\art-tattoo-be.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\dreon\\OneDrive\\Desktop\\CN5\\SWP\\art-tattoo-be\\art-tattoo-be.csproj",
+        "projectUniqueName": "D:\\ngocthach\\Projects\\Art Tattoo Lover\\art-tattoo-be\\art-tattoo-be.csproj",
         "projectName": "art-tattoo-be",
-        "projectPath": "C:\\Users\\dreon\\OneDrive\\Desktop\\CN5\\SWP\\art-tattoo-be\\art-tattoo-be.csproj",
-        "packagesPath": "C:\\Users\\dreon\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\dreon\\OneDrive\\Desktop\\CN5\\SWP\\art-tattoo-be\\obj\\",
+        "projectPath": "D:\\ngocthach\\Projects\\Art Tattoo Lover\\art-tattoo-be\\art-tattoo-be.csproj",
+        "packagesPath": "C:\\Users\\Admins\\.nuget\\packages\\",
+        "outputPath": "D:\\ngocthach\\Projects\\Art Tattoo Lover\\art-tattoo-be\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\dreon\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\Admins\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net7.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -43,6 +41,16 @@
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[7.0.10, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[7.0.11, )"
+            },
+            "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[7.0.11, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
