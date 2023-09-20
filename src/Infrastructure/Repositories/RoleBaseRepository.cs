@@ -15,6 +15,11 @@ public class RoleBaseRepository : IRoleBaseRepository
     _dbContext = dbContext;
   }
 
+  public async Task<IEnumerable<Role>> GetRolesAsync()
+  {
+    return await _dbContext.Roles.ToListAsync();
+  }
+
   public async Task<Role> GetRoleByIdAsync(Guid id)
   {
     return await _dbContext.Roles
@@ -38,6 +43,16 @@ public class RoleBaseRepository : IRoleBaseRepository
     _dbContext.Roles.Remove(role);
     await _dbContext.SaveChangesAsync();
     return role;
+  }
+
+  public async Task<IEnumerable<Permission>> GetPermissionsAsync()
+  {
+    return await _dbContext.Permissions.ToListAsync();
+  }
+
+  public IEnumerable<Permission> GetPermissions()
+  {
+    return _dbContext.Permissions.ToList();
   }
 
   public async Task<Permission> GetPermissionByIdAsync(Guid id)

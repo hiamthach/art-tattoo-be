@@ -25,7 +25,9 @@ public class RoleBaseController : ControllerBase
   {
     _logger.LogInformation("GetPermission");
 
-    return Ok("GetPermission");
+    var permissions = _roleBaseRepo.GetPermissions();
+
+    return Ok(permissions);
   }
 
   [HttpPost("permission")]
@@ -76,7 +78,9 @@ public class RoleBaseController : ControllerBase
   {
     _logger.LogInformation("GetRole");
 
-    return Ok("GetRole");
+    var roles = _roleBaseRepo.GetRolesAsync();
+
+    return Ok(roles);
   }
 
   [HttpPost("role")]
