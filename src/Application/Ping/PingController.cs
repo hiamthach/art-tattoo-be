@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace art_tattoo_be.Controllers;
+namespace art_tattoo_be.Application.Ping;
 
 [ApiController]
 [Route("ping")]

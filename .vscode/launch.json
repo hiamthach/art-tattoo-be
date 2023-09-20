@@ -6,9 +6,9 @@
           "type": "coreclr",
           "request": "launch",
           "preLaunchTask": "build",
-          "program": "${workspaceFolder}/src/Host/bin/Debug/net7.0/FSH.WebApi.Host.dll",
+          "program": "${workspaceFolder}/bin/Debug/net7.0/art-tattoo-be.dll",
           "args": [],
-          "cwd": "${workspaceFolder}/src/Host",
+          "cwd": "${workspaceFolder}/",
           "stopAtEntry": false,
           "env": {
               "ASPNETCORE_ENVIRONMENT": "Development"
@@ -28,7 +28,7 @@
           "request": "launch",
           "preLaunchTask": "docker-run: debug",
           "netCore": {
-              "appProject": "${workspaceFolder}/src/Host/Host.csproj"
+              "appProject": "${workspaceFolder}/art-tattoo-be.csproj"
           }
       }
   ]

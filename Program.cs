@@ -1,4 +1,5 @@
 using art_tattoo_be.Infrastructure.Database;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddDbContext<ArtTattooDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DatabaseConnection"));
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -18,7 +24,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseInitializeDatabase();
+DbInitializer.UseInitializeDatabase(app);
 
 app.UseHttpsRedirection();
 

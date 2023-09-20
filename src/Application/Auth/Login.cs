@@ -1,4 +1,4 @@
-namespace art_tattoo_be.Api.Auth;
+namespace art_tattoo_be.Application.Auth;
 
 public class LoginReq
 {
