@@ -12,6 +12,8 @@ public class ArtTattooDbContext : IdentityDbContext
   public DbSet<Role> Roles { get; set; }
   public DbSet<Permission> Permissions { get; set; }
 
+  public DbSet<RolePermission> RolePermissions { get; set; }
+
   public ArtTattooDbContext(DbContextOptions<ArtTattooDbContext> options) : base(options) { }
 
 
