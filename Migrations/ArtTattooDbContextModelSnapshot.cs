@@ -220,16 +220,25 @@ namespace art_tattoo_be.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("PermissionRole", b =>
+                {
+                    b.Property<string>("PermissionsSlug")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("RolesId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PermissionsSlug", "RolesId");
+
+                    b.HasIndex("RolesId");
+
+                    b.ToTable("PermissionRole");
+                });
+
             modelBuilder.Entity("art_tattoo_be.Domain.RoleBase.Permission", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                    b.Property<string>("Slug")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -238,25 +247,21 @@ namespace art_tattoo_be.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Slug")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.HasKey("Id");
+                    b.HasKey("Slug");
 
                     b.ToTable("permissions", (string)null);
                 });
 
             modelBuilder.Entity("art_tattoo_be.Domain.RoleBase.Role", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -265,21 +270,6 @@ namespace art_tattoo_be.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("roles", (string)null);
-                });
-
-            modelBuilder.Entity("art_tattoo_be.Domain.RoleBase.RolePermission", b =>
-                {
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("PermissionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("RoleId", "PermissionId");
-
-                    b.HasIndex("PermissionId");
-
-                    b.ToTable("role_permissions", (string)null);
                 });
 
             modelBuilder.Entity("art_tattoo_be.Domain.User.User", b =>
@@ -374,33 +364,19 @@ namespace art_tattoo_be.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("art_tattoo_be.Domain.RoleBase.RolePermission", b =>
+            modelBuilder.Entity("PermissionRole", b =>
                 {
-                    b.HasOne("art_tattoo_be.Domain.RoleBase.Permission", "Permission")
-                        .WithMany("RolePermission")
-                        .HasForeignKey("PermissionId")
+                    b.HasOne("art_tattoo_be.Domain.RoleBase.Permission", null)
+                        .WithMany()
+                        .HasForeignKey("PermissionsSlug")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("art_tattoo_be.Domain.RoleBase.Role", "Role")
-                        .WithMany("RolePermission")
-                        .HasForeignKey("RoleId")
+                    b.HasOne("art_tattoo_be.Domain.RoleBase.Role", null)
+                        .WithMany()
+                        .HasForeignKey("RolesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Permission");
-
-                    b.Navigation("Role");
-                });
-
-            modelBuilder.Entity("art_tattoo_be.Domain.RoleBase.Permission", b =>
-                {
-                    b.Navigation("RolePermission");
-                });
-
-            modelBuilder.Entity("art_tattoo_be.Domain.RoleBase.Role", b =>
-                {
-                    b.Navigation("RolePermission");
                 });
 #pragma warning restore 612, 618
         }

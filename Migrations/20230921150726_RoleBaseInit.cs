@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace art_tattoo_be.Migrations
 {
     /// <inheritdoc />
-    public partial class initdb : Migration
+    public partial class RoleBaseInit : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -54,24 +54,23 @@ namespace art_tattoo_be.Migrations
                 name: "permissions",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Slug = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Slug = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true, defaultValueSql: "GETDATE()")
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_permissions", x => x.Id);
+                    table.PrimaryKey("PK_permissions", x => x.Slug);
                 });
 
             migrationBuilder.CreateTable(
                 name: "roles",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -205,24 +204,24 @@ namespace art_tattoo_be.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "role_permissions",
+                name: "PermissionRole",
                 columns: table => new
                 {
-                    RoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PermissionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    PermissionsSlug = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RolesId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_role_permissions", x => new { x.RoleId, x.PermissionId });
+                    table.PrimaryKey("PK_PermissionRole", x => new { x.PermissionsSlug, x.RolesId });
                     table.ForeignKey(
-                        name: "FK_role_permissions_permissions_PermissionId",
-                        column: x => x.PermissionId,
+                        name: "FK_PermissionRole_permissions_PermissionsSlug",
+                        column: x => x.PermissionsSlug,
                         principalTable: "permissions",
-                        principalColumn: "Id",
+                        principalColumn: "Slug",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_role_permissions_roles_RoleId",
-                        column: x => x.RoleId,
+                        name: "FK_PermissionRole_roles_RolesId",
+                        column: x => x.RolesId,
                         principalTable: "roles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -268,9 +267,9 @@ namespace art_tattoo_be.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_role_permissions_PermissionId",
-                table: "role_permissions",
-                column: "PermissionId");
+                name: "IX_PermissionRole_RolesId",
+                table: "PermissionRole",
+                column: "RolesId");
         }
 
         /// <inheritdoc />
@@ -292,7 +291,7 @@ namespace art_tattoo_be.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "role_permissions");
+                name: "PermissionRole");
 
             migrationBuilder.DropTable(
                 name: "users");

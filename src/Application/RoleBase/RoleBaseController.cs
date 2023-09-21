@@ -44,28 +44,38 @@ public class RoleBaseController : ControllerBase
       Description = req.Description,
     };
 
-    var result = _roleBaseRepo.CreatePermission(p);
+    try
+    {
+      var result = _roleBaseRepo.CreatePermission(p);
 
-    if (result > 0)
-    {
-      return CreatedAtAction("Permission", new CreatePermissionResp
+      if (result > 0)
       {
-        Message = "Create permission successfully!"
-      });
+        return Ok(new CreatePermissionResp
+        {
+          Message = "Create permission successfully!"
+        });
+      }
+      else
+      {
+        return BadRequest();
+      }
     }
-    else
+    catch (Exception)
     {
-      return BadRequest();
+      return BadRequest(new BaseResp
+      {
+        Message = "Slug already exists!"
+      });
     }
   }
 
-  [HttpPut("permission/{id}")]
-  public IActionResult UpdatePermission([FromRoute] Guid id, [FromBody] UpdatePermissionReq req)
+  [HttpPut("permission/{slug}")]
+  public IActionResult UpdatePermission([FromRoute] string slug, [FromBody] UpdatePermissionReq req)
   {
     _logger.LogInformation("UpdatePermission");
 
     // check if permission exists
-    var p = _roleBaseRepo.GetPermissionById(id);
+    var p = _roleBaseRepo.GetPermissionById(slug);
     if (p == null)
     {
       return NotFound(new BaseResp
@@ -99,12 +109,12 @@ public class RoleBaseController : ControllerBase
     }
   }
 
-  [HttpDelete("permission/{id}")]
-  public IActionResult DeletePermission([FromRoute] Guid id)
+  [HttpDelete("permission/{slug}")]
+  public IActionResult DeletePermission([FromRoute] string slug)
   {
     _logger.LogInformation("DeletePermission");
 
-    var result = _roleBaseRepo.DeletePermission(id);
+    var result = _roleBaseRepo.DeletePermission(slug);
 
     if (result > 0)
     {
@@ -153,7 +163,7 @@ public class RoleBaseController : ControllerBase
   }
 
   [HttpGet("role/{id}")]
-  public IActionResult GetRoleById([FromRoute] Guid id)
+  public IActionResult GetRoleById([FromRoute] int id)
   {
     _logger.LogInformation("GetRoleById");
 
@@ -167,13 +177,11 @@ public class RoleBaseController : ControllerBase
       });
     }
 
-    var roleDto = _mapper.Map<RoleDto>(role);
-
-    return Ok(roleDto);
+    return Ok(role);
   }
 
   [HttpPut("role/{id}")]
-  public IActionResult UpdateRole([FromRoute] Guid id, [FromBody] UpdateRoleReq req)
+  public IActionResult UpdateRole([FromRoute] int id, [FromBody] UpdateRoleReq req)
   {
     _logger.LogInformation("UpdateRole");
 
@@ -207,7 +215,7 @@ public class RoleBaseController : ControllerBase
   }
 
   [HttpDelete("role/{id}")]
-  public IActionResult DeleteRole([FromRoute] Guid id)
+  public IActionResult DeleteRole([FromRoute] int id)
   {
     _logger.LogInformation("DeleteRole");
 

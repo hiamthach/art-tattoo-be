@@ -4,20 +4,20 @@ interface IRoleBaseRepository
 {
   // Role
   IEnumerable<Role> GetRoles();
-  RoleDto GetRoleById(Guid id);
+  Role? GetRoleById(int id);
 
   int CreateRole(Role role);
 
-  int UpdateRolePermission(Guid id, IEnumerable<Guid> permissionIds);
+  int UpdateRolePermission(int id, IEnumerable<string> permissionIds);
 
-  int DeleteRole(Guid id);
+  int DeleteRole(int id);
 
   // Permission
   IEnumerable<Permission> GetPermissions();
-  Permission GetPermissionById(Guid id);
+  Permission? GetPermissionById(string slug);
   int CreatePermission(Permission permission);
 
   int UpdatePermission(Permission permission);
 
-  int DeletePermission(Guid id);
+  int DeletePermission(string slug);
 }

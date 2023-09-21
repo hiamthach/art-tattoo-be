@@ -4,24 +4,10 @@ using AutoMapper;
 
 public class Role
 {
-  public Guid Id { get; set; }
+  public int Id { get; set; }
   public string Name { get; set; } = null!;
 
-  public ICollection<RolePermission> RolePermission { get; set; } = null!;
-}
+  public string? Description { get; set; }
 
-public class RoleDto
-{
-  public Guid Id { get; set; }
-  public string Name { get; set; } = null!;
-  public IEnumerable<Permission> Permissions { get; set; } = new List<Permission>();
-}
-
-public class RoleProfile : Profile
-{
-  public RoleProfile()
-  {
-    CreateMap<Role, RoleDto>()
-      .ForMember(dest => dest.Permissions, opt => opt.MapFrom(src => src.RolePermission.Select(rp => rp.Permission).ToList()));
-  }
+  public List<Permission> Permissions { get; } = new();
 }

@@ -12,8 +12,6 @@ public class ArtTattooDbContext : IdentityDbContext
   public DbSet<Role> Roles { get; set; }
   public DbSet<Permission> Permissions { get; set; }
 
-  public DbSet<RolePermission> RolePermissions { get; set; }
-
   public ArtTattooDbContext(DbContextOptions<ArtTattooDbContext> options) : base(options) { }
 
 
@@ -35,27 +33,19 @@ public class ArtTattooDbContext : IdentityDbContext
     {
       entity.ToTable("roles");
       entity.HasKey(e => e.Id);
-      entity.Property(e => e.Id).ValueGeneratedOnAdd();
+      entity.Property(e => e.Id).ValueGeneratedOnAdd().UseIdentityColumn();
       entity.Property(e => e.Name).IsRequired();
+      entity.Property(e => e.Description).IsRequired(false);
+      entity.HasMany(e => e.Permissions).WithMany(e => e.Roles);
     });
 
     builder.Entity<Permission>(entity =>
     {
       entity.ToTable("permissions");
-      entity.HasKey(e => e.Id);
-      entity.Property(e => e.Id).ValueGeneratedOnAdd();
-      entity.Property(e => e.Name).IsRequired();
+      entity.HasKey(e => e.Slug);
       entity.Property(e => e.Slug).IsRequired();
-      entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("GETDATE()");
-      entity.Property(e => e.UpdatedAt).ValueGeneratedOnAddOrUpdate().HasDefaultValueSql("GETDATE()");
-    });
-
-    builder.Entity<RolePermission>(entity =>
-    {
-      entity.ToTable("role_permissions");
-      entity.HasKey(e => new { e.RoleId, e.PermissionId });
-      entity.HasOne(e => e.Role).WithMany(e => e.RolePermission).HasForeignKey(e => e.RoleId);
-      entity.HasOne(e => e.Permission).WithMany(e => e.RolePermission).HasForeignKey(e => e.PermissionId);
+      entity.Property(e => e.Name).IsRequired();
+      entity.Property(e => e.Description).IsRequired(false);
     });
   }
 }

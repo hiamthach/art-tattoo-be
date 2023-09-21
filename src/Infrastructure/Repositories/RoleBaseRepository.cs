@@ -16,38 +16,12 @@ public class RoleBaseRepository : IRoleBaseRepository
 
   public IEnumerable<Role> GetRoles()
   {
-    return _dbContext.Roles.ToList();
+    return _dbContext.Roles.Include(r => r.Permissions).ToList();
   }
 
-  public RoleDto GetRoleById(Guid id)
+  public Role? GetRoleById(int id)
   {
-    var role = _dbContext.Roles
-      .Include(r => r.RolePermission)
-      .ThenInclude(rp => rp.Permission)
-      .FirstOrDefault(r => r.Id == id);
-
-    if (role == null)
-    {
-      return null;
-    }
-
-    var roleDto = new RoleDto
-    {
-      Id = role.Id,
-      Name = role.Name,
-      Permissions = role.RolePermission.Select(rp => rp.Permission).Select(p =>
-      {
-        return new Permission
-        {
-          Id = p.Id,
-          Name = p.Name,
-          Slug = p.Slug,
-          Description = p.Description,
-        };
-      }).ToList(),
-    };
-
-    return roleDto;
+    return _dbContext.Roles.Include(r => r.Permissions).FirstOrDefault(r => r.Id == id);
   }
 
   public int CreateRole(Role role)
@@ -56,50 +30,32 @@ public class RoleBaseRepository : IRoleBaseRepository
     return _dbContext.SaveChanges();
   }
 
-  public int DeleteRole(Guid id)
+  public int UpdateRolePermission(int id, IEnumerable<string> permissionSlugs)
   {
-    var role = _dbContext.Roles.FirstOrDefault(r => r.Id == id);
-    if (role == null)
-    {
-      return 0;
-    }
+    // check if role exists
+    var role = _dbContext.Roles.FirstOrDefault(r => r.Id == id) ?? throw new Exception("Role not found");
 
-    var result = _dbContext.Roles.Remove(role);
+    var slugs = role.Permissions.Select(p => p.Slug).ToList();
+    var removeSlugs = slugs.Except(permissionSlugs).ToList();
+    var addSlugs = permissionSlugs.Except(slugs).ToList();
+
+    role.Permissions.RemoveAll(p => removeSlugs.Contains(p.Slug));
+    var newPermissions = _dbContext.Permissions.Where(p => addSlugs.Contains(p.Slug)).ToList();
+
+    role.Permissions.AddRange(newPermissions);
+
     return _dbContext.SaveChanges();
   }
 
-  public int UpdateRolePermission(Guid roleId, IEnumerable<Guid> permissionIds)
+  public int DeleteRole(int id)
   {
-    // Get the existing permissions associated with the role.
-    var existingPermissions = _dbContext.RolePermissions
-        .Where(rp => rp.RoleId == roleId)
-        .ToList();
-
-    // Remove permissions that are no longer in the list.
-    foreach (var existingPermission in existingPermissions)
+    var role = _dbContext.Roles.Find(id);
+    if (role == null)
     {
-      if (!permissionIds.Contains(existingPermission.PermissionId))
-      {
-        _dbContext.RolePermissions.Remove(existingPermission);
-      }
+      throw new Exception("Role not found");
     }
 
-    // Add new permissions.
-    foreach (var permissionId in permissionIds)
-    {
-      if (!existingPermissions.Any(rp => rp.PermissionId == permissionId))
-      {
-        var rolePermission = new RolePermission
-        {
-          RoleId = roleId,
-          PermissionId = permissionId,
-        };
-
-        _dbContext.RolePermissions.Add(rolePermission);
-      }
-    }
-
-    // Save changes to the database.
+    _dbContext.Roles.Remove(role);
     return _dbContext.SaveChanges();
   }
 
@@ -107,13 +63,6 @@ public class RoleBaseRepository : IRoleBaseRepository
   {
     return _dbContext.Permissions.ToList();
   }
-
-  public Permission GetPermissionById(Guid id)
-  {
-    return _dbContext.Permissions
-      .FirstOrDefault(p => p.Id == id);
-  }
-
   public int CreatePermission(Permission permission)
   {
     _dbContext.Permissions.Add(permission);
@@ -126,15 +75,16 @@ public class RoleBaseRepository : IRoleBaseRepository
     return _dbContext.SaveChanges();
   }
 
-  public int DeletePermission(Guid id)
+  public Permission? GetPermissionById(string slug)
   {
-    var permission = _dbContext.Permissions.FirstOrDefault(p => p.Id == id);
-    if (permission == null)
-    {
-      return 0;
-    }
+    return _dbContext.Permissions.Find(slug);
+  }
 
-    var result = _dbContext.Permissions.Remove(permission);
+  public int DeletePermission(string slug)
+  {
+    var permission = _dbContext.Permissions.Find(slug) ?? throw new Exception("Permission not found");
+
+    _dbContext.Permissions.Remove(permission);
     return _dbContext.SaveChanges();
   }
 }

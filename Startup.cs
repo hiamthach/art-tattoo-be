@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using AutoMapper;
-using art_tattoo_be.Domain.RoleBase;
-
 
 namespace MyApp
 {
@@ -22,7 +20,6 @@ namespace MyApp
       // Configure services (e.g., database, authentication, etc.)
 
       services.AddAutoMapper(typeof(Startup));
-      services.AddAutoMapper(typeof(RoleProfile));
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
