@@ -1,4 +1,4 @@
-namespace art_tattoo_be.Infrastructure.Repositories;
+namespace art_tattoo_be.Infrastructure.Repository;
 
 using System;
 using art_tattoo_be.Domain.RoleBase;
@@ -63,6 +63,7 @@ public class RoleBaseRepository : IRoleBaseRepository
   {
     return _dbContext.Permissions.ToList();
   }
+
   public int CreatePermission(Permission permission)
   {
     _dbContext.Permissions.Add(permission);

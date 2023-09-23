@@ -1,6 +1,6 @@
 namespace art_tattoo_be.Application.RoleBase;
 using Microsoft.AspNetCore.Mvc;
-using art_tattoo_be.Infrastructure.Repositories;
+using art_tattoo_be.Infrastructure.Repository;
 using art_tattoo_be.Domain.RoleBase;
 using art_tattoo_be.Infrastructure.Database;
 using art_tattoo_be.Application.Shared;

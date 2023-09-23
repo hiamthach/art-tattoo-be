@@ -1,6 +1,6 @@
 namespace art_tattoo_be.Domain.RoleBase;
+using art_tattoo_be.Domain.User;
 
-using AutoMapper;
 
 public class Role
 {
@@ -10,4 +10,5 @@ public class Role
   public string? Description { get; set; }
 
   public List<Permission> Permissions { get; } = new();
+  public List<User> Users { get; } = new();
 }
