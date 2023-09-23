@@ -4,6 +4,9 @@ start:
 build:
 	dotnet build
 
+test:
+	dotnet test
+
 docker:
 	docker build -t art-tattoo-be -f Dockerfile .
 
@@ -13,4 +16,7 @@ new-migration:
 migration:
 	dotnet ef database update
 
-.PHONY: start build docker new-migration migration
+drop-database:
+	dotnet ef database drop
+
+.PHONY: start build docker new-migration migration test drop-database

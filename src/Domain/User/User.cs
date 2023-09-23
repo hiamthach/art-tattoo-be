@@ -1,7 +1,10 @@
+namespace art_tattoo_be.Domain.User;
+
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Domain.RoleBase;
+using art_tattoo_be.Domain.Studio;
+using art_tattoo_be.Domain.Testimonial;
 
-namespace art_tattoo_be.Domain.User;
 
 public class User
 {
@@ -19,4 +22,6 @@ public class User
   public DateTime LastLoginAt { get; set; }
 
   public Role Role { get; set; } = null!;
+  public StudioUser StudioUser { get; set; } = null!;
+  public List<Testimonial> Testimonials { get; set; } = new();
 }

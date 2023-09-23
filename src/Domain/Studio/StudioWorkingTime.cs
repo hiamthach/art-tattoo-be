@@ -7,4 +7,5 @@ public class StudioWorkingTime
   public int DayOfWeek { get; set; }
   public DateTime OpenAt { get; set; }
   public DateTime CloseAt { get; set; }
+  public Studio Studio { get; set; } = null!;
 }
