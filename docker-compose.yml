@@ -27,6 +27,7 @@ services:
       - ConnectionStrings__DatabaseConnection=Server=db;Database=tattoodb;User=sa;Password=ArtTattoo@@;
     ports:
       - 8080:8080
+    restart: unless-stopped
     depends_on:
       - db
       - redis
