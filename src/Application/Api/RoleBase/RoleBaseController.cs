@@ -4,6 +4,7 @@ using art_tattoo_be.Infrastructure.Repository;
 using art_tattoo_be.Domain.RoleBase;
 using art_tattoo_be.Infrastructure.Database;
 using art_tattoo_be.Application.Shared;
+using art_tattoo_be.Application.Shared.Handler;
 using AutoMapper;
 
 [Produces("application/json")]
@@ -57,15 +58,12 @@ public class RoleBaseController : ControllerBase
       }
       else
       {
-        return BadRequest();
+        return ErrorResp.BadRequest("Create permission failed!");
       }
     }
-    catch (Exception)
+    catch (Exception e)
     {
-      return BadRequest(new BaseResp
-      {
-        Message = "Slug already exists!"
-      });
+      return ErrorResp.BadRequest(e.Message);
     }
   }
 
@@ -105,7 +103,7 @@ public class RoleBaseController : ControllerBase
     }
     else
     {
-      return BadRequest();
+      return ErrorResp.BadRequest("Update permission failed!");
     }
   }
 
@@ -125,7 +123,7 @@ public class RoleBaseController : ControllerBase
     }
     else
     {
-      return BadRequest();
+      return ErrorResp.BadRequest("Delete permission failed!");
     }
   }
 
@@ -158,7 +156,7 @@ public class RoleBaseController : ControllerBase
     }
     else
     {
-      return BadRequest();
+      return ErrorResp.BadRequest("Create role failed!");
     }
   }
 
@@ -230,7 +228,7 @@ public class RoleBaseController : ControllerBase
     }
     else
     {
-      return BadRequest();
+      return ErrorResp.BadRequest("Delete role failed!");
     }
   }
 }

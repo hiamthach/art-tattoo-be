@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using art_tattoo_be.Infrastructure.Database;
 
@@ -11,9 +12,11 @@ using art_tattoo_be.Infrastructure.Database;
 namespace art_tattoo_be.Migrations
 {
     [DbContext(typeof(ArtTattooDbContext))]
-    partial class ArtTattooDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230924161440_UserEnumStatus")]
+    partial class UserEnumStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -316,11 +319,10 @@ namespace art_tattoo_be.Migrations
                     b.Property<Guid>("ScheduleId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
+                    b.Property<int>("Status")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("Pending");
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<Guid>("StudioId")
                         .HasColumnType("uniqueidentifier");
@@ -418,9 +420,8 @@ namespace art_tattoo_be.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("PayMethod")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("PayMethod")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("StudioId")
                         .HasColumnType("uniqueidentifier");
@@ -456,9 +457,8 @@ namespace art_tattoo_be.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnUpdate()
@@ -532,16 +532,13 @@ namespace art_tattoo_be.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Facebook")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Instagram")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Logo")
                         .HasMaxLength(255)
@@ -553,8 +550,7 @@ namespace art_tattoo_be.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Phone")
-                        .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnUpdate()
@@ -562,8 +558,7 @@ namespace art_tattoo_be.Migrations
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Website")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 

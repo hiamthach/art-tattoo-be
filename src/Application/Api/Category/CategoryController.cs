@@ -3,6 +3,7 @@ namespace art_tattoo_be.Application.Category;
 using art_tattoo_be.Domain.Category;
 using art_tattoo_be.Infrastructure.Database;
 using art_tattoo_be.Infrastructure.Repository;
+using art_tattoo_be.Application.Shared.Handler;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -61,14 +62,14 @@ public class CategoryController : ControllerBase
       }
       else
       {
-        return BadRequest("Create failed");
+        return ErrorResp.BadRequest("Create failed");
       }
 
     }
     catch (Exception e)
     {
       _logger.LogError(e, "Error creating category");
-      return new JsonResult(new { error = e.Message }) { StatusCode = 500 };
+      return ErrorResp.UnknownError(e.Message);
     }
   }
 
@@ -92,7 +93,7 @@ public class CategoryController : ControllerBase
     catch (Exception e)
     {
       _logger.LogError(e, "Error delete category");
-      return new JsonResult(new { error = e.Message }) { StatusCode = 500 };
+      return ErrorResp.UnknownError(e.Message);
     }
 
   }
