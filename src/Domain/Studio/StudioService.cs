@@ -1,6 +1,7 @@
 namespace art_tattoo_be.Domain.Studio;
 
 using art_tattoo_be.Domain.Category;
+using art_tattoo_be.Domain.Media;
 
 public class StudioService
 {
@@ -17,4 +18,5 @@ public class StudioService
 
   public Studio Studio { get; set; } = null!;
   public Category Category { get; set; } = null!;
+  public List<Media> ListMedia { get; set; } = new();
 }

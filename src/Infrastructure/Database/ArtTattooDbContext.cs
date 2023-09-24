@@ -1,3 +1,5 @@
+namespace art_tattoo_be.Infrastructure.Database;
+
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,20 +9,26 @@ using art_tattoo_be.Domain.Category;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Domain.Testimonial;
-
-namespace art_tattoo_be.Infrastructure.Database;
+using art_tattoo_be.Domain.Booking;
+using art_tattoo_be.Domain.Invoice;
+using art_tattoo_be.Domain.Media;
 
 public class ArtTattooDbContext : IdentityDbContext
 {
-  public new DbSet<Role> Roles { get; set; }
-  public DbSet<Permission> Permissions { get; set; }
-  public new DbSet<User> Users { get; set; }
-  public DbSet<Category> Categories { get; set; }
-  public DbSet<Studio> Studios { get; set; }
-  public DbSet<StudioService> StudioServices { get; set; }
-  public DbSet<StudioWorkingTime> StudioWorkingTimes { get; set; }
-  public DbSet<StudioUser> StudioUsers { get; set; }
-  public DbSet<Testimonial> Testimonials { get; set; }
+  public new DbSet<Role> Roles { get; set; } = null!;
+  public DbSet<Permission> Permissions { get; set; } = null!;
+  public new DbSet<User> Users { get; set; } = null!;
+  public DbSet<Category> Categories { get; set; } = null!;
+  public DbSet<Studio> Studios { get; set; } = null!;
+  public DbSet<StudioService> StudioServices { get; set; } = null!;
+  public DbSet<StudioWorkingTime> StudioWorkingTimes { get; set; } = null!;
+  public DbSet<StudioUser> StudioUsers { get; set; } = null!;
+  public DbSet<StudioLocation> StudioLocations { get; set; } = null!;
+  public DbSet<Testimonial> Testimonials { get; set; } = null!;
+  public DbSet<Schedule> Schedules { get; set; } = null!;
+  public DbSet<Appointment> Appointments { get; set; } = null!;
+  public DbSet<Invoice> Invoices { get; set; } = null!;
+  public DbSet<Media> Medias { get; set; } = null!;
 
   public ArtTattooDbContext(DbContextOptions<ArtTattooDbContext> options) : base(options) { }
 
@@ -52,6 +60,7 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.ToTable("users");
       entity.HasKey(e => e.Id);
       entity.HasOne(e => e.Role).WithMany(e => e.Users).HasForeignKey(e => e.RoleId).IsRequired();
+      entity.HasMany(e => e.ListMedia).WithMany(e => e.UserMedia);
       entity.HasIndex(e => e.Email).IsUnique();
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.Email).IsRequired().HasMaxLength(30);
@@ -79,6 +88,7 @@ public class ArtTattooDbContext : IdentityDbContext
     {
       entity.ToTable("studios");
       entity.HasKey(e => e.Id);
+      entity.HasMany(e => e.ListMedia).WithMany(e => e.StudioMedia);
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
       entity.Property(e => e.Detail).IsRequired(false);
@@ -87,9 +97,26 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
     });
 
+    builder.Entity<StudioLocation>(entity =>
+    {
+      entity.ToTable("studio_locations");
+      entity.HasKey(e => e.Id);
+      entity.HasOne(e => e.Studio).WithMany(e => e.Locations).HasForeignKey(e => e.StudioId).IsRequired();
+      entity.Property(e => e.Id).ValueGeneratedOnAdd();
+      entity.Property(e => e.StudioId).IsRequired();
+      entity.Property(e => e.Address).IsRequired().HasMaxLength(255);
+      entity.Property(e => e.Province).IsRequired(false).HasMaxLength(50);
+      entity.Property(e => e.City).IsRequired(false).HasMaxLength(50);
+      entity.Property(e => e.Country).IsRequired(false).HasMaxLength(50);
+      entity.Property(e => e.PostalCode).IsRequired(false).HasMaxLength(10);
+      entity.Property(e => e.Latitude).IsRequired(false);
+      entity.Property(e => e.Longitude).IsRequired(false);
+    });
+
     builder.Entity<StudioService>(entity =>
     {
       entity.ToTable("studio_services");
+      entity.HasMany(e => e.ListMedia).WithMany(e => e.StudioServiceMedia);
       entity.HasKey(e => e.Id);
       entity.HasOne(e => e.Studio).WithMany(e => e.Services).HasForeignKey(e => e.StudioId).IsRequired();
       entity.HasOne(e => e.Category).WithMany(e => e.StudioServices).HasForeignKey(e => e.CategoryId).IsRequired();
@@ -142,6 +169,66 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Content).IsRequired().HasMaxLength(1000);
       entity.Property(e => e.Rating).IsRequired();
       entity.Property(e => e.CreatedBy).IsRequired();
+      entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
+    });
+
+    builder.Entity<Schedule>(entity =>
+    {
+      entity.ToTable("schedules");
+      entity.HasKey(e => e.Id);
+      entity.HasOne(e => e.Artist).WithMany(e => e.Schedules).HasForeignKey(e => e.ArtistId).IsRequired();
+      entity.Property(e => e.Id).ValueGeneratedOnAdd();
+      entity.Property(e => e.ArtistId).IsRequired();
+      entity.Property(e => e.Start).IsRequired();
+      entity.Property(e => e.End).IsRequired();
+      entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
+    });
+
+    builder.Entity<Appointment>(entity =>
+    {
+      entity.ToTable("appointments");
+      entity.HasMany(e => e.ListMedia).WithMany(e => e.AppointmentMedia);
+      entity.HasKey(e => e.Id);
+      entity.HasOne(e => e.Studio).WithMany(e => e.Appointments).HasForeignKey(e => e.StudioId).IsRequired().OnDelete(DeleteBehavior.Restrict); ;
+      entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+      entity.HasOne(e => e.Schedule).WithMany(e => e.Appointments).HasForeignKey(e => e.ScheduleId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+      entity.HasOne(e => e.Artist).WithMany(e => e.Appointments).HasForeignKey(e => e.DoneBy).OnDelete(DeleteBehavior.Restrict);
+      entity.Property(e => e.Id).ValueGeneratedOnAdd();
+      entity.Property(e => e.StudioId).IsRequired();
+      entity.Property(e => e.UserId).IsRequired();
+      entity.Property(e => e.ScheduleId).IsRequired();
+      entity.Property(e => e.DoneBy).IsRequired(false);
+      entity.Property(e => e.Notes).IsRequired(false).HasMaxLength(500);
+      entity.Property(e => e.Status).IsRequired().HasDefaultValue(AppointmentStatusEnum.Pending);
+      entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
+    });
+
+    builder.Entity<Invoice>(entity =>
+    {
+      entity.ToTable("invoices");
+      entity.HasKey(e => e.Id);
+      entity.HasOne(e => e.Studio).WithMany(e => e.Invoices).HasForeignKey(e => e.StudioId).IsRequired();
+      entity.HasOne(e => e.User).WithMany(e => e.Invoices).HasForeignKey(e => e.UserId).IsRequired();
+      entity.Property(e => e.Id).ValueGeneratedOnAdd();
+      entity.Property(e => e.StudioId).IsRequired();
+      entity.Property(e => e.UserId).IsRequired();
+      entity.Property(e => e.Total).IsRequired();
+      entity.Property(e => e.PayMethod).IsRequired();
+      entity.Property(e => e.Notes).IsRequired(false).HasMaxLength(500);
+      entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
+    });
+
+    builder.Entity<Media>(entity =>
+    {
+      entity.ToTable("media");
+      entity.HasKey(e => e.Id);
+      entity.Property(e => e.Id).ValueGeneratedOnAdd();
+      entity.Property(e => e.Url).IsRequired().HasMaxLength(255);
+      entity.Property(e => e.Type).IsRequired();
       entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
       entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
     });

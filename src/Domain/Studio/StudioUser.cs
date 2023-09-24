@@ -1,6 +1,7 @@
 namespace art_tattoo_be.Domain.Studio;
 
 using art_tattoo_be.Domain.User;
+using art_tattoo_be.Domain.Booking;
 
 public class StudioUser
 {
@@ -12,4 +13,7 @@ public class StudioUser
 
   public Studio Studio { get; set; } = null!;
   public User User { get; set; } = null!;
+
+  public List<Schedule> Schedules { get; set; } = new();
+  public List<Appointment> Appointments { get; set; } = new();
 }

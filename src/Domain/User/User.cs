@@ -4,7 +4,8 @@ using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Domain.RoleBase;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Domain.Testimonial;
-
+using art_tattoo_be.Domain.Invoice;
+using art_tattoo_be.Domain.Media;
 
 public class User
 {
@@ -24,4 +25,6 @@ public class User
   public Role Role { get; set; } = null!;
   public StudioUser StudioUser { get; set; } = null!;
   public List<Testimonial> Testimonials { get; set; } = new();
+  public List<Invoice> Invoices { get; set; } = new();
+  public List<Media> ListMedia { get; set; } = new();
 }

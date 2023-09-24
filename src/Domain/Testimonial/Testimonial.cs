@@ -13,6 +13,7 @@ public class Testimonial
   public Guid CreatedBy { get; set; }
   public DateTime CreatedAt { get; set; }
   public DateTime UpdatedAt { get; set; }
-  public Studio Studio { get; set; } = null!;
+
+  public virtual Studio Studio { get; set; } = null!;
   public User User { get; set; } = null!;
 }

@@ -12,8 +12,8 @@ using art_tattoo_be.Infrastructure.Database;
 namespace art_tattoo_be.Migrations
 {
     [DbContext(typeof(ArtTattooDbContext))]
-    [Migration("20230923164911_InitDb")]
-    partial class InitDb
+    [Migration("20230924084032_DbInit")]
+    partial class DbInit
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,66 @@ namespace art_tattoo_be.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("AppointmentMedia", b =>
+                {
+                    b.Property<Guid>("AppointmentMediaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ListMediaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("AppointmentMediaId", "ListMediaId");
+
+                    b.HasIndex("ListMediaId");
+
+                    b.ToTable("AppointmentMedia");
+                });
+
+            modelBuilder.Entity("MediaStudio", b =>
+                {
+                    b.Property<Guid>("ListMediaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("StudioMediaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("ListMediaId", "StudioMediaId");
+
+                    b.HasIndex("StudioMediaId");
+
+                    b.ToTable("MediaStudio");
+                });
+
+            modelBuilder.Entity("MediaStudioService", b =>
+                {
+                    b.Property<Guid>("ListMediaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("StudioServiceMediaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("ListMediaId", "StudioServiceMediaId");
+
+                    b.HasIndex("StudioServiceMediaId");
+
+                    b.ToTable("MediaStudioService");
+                });
+
+            modelBuilder.Entity("MediaUser", b =>
+                {
+                    b.Property<Guid>("ListMediaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserMediaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("ListMediaId", "UserMediaId");
+
+                    b.HasIndex("UserMediaId");
+
+                    b.ToTable("MediaUser");
+                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -238,6 +298,88 @@ namespace art_tattoo_be.Migrations
                     b.ToTable("PermissionRole");
                 });
 
+            modelBuilder.Entity("art_tattoo_be.Domain.Booking.Appointment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<Guid?>("DoneBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("ScheduleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<Guid>("StudioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DoneBy");
+
+                    b.HasIndex("ScheduleId");
+
+                    b.HasIndex("StudioId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("appointments", (string)null);
+                });
+
+            modelBuilder.Entity("art_tattoo_be.Domain.Booking.Schedule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ArtistId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateTime>("End")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("Start")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArtistId");
+
+                    b.ToTable("schedules", (string)null);
+                });
+
             modelBuilder.Entity("art_tattoo_be.Domain.Category.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -261,6 +403,76 @@ namespace art_tattoo_be.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("tattoo_categories", (string)null);
+                });
+
+            modelBuilder.Entity("art_tattoo_be.Domain.Invoice.Invoice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("PayMethod")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("StudioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double>("Total")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudioId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("invoices", (string)null);
+                });
+
+            modelBuilder.Entity("art_tattoo_be.Domain.Media.Media", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("media", (string)null);
                 });
 
             modelBuilder.Entity("art_tattoo_be.Domain.RoleBase.Permission", b =>
@@ -319,6 +531,15 @@ namespace art_tattoo_be.Migrations
                     b.Property<string>("Detail")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Facebook")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Instagram")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Logo")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
@@ -328,14 +549,63 @@ namespace art_tattoo_be.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("Phone")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnUpdate()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<string>("Website")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.ToTable("studios", (string)null);
+                });
+
+            modelBuilder.Entity("art_tattoo_be.Domain.Studio.StudioLocation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Country")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Latitude")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Longitude")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PostalCode")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Province")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("StudioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudioId");
+
+                    b.ToTable("studio_locations", (string)null);
                 });
 
             modelBuilder.Entity("art_tattoo_be.Domain.Studio.StudioService", b =>
@@ -556,6 +826,66 @@ namespace art_tattoo_be.Migrations
                     b.ToTable("users", (string)null);
                 });
 
+            modelBuilder.Entity("AppointmentMedia", b =>
+                {
+                    b.HasOne("art_tattoo_be.Domain.Booking.Appointment", null)
+                        .WithMany()
+                        .HasForeignKey("AppointmentMediaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("art_tattoo_be.Domain.Media.Media", null)
+                        .WithMany()
+                        .HasForeignKey("ListMediaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("MediaStudio", b =>
+                {
+                    b.HasOne("art_tattoo_be.Domain.Media.Media", null)
+                        .WithMany()
+                        .HasForeignKey("ListMediaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("art_tattoo_be.Domain.Studio.Studio", null)
+                        .WithMany()
+                        .HasForeignKey("StudioMediaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("MediaStudioService", b =>
+                {
+                    b.HasOne("art_tattoo_be.Domain.Media.Media", null)
+                        .WithMany()
+                        .HasForeignKey("ListMediaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("art_tattoo_be.Domain.Studio.StudioService", null)
+                        .WithMany()
+                        .HasForeignKey("StudioServiceMediaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("MediaUser", b =>
+                {
+                    b.HasOne("art_tattoo_be.Domain.Media.Media", null)
+                        .WithMany()
+                        .HasForeignKey("ListMediaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("art_tattoo_be.Domain.User.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserMediaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -620,6 +950,81 @@ namespace art_tattoo_be.Migrations
                         .HasForeignKey("RolesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("art_tattoo_be.Domain.Booking.Appointment", b =>
+                {
+                    b.HasOne("art_tattoo_be.Domain.Studio.StudioUser", "Artist")
+                        .WithMany("Appointments")
+                        .HasForeignKey("DoneBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("art_tattoo_be.Domain.Booking.Schedule", "Schedule")
+                        .WithMany("Appointments")
+                        .HasForeignKey("ScheduleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("art_tattoo_be.Domain.Studio.Studio", "Studio")
+                        .WithMany("Appointments")
+                        .HasForeignKey("StudioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("art_tattoo_be.Domain.User.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Artist");
+
+                    b.Navigation("Schedule");
+
+                    b.Navigation("Studio");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("art_tattoo_be.Domain.Booking.Schedule", b =>
+                {
+                    b.HasOne("art_tattoo_be.Domain.Studio.StudioUser", "Artist")
+                        .WithMany("Schedules")
+                        .HasForeignKey("ArtistId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Artist");
+                });
+
+            modelBuilder.Entity("art_tattoo_be.Domain.Invoice.Invoice", b =>
+                {
+                    b.HasOne("art_tattoo_be.Domain.Studio.Studio", "Studio")
+                        .WithMany("Invoices")
+                        .HasForeignKey("StudioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("art_tattoo_be.Domain.User.User", "User")
+                        .WithMany("Invoices")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Studio");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("art_tattoo_be.Domain.Studio.StudioLocation", b =>
+                {
+                    b.HasOne("art_tattoo_be.Domain.Studio.Studio", "Studio")
+                        .WithMany("Locations")
+                        .HasForeignKey("StudioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Studio");
                 });
 
             modelBuilder.Entity("art_tattoo_be.Domain.Studio.StudioService", b =>
@@ -705,6 +1110,11 @@ namespace art_tattoo_be.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("art_tattoo_be.Domain.Booking.Schedule", b =>
+                {
+                    b.Navigation("Appointments");
+                });
+
             modelBuilder.Entity("art_tattoo_be.Domain.Category.Category", b =>
                 {
                     b.Navigation("StudioServices");
@@ -717,6 +1127,12 @@ namespace art_tattoo_be.Migrations
 
             modelBuilder.Entity("art_tattoo_be.Domain.Studio.Studio", b =>
                 {
+                    b.Navigation("Appointments");
+
+                    b.Navigation("Invoices");
+
+                    b.Navigation("Locations");
+
                     b.Navigation("Services");
 
                     b.Navigation("StudioUsers");
@@ -726,8 +1142,17 @@ namespace art_tattoo_be.Migrations
                     b.Navigation("WorkingTimes");
                 });
 
+            modelBuilder.Entity("art_tattoo_be.Domain.Studio.StudioUser", b =>
+                {
+                    b.Navigation("Appointments");
+
+                    b.Navigation("Schedules");
+                });
+
             modelBuilder.Entity("art_tattoo_be.Domain.User.User", b =>
                 {
+                    b.Navigation("Invoices");
+
                     b.Navigation("StudioUser")
                         .IsRequired();
 
