@@ -1,11 +1,11 @@
-namespace art_tattoo_be.Application.Category;
+namespace art_tattoo_be.Application.Controllers;
 
+using Microsoft.AspNetCore.Mvc;
 using art_tattoo_be.Domain.Category;
 using art_tattoo_be.Infrastructure.Database;
 using art_tattoo_be.Infrastructure.Repository;
 using art_tattoo_be.Application.Shared.Handler;
-using Microsoft.AspNetCore.Mvc;
-
+using art_tattoo_be.Application.DTOs.Category;
 
 [Produces("application/json")]
 [ApiController]

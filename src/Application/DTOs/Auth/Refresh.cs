@@ -1,4 +1,4 @@
-namespace art_tattoo_be.Application.Auth;
+namespace art_tattoo_be.Application.DTOs.Auth;
 
 public class RefreshReq
 {

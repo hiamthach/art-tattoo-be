@@ -1,6 +1,7 @@
-using Microsoft.AspNetCore.Mvc;
+namespace art_tattoo_be.Application.Controllers;
 
-namespace art_tattoo_be.Application.Auth;
+using Microsoft.AspNetCore.Mvc;
+using art_tattoo_be.Application.DTOs.Auth;
 
 [Produces("application/json")]
 [ApiController]

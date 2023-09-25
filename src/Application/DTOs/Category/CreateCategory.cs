@@ -1,4 +1,4 @@
-namespace art_tattoo_be.Application.Category;
+namespace art_tattoo_be.Application.DTOs.Category;
 
 public class CreateCategoryReq
 {

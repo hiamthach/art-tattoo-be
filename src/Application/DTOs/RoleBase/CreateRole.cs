@@ -1,4 +1,4 @@
-namespace art_tattoo_be.Application.RoleBase;
+namespace art_tattoo_be.Application.DTOs.RoleBase;
 
 public class CreateRoleReq
 {

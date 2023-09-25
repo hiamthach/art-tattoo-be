@@ -1,11 +1,13 @@
-namespace art_tattoo_be.Application.RoleBase;
+namespace art_tattoo_be.Application.Controllers;
+
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using art_tattoo_be.Application.DTOs.RoleBase;
 using art_tattoo_be.Infrastructure.Repository;
 using art_tattoo_be.Domain.RoleBase;
 using art_tattoo_be.Infrastructure.Database;
 using art_tattoo_be.Application.Shared;
 using art_tattoo_be.Application.Shared.Handler;
-using AutoMapper;
 
 [Produces("application/json")]
 [ApiController]
@@ -31,15 +33,13 @@ public class RoleBaseController : ControllerBase
     {
       var permissions = _roleBaseRepo.GetPermissions();
 
-      return Ok(permissions.Select(p => p.ToDto()));
+      return Ok(_mapper.Map<List<PermissionDto>>(permissions));
     }
     catch (Exception e)
     {
       _logger.LogError("GetPermission: {@e}", e);
       return ErrorResp.SomethingWrong(e.Message);
     }
-
-
   }
 
   [HttpPost("permission")]
@@ -61,7 +61,7 @@ public class RoleBaseController : ControllerBase
         return Ok(new CreatePermissionResp
         {
           Message = "Create permission successfully!",
-          Permission = p.ToDto()
+          Permission = _mapper.Map<PermissionDto>(p)
         });
       }
       else
@@ -158,7 +158,7 @@ public class RoleBaseController : ControllerBase
     {
       var roles = _roleBaseRepo.GetRoles();
 
-      return Ok(roles.Select(r => r.ToDto()));
+      return Ok(_mapper.Map<List<RoleDto>>(roles));
     }
     catch (Exception e)
     {

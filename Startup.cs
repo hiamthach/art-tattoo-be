@@ -18,7 +18,6 @@ namespace MyApp
     public void ConfigureServices(IServiceCollection services)
     {
       // Configure services (e.g., database, authentication, etc.)
-
       services.AddAutoMapper(typeof(Startup));
     }
 

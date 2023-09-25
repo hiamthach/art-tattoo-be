@@ -1,4 +1,4 @@
-namespace art_tattoo_be.Application.RoleBase;
+namespace art_tattoo_be.Application.DTOs.RoleBase;
 
 using art_tattoo_be.Domain.RoleBase;
 
