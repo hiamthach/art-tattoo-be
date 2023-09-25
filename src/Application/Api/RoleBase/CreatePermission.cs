@@ -1,5 +1,7 @@
 namespace art_tattoo_be.Application.RoleBase;
 
+using art_tattoo_be.Domain.RoleBase;
+
 public class CreatePermissionReq
 {
 
@@ -14,4 +16,5 @@ public class CreatePermissionReq
 public class CreatePermissionResp
 {
   public string Message { get; set; } = null!;
+  public PermissionDto Permission { get; set; } = null!;
 }

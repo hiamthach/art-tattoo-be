@@ -25,6 +25,11 @@ public static class ErrorResp
     return new JsonResult(new { Error = message }) { StatusCode = HttpCode.UNAUTHORIZED };
   }
 
+  public static IActionResult SomethingWrong(string message)
+  {
+    return new JsonResult(new { Error = message }) { StatusCode = HttpCode.SOMETHING_WRONG };
+  }
+
   public static IActionResult Forbidden(string message)
   {
     return new JsonResult(new { Error = message }) { StatusCode = HttpCode.FORBIDDEN };

@@ -1,7 +1,6 @@
 namespace art_tattoo_be.Domain.Booking;
 
 using art_tattoo_be.Domain.Studio;
-using art_tattoo_be.Domain.User;
 
 public class Schedule
 {

@@ -9,5 +9,6 @@ public static class HttpCode
   public const int UNAUTHORIZED = 401;
   public const int FORBIDDEN = 403;
   public const int NOT_FOUND = 404;
+  public const int SOMETHING_WRONG = 422;
   public const int UNKNOWN_ERROR = 500;
 }

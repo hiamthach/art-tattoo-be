@@ -44,6 +44,7 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Name).IsRequired().HasMaxLength(30);
       entity.Property(e => e.Description).IsRequired(false).HasMaxLength(255);
       entity.HasMany(e => e.Permissions).WithMany(e => e.Roles);
+      entity.HasIndex(e => e.Name).IsUnique();
     });
 
     builder.Entity<Permission>(entity =>
@@ -53,6 +54,7 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Slug).IsRequired().HasMaxLength(10);
       entity.Property(e => e.Name).IsRequired().HasMaxLength(30);
       entity.Property(e => e.Description).IsRequired(false).HasMaxLength(255);
+      entity.HasIndex(e => e.Slug).IsUnique();
     });
 
     builder.Entity<User>(entity =>

@@ -27,43 +27,51 @@ public class RoleBaseController : ControllerBase
   public IActionResult GetPermission()
   {
     _logger.LogInformation("GetPermission");
+    try
+    {
+      var permissions = _roleBaseRepo.GetPermissions();
 
-    var permissions = _roleBaseRepo.GetPermissions();
+      return Ok(permissions.Select(p => p.ToDto()));
+    }
+    catch (Exception e)
+    {
+      _logger.LogError("GetPermission: {@e}", e);
+      return ErrorResp.SomethingWrong(e.Message);
+    }
 
-    return Ok(permissions);
+
   }
 
   [HttpPost("permission")]
   public IActionResult CreatePermission([FromBody] CreatePermissionReq req)
   {
     _logger.LogInformation("CreatePermission: {@req}", req);
-
-    var p = new Permission
-    {
-      Name = req.Name,
-      Slug = req.Slug,
-      Description = req.Description,
-    };
-
     try
     {
+      var p = new Permission
+      {
+        Name = req.Name,
+        Slug = req.Slug,
+        Description = req.Description,
+      };
       var result = _roleBaseRepo.CreatePermission(p);
 
       if (result > 0)
       {
         return Ok(new CreatePermissionResp
         {
-          Message = "Create permission successfully!"
+          Message = "Create permission successfully!",
+          Permission = p.ToDto()
         });
       }
       else
       {
-        return ErrorResp.BadRequest("Create permission failed!");
+        return ErrorResp.SomethingWrong("Create permission failed!");
       }
     }
     catch (Exception e)
     {
-      return ErrorResp.BadRequest(e.Message);
+      return ErrorResp.SomethingWrong(e.Message);
     }
   }
 
@@ -73,37 +81,44 @@ public class RoleBaseController : ControllerBase
     _logger.LogInformation("UpdatePermission");
 
     // check if permission exists
-    var p = _roleBaseRepo.GetPermissionById(slug);
-    if (p == null)
+    try
     {
-      return NotFound(new BaseResp
+      var p = _roleBaseRepo.GetPermissionById(slug);
+      if (p == null)
       {
-        Message = "Permission not found!"
-      });
-    }
-    // update the field if not null
-    if (req.Name != null)
-    {
-      p.Name = req.Name;
-    }
-
-    if (req.Description != null)
-    {
-      p.Description = req.Description;
-    }
-
-    var result = _roleBaseRepo.UpdatePermission(p);
-
-    if (result > 0)
-    {
-      return Ok(new BaseResp
+        return NotFound(new BaseResp
+        {
+          Message = "Permission not found!"
+        });
+      }
+      // update the field if not null
+      if (req.Name != null)
       {
-        Message = "Update permission successfully!"
-      });
+        p.Name = req.Name;
+      }
+
+      if (req.Description != null)
+      {
+        p.Description = req.Description;
+      }
+
+      var result = _roleBaseRepo.UpdatePermission(p);
+
+      if (result > 0)
+      {
+        return Ok(new BaseResp
+        {
+          Message = "Update permission successfully!"
+        });
+      }
+      else
+      {
+        return ErrorResp.SomethingWrong("Update permission failed!");
+      }
     }
-    else
+    catch (Exception e)
     {
-      return ErrorResp.BadRequest("Update permission failed!");
+      return ErrorResp.SomethingWrong(e.Message);
     }
   }
 
@@ -112,18 +127,25 @@ public class RoleBaseController : ControllerBase
   {
     _logger.LogInformation("DeletePermission");
 
-    var result = _roleBaseRepo.DeletePermission(slug);
+    try
+    {
+      var result = _roleBaseRepo.DeletePermission(slug);
 
-    if (result > 0)
-    {
-      return Ok(new BaseResp
+      if (result > 0)
       {
-        Message = "Delete permission successfully!"
-      });
+        return Ok(new BaseResp
+        {
+          Message = "Delete permission successfully!"
+        });
+      }
+      else
+      {
+        return ErrorResp.SomethingWrong("Delete permission failed!");
+      }
     }
-    else
+    catch (Exception e)
     {
-      return ErrorResp.BadRequest("Delete permission failed!");
+      return ErrorResp.SomethingWrong(e.Message);
     }
   }
 
@@ -132,9 +154,16 @@ public class RoleBaseController : ControllerBase
   {
     _logger.LogInformation("GetRole");
 
-    var roles = _roleBaseRepo.GetRoles();
+    try
+    {
+      var roles = _roleBaseRepo.GetRoles();
 
-    return Ok(roles);
+      return Ok(roles.Select(r => r.ToDto()));
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
   }
 
   [HttpPost("role")]
@@ -142,21 +171,28 @@ public class RoleBaseController : ControllerBase
   {
     _logger.LogInformation("CreateRole");
 
-    var result = _roleBaseRepo.CreateRole(new Role
+    try
     {
-      Name = req.Name,
-    });
-
-    if (result > 0)
-    {
-      return Ok(new CreateRoleResp
+      var result = _roleBaseRepo.CreateRole(new Role
       {
-        Message = "Create role successfully!"
+        Name = req.Name,
       });
+
+      if (result > 0)
+      {
+        return Ok(new CreateRoleResp
+        {
+          Message = "Create role successfully!"
+        });
+      }
+      else
+      {
+        return ErrorResp.SomethingWrong("Create role failed!");
+      }
     }
-    else
+    catch (Exception e)
     {
-      return ErrorResp.BadRequest("Create role failed!");
+      return ErrorResp.SomethingWrong(e.Message);
     }
   }
 
@@ -165,17 +201,24 @@ public class RoleBaseController : ControllerBase
   {
     _logger.LogInformation("GetRoleById");
 
-    var role = _roleBaseRepo.GetRoleById(id);
-
-    if (role == null)
+    try
     {
-      return NotFound(new BaseResp
-      {
-        Message = "Role not found!"
-      });
-    }
+      var role = _roleBaseRepo.GetRoleById(id);
 
-    return Ok(role);
+      if (role == null)
+      {
+        return NotFound(new BaseResp
+        {
+          Message = "Role not found!"
+        });
+      }
+
+      return Ok(role);
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
   }
 
   [HttpPut("role/{id}")]
@@ -184,31 +227,35 @@ public class RoleBaseController : ControllerBase
     _logger.LogInformation("UpdateRole");
 
     // check if role exists
-    var role = _roleBaseRepo.GetRoleById(id);
-    if (role == null)
+    try
     {
-      return NotFound(new BaseResp
+      var role = _roleBaseRepo.GetRoleById(id);
+      if (role == null)
       {
-        Message = "Role not found!"
-      });
-    }
+        return NotFound(new BaseResp
+        {
+          Message = "Role not found!"
+        });
+      }
 
-    // update the field if not null
-    var result = _roleBaseRepo.UpdateRolePermission(id, req.PermissionIds);
+      // update the field if not null
+      var result = _roleBaseRepo.UpdateRolePermission(id, req.PermissionIds);
 
-    if (result > 0)
-    {
-      return Ok(new BaseResp
+      if (result > 0)
       {
-        Message = "Update role successfully!"
-      });
+        return Ok(new BaseResp
+        {
+          Message = "Update role successfully!"
+        });
+      }
+      else
+      {
+        return ErrorResp.SomethingWrong("Update role failed!");
+      }
     }
-    else
+    catch (Exception e)
     {
-      return BadRequest(new BaseResp
-      {
-        Message = "Update role failed!",
-      });
+      return ErrorResp.SomethingWrong(e.Message);
     }
   }
 
@@ -228,7 +275,7 @@ public class RoleBaseController : ControllerBase
     }
     else
     {
-      return ErrorResp.BadRequest("Delete role failed!");
+      return ErrorResp.SomethingWrong("Delete role failed!");
     }
   }
 }

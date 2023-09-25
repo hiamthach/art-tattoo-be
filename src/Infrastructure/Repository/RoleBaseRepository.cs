@@ -67,6 +67,7 @@ public class RoleBaseRepository : IRoleBaseRepository
   public int CreatePermission(Permission permission)
   {
     _dbContext.Permissions.Add(permission);
+
     return _dbContext.SaveChanges();
   }
 
