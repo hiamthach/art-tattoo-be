@@ -1,36 +1,38 @@
 version: '3.9'
 services:
-  db:
-    image: mcr.microsoft.com/mssql/server:2022-preview-ubuntu-22.04
-    environment:
-      SA_PASSWORD: "ArtTattoo@@"
-      ACCEPT_EULA: "Y"
-    ports:
-      - 1433:1433
-    networks:
-      - app-network
-
-  redis:
-    image: redis:7.0-alpine
-    ports:
-      - 6379:6379
-    networks:
-      - app-network
-
-  app:
+  webapi:
     build:
       context: .
       dockerfile: Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DatabaseConnection=Server=db;Database=tattoodb;User=sa;Password=ArtTattoo@@;
+      - ConnectionStrings__DatabaseConnection=Server=sqlserver;Database=tattoodb;User=sa;Password=ArtTattoo@@;MultipleActiveResultSets=true;TrustServerCertificate=true;
+      - APP_VERSION=0.0.2
     ports:
       - 8080:8080
-    restart: unless-stopped
+    restart: on-failure
     depends_on:
-      - db
-      - redis
+      - sqlserver
+      - cache
+    networks:
+      - app-network
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-preview-ubuntu-22.04
+    environment:
+      SA_PASSWORD: "ArtTattoo@@"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Evaluation"
+    ports:
+      - 1433:1433
+    networks:
+      - app-network
+
+  cache:
+    image: redis:7.0-alpine
+    ports:
+      - 6379:6379
     networks:
       - app-network
 

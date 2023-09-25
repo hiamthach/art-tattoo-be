@@ -1,5 +1,5 @@
 start:
-	dotnet watch
+	dotnet watch --launch-profile dev
 
 build:
 	dotnet build
@@ -9,6 +9,9 @@ test:
 
 docker:
 	docker build -t art-tattoo-be -f Dockerfile .
+
+deploy:
+	docker-compose up -d
 
 new-migration:
 	dotnet ef migrations add $(name)

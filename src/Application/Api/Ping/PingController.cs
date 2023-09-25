@@ -18,6 +18,8 @@ public class PingController : ControllerBase
   {
     _logger.LogInformation("Ping");
 
-    return Ok("{ \"message\": \"pong\"}");
+    var appVer = Environment.GetEnvironmentVariable("APP_VERSION");
+
+    return Ok("{ \"message\": \"pong\", \"version\": \"" + appVer + "\" }");
   }
 }
