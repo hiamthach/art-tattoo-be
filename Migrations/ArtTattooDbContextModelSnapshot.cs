@@ -492,6 +492,9 @@ namespace art_tattoo_be.Migrations
 
                     b.HasKey("Slug");
 
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
                     b.ToTable("permissions", (string)null);
                 });
 
@@ -513,6 +516,9 @@ namespace art_tattoo_be.Migrations
                         .HasColumnType("nvarchar(30)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("roles", (string)null);
                 });
@@ -566,6 +572,8 @@ namespace art_tattoo_be.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name");
 
                     b.ToTable("studios", (string)null);
                 });

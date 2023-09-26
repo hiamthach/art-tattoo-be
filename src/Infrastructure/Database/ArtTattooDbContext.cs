@@ -104,6 +104,7 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Instagram).IsRequired(false).HasMaxLength(255);
       entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
       entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.HasIndex(e => e.Name);
     });
 
     builder.Entity<StudioLocation>(entity =>
