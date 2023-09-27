@@ -25,15 +25,15 @@ public class JwtService : IJwtService
 
   public string GenerateToken(Guid userId, Guid sessionId, int roleId, int exp)
   {
-    var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET") ?? "ArtSecret");
+    var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET") ?? "ArtTattooSecret@@");
     var tokenDescriptor = new SecurityTokenDescriptor
     {
       Subject = new ClaimsIdentity(new Claim[]
       {
-        new(ClaimTypes.NameIdentifier, userId.ToString()),
         new(ClaimTypes.Role, roleId.ToString()),
         new(ClaimTypes.Sid, sessionId.ToString())
       }),
+      Issuer = userId.ToString(),
       Expires = DateTime.UtcNow.AddSeconds(exp),
       SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
     };

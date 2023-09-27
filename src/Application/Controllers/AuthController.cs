@@ -43,7 +43,7 @@ public class AuthController : ControllerBase
       var accessTk = GenerateAccessTk(userId, sessionId, 1);
       var refreshTk = GenerateRefreshTk(userId, sessionId, 1);
 
-      return Ok(new LoginResp()
+      LoginResp resp = new()
       {
         Message = "Login successfully",
         Token = {
@@ -52,7 +52,9 @@ public class AuthController : ControllerBase
           AccessTokenExp = JwtConst.ACCESS_TOKEN_EXP,
           RefreshTokenExp = JwtConst.REFRESH_TOKEN_EXP
         }
-      });
+      };
+
+      return Ok(resp);
     }
 
   }
