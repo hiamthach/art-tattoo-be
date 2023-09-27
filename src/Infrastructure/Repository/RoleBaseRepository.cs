@@ -73,7 +73,7 @@ public class RoleBaseRepository : IRoleBaseRepository
 
   public int UpdatePermission(Permission permission)
   {
-    _dbContext.Entry(permission).State = EntityState.Modified;
+    _dbContext.Permissions.Update(permission);
     return _dbContext.SaveChanges();
   }
 
