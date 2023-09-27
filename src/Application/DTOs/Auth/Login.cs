@@ -8,7 +8,14 @@ public class LoginReq
 
 public class LoginResp
 {
-  public string AccessToken { get; set; } = null!;
+  public string Message { get; set; } = null!;
+  public TokenResp Token { get; set; } = null!;
+}
 
+public class TokenResp
+{
+  public string AccessToken { get; set; } = null!;
+  public int AccessTokenExp { get; set; }
   public string RefreshToken { get; set; } = null!;
+  public int RefreshTokenExp { get; set; }
 }
