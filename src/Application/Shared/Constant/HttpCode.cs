@@ -11,4 +11,5 @@ public static class HttpCode
   public const int NOT_FOUND = 404;
   public const int SOMETHING_WRONG = 422;
   public const int UNKNOWN_ERROR = 500;
+  public const int INTERNAL_SERVER_ERROR = 500;
 }

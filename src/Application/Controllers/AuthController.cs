@@ -8,6 +8,7 @@ using art_tattoo_be.Infrastructure.Database;
 using art_tattoo_be.Domain.User;
 using art_tattoo_be.Infrastructure.Repository;
 using art_tattoo_be.Application.Shared.Handler;
+using art_tattoo_be.Infrastructure.Cache;
 
 [Produces("application/json")]
 [ApiController]
@@ -16,45 +17,60 @@ public class AuthController : ControllerBase
 {
   private readonly ILogger<AuthController> _logger;
   private readonly IJwtService _jwtService;
+  private readonly ICacheService _cacheService;
   private readonly IUserRepository _userRepo;
 
-  public AuthController(ILogger<AuthController> logger, IJwtService jwtService, ArtTattooDbContext dbContext)
+  public AuthController(ILogger<AuthController> logger, IJwtService jwtService, ArtTattooDbContext dbContext, ICacheService cacheService)
   {
     _logger = logger;
     _jwtService = jwtService;
     _userRepo = new UserRepository(dbContext);
+    _cacheService = cacheService;
   }
 
   [HttpPost("login")]
-  public IActionResult Login([FromBody] LoginReq req)
+  public async Task<IActionResult> Login([FromBody] LoginReq req)
   {
     _logger.LogInformation("Login email:" + req.Email);
-
-    if (req.Email == null || req.Password == null)
-    {
-      return ErrorResp.BadRequest("Email or password is null");
-    }
-    else
+    try
     {
 
-      Guid sessionId = Guid.NewGuid();
-      Guid userId = Guid.NewGuid();
-
-      var accessTk = GenerateAccessTk(userId, sessionId, 1);
-      var refreshTk = GenerateRefreshTk(userId, sessionId, 1);
-
-      LoginResp resp = new()
+      if (req.Email == null || req.Password == null)
       {
-        Message = "Login successfully",
-        Token = {
+        return ErrorResp.BadRequest("Email or password is null");
+      }
+      else
+      {
+
+        Guid sessionId = Guid.NewGuid();
+        Guid userId = Guid.NewGuid();
+
+        var accessTk = GenerateAccessTk(userId, sessionId, 1);
+        var refreshTk = GenerateRefreshTk(userId, sessionId, 1);
+
+        await _cacheService.Set(sessionId.ToString(), refreshTk, TimeSpan.FromSeconds(JwtConst.REFRESH_TOKEN_EXP));
+
+        TokenResp tokenResp = new()
+        {
           AccessToken = accessTk,
           RefreshToken = refreshTk,
           AccessTokenExp = JwtConst.ACCESS_TOKEN_EXP,
           RefreshTokenExp = JwtConst.REFRESH_TOKEN_EXP
-        }
-      };
+        };
 
-      return Ok(resp);
+        LoginResp resp = new()
+        {
+          Message = "Login successfully",
+          Token = tokenResp
+        };
+
+        return Ok(resp);
+      }
+    }
+    catch (Exception e)
+    {
+      _logger.LogError(e.Message);
+      return ErrorResp.SomethingWrong(e.Message);
     }
 
   }
@@ -72,7 +88,14 @@ public class AuthController : ControllerBase
   {
     _logger.LogInformation("Refresh");
 
-    return Ok("Refresh");
+    try
+    {
+      return Ok("Refresh");
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.Unauthorized(e.Message);
+    }
   }
 
   [HttpPost("logout")]

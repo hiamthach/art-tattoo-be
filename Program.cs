@@ -1,11 +1,15 @@
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using art_tattoo_be.Core.Jwt;
 using art_tattoo_be.Infrastructure.Database;
-using Microsoft.EntityFrameworkCore;
+using art_tattoo_be.Infrastructure.Cache;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddCors(options =>
 {
@@ -26,6 +30,10 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("localhost:6379"));
+
+builder.Services.AddScoped<ICacheService, CacheService>();
 
 builder.Services.AddDbContext<ArtTattooDbContext>(options =>
 {

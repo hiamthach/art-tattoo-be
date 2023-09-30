@@ -18,7 +18,7 @@ public class JwtService : IJwtService
   private readonly JwtSecurityTokenHandler _handler;
   public JwtService()
   {
-    var SecretKey = Environment.GetEnvironmentVariable("JWT_SECRET") ?? "ArtSecret";
+    var SecretKey = Environment.GetEnvironmentVariable("JWT_SECRET") ?? "ArtTattooSecret@@";
     _key = Encoding.ASCII.GetBytes(SecretKey);
     _handler = new JwtSecurityTokenHandler();
   }
@@ -30,8 +30,8 @@ public class JwtService : IJwtService
     {
       Subject = new ClaimsIdentity(new Claim[]
       {
-        new(ClaimTypes.Role, roleId.ToString()),
-        new(ClaimTypes.Sid, sessionId.ToString())
+        new("sessionId", sessionId.ToString()),
+        new("roleId", roleId.ToString()),
       }),
       Issuer = userId.ToString(),
       Expires = DateTime.UtcNow.AddSeconds(exp),
@@ -59,16 +59,18 @@ public class JwtService : IJwtService
 
       var result = (JwtSecurityToken)validatedToken;
 
-      return new Payload
+      var payload = new Payload()
       {
-        UserId = Guid.Parse(result.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value),
-        RoleId = int.Parse(result.Claims.First(x => x.Type == ClaimTypes.Role).Value),
-        SessionId = Guid.Parse(result.Claims.First(x => x.Type == ClaimTypes.Sid).Value)
+        UserId = Guid.Parse(result.Issuer),
+        RoleId = int.Parse(result.Claims.First(x => x.Type == "roleId").Value),
+        SessionId = Guid.Parse(result.Claims.First(x => x.Type == "sessionId").Value)
       };
+
+      return payload;
     }
-    catch
+    catch (Exception e)
     {
-      return null;
+      throw e;
     }
   }
 }
