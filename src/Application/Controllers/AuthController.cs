@@ -9,6 +9,11 @@ using art_tattoo_be.Domain.User;
 using art_tattoo_be.Infrastructure.Repository;
 using art_tattoo_be.Application.Shared.Handler;
 using art_tattoo_be.Infrastructure.Cache;
+using art_tattoo_be.Core.Crypto;
+using art_tattoo_be.Application.Shared.Enum;
+using art_tattoo_be.Application.Shared;
+using Microsoft.AspNetCore.Authorization;
+using art_tattoo_be.Application.Middlewares;
 
 [Produces("application/json")]
 [ApiController]
@@ -34,38 +39,43 @@ public class AuthController : ControllerBase
     _logger.LogInformation("Login email:" + req.Email);
     try
     {
-
-      if (req.Email == null || req.Password == null)
+      // Check user exist
+      var user = await _userRepo.GetUserByEmailAsync(req.Email);
+      if (user == null)
       {
-        return ErrorResp.BadRequest("Email or password is null");
+        return ErrorResp.NotFound("User not found");
       }
-      else
+
+      // Check password
+      if (!CryptoService.VerifyPassword(req.Password, user.Password))
       {
-
-        Guid sessionId = Guid.NewGuid();
-        Guid userId = Guid.NewGuid();
-
-        var accessTk = GenerateAccessTk(userId, sessionId, 1);
-        var refreshTk = GenerateRefreshTk(userId, sessionId, 1);
-
-        await _cacheService.Set(sessionId.ToString(), refreshTk, TimeSpan.FromSeconds(JwtConst.REFRESH_TOKEN_EXP));
-
-        TokenResp tokenResp = new()
-        {
-          AccessToken = accessTk,
-          RefreshToken = refreshTk,
-          AccessTokenExp = JwtConst.ACCESS_TOKEN_EXP,
-          RefreshTokenExp = JwtConst.REFRESH_TOKEN_EXP
-        };
-
-        LoginResp resp = new()
-        {
-          Message = "Login successfully",
-          Token = tokenResp
-        };
-
-        return Ok(resp);
+        return ErrorResp.Unauthorized("Wrong password");
       }
+
+      Guid sessionId = Guid.NewGuid();
+
+      var accessTk = GenerateAccessTk(user.Id, sessionId, user.RoleId);
+      var refreshTk = GenerateRefreshTk(user.Id, sessionId, user.RoleId);
+
+      var redisKey = "ss:" + sessionId.ToString();
+
+      await _cacheService.Set(redisKey, refreshTk, TimeSpan.FromSeconds(JwtConst.REFRESH_TOKEN_EXP));
+
+      TokenResp tokenResp = new()
+      {
+        AccessToken = accessTk,
+        RefreshToken = refreshTk,
+        AccessTokenExp = JwtConst.ACCESS_TOKEN_EXP,
+        RefreshTokenExp = JwtConst.REFRESH_TOKEN_EXP
+      };
+
+      LoginResp resp = new()
+      {
+        Message = "Login successfully",
+        Token = tokenResp
+      };
+
+      return Ok(resp);
     }
     catch (Exception e)
     {
@@ -79,18 +89,85 @@ public class AuthController : ControllerBase
   public IActionResult Register([FromBody] RegisterReq req)
   {
     _logger.LogInformation("Register");
+    try
+    {
+      var hashedPass = CryptoService.HashPassword(req.Password);
 
-    return Ok(req);
+      var user = new User
+      {
+        Id = Guid.NewGuid(),
+        Email = req.Email,
+        Password = hashedPass,
+        FullName = req.FullName,
+        Phone = req.PhoneNumber,
+        RoleId = RoleConst.GetRoleId(RoleConst.MEMBER),
+        Status = UserStatusEnum.Active,
+        Address = null,
+        Avatar = null,
+      };
+
+      var result = _userRepo.CreateUser(user);
+
+      if (result > 0)
+      {
+        return CreatedAtAction(nameof(Register), new BaseResp { Message = "Create successfully", Success = true });
+      }
+      else
+      {
+        return ErrorResp.BadRequest("Create failed");
+      }
+    }
+    catch (Exception e)
+    {
+      _logger.LogError(e, "Error creating user");
+      return ErrorResp.UnknownError(e.Message);
+    }
   }
 
   [HttpPost("refresh")]
-  public IActionResult Refresh()
+  public async Task<IActionResult> Refresh()
   {
     _logger.LogInformation("Refresh");
 
     try
     {
-      return Ok("Refresh");
+      var refreshTk = Request.Headers["Authorization"].ToString().Split(" ")[1];
+      var payload = _jwtService.ValidateToken(refreshTk);
+
+      if (payload == null)
+      {
+        return ErrorResp.Unauthorized("Invalid token");
+      }
+
+      var ssId = payload.SessionId;
+      var userId = payload.UserId;
+
+      var redisKey = "ss:" + ssId.ToString();
+
+      var ss = await _cacheService.Get<string>(redisKey);
+      if (ss == null)
+      {
+        return ErrorResp.Unauthorized("Invalid token");
+      }
+
+      if (ss != refreshTk)
+      {
+        return ErrorResp.Unauthorized("Invalid token");
+      }
+
+      var user = _userRepo.GetUserById(userId);
+      if (user == null)
+      {
+        return ErrorResp.NotFound("User not found");
+      }
+
+      var accessTk = GenerateAccessTk(user.Id, ssId, user.RoleId);
+
+      return Ok(new TokenResp
+      {
+        AccessToken = accessTk,
+        AccessTokenExp = JwtConst.ACCESS_TOKEN_EXP
+      });
     }
     catch (Exception e)
     {
@@ -98,10 +175,29 @@ public class AuthController : ControllerBase
     }
   }
 
+  [Protected]
   [HttpPost("logout")]
-  public IActionResult Logout()
+  public async Task<IActionResult> Logout()
   {
     _logger.LogInformation("Logout");
+
+    try
+    {
+      if (HttpContext.Items["payload"] is not Payload payload)
+      {
+        return ErrorResp.BadRequest("Invalid token");
+      }
+
+      var ssId = payload.SessionId;
+
+      var redisKey = "ss:" + ssId.ToString();
+
+      await _cacheService.Remove(redisKey);
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.BadRequest(e.Message);
+    }
 
     return Ok("Logout");
   }

@@ -1,9 +1,10 @@
 namespace art_tattoo_be.Infrastructure.Repository;
 
+using System.Threading.Tasks;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Domain.User;
 using art_tattoo_be.Infrastructure.Database;
-
+using Microsoft.EntityFrameworkCore;
 
 public class UserRepository : IUserRepository
 {
@@ -32,9 +33,19 @@ public class UserRepository : IUserRepository
     return _dbContext.Users.FirstOrDefault(u => u.Email == email);
   }
 
+  public Task<User?> GetUserByEmailAsync(string email)
+  {
+    return _dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+  }
+
   public User? GetUserById(Guid id)
   {
     return _dbContext.Users.Find(id);
+  }
+
+  public Task<User?> GetUserByIdAsync(Guid id)
+  {
+    return _dbContext.Users.FindAsync(id).AsTask();
   }
 
   public IEnumerable<User> GetUsers()

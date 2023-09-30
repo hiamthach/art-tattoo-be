@@ -16,10 +16,12 @@ public class Studio
   public string? Website { get; set; }
   public string? Facebook { get; set; }
   public string? Instagram { get; set; }
+  public string? Address { get; set; }
+  public double Latitude { get; set; }
+  public double Longitude { get; set; }
   public DateTime CreatedAt { get; set; }
   public DateTime UpdatedAt { get; set; }
 
-  public List<StudioLocation> Locations { get; set; } = new();
   public List<StudioService> Services { get; set; } = new();
   public List<StudioWorkingTime> WorkingTimes { get; set; } = new();
   public List<StudioUser> StudioUsers { get; set; } = new();

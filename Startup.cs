@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using AutoMapper;
+using art_tattoo_be.Application.Middlewares;
 
 namespace MyApp
 {
@@ -33,6 +34,16 @@ namespace MyApp
       }
 
       // Configure middleware (e.g., routing, authentication, etc.)
+      app.UseMiddleware<ModelStateValidationMiddleware>();
+
+      app.UseMiddleware<AuthMiddleware>();
+      app.UseRouting();
+      // ...
+
+      app.UseEndpoints(endpoints =>
+      {
+        endpoints.MapControllers(); // Map your controllers
+      });
     }
   }
 }

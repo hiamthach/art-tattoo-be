@@ -14,6 +14,6 @@ public class StudioUser
   public Studio Studio { get; set; } = null!;
   public User User { get; set; } = null!;
 
-  public List<Schedule> Schedules { get; set; } = new();
+  public List<Shift> Shifts { get; set; } = new();
   public List<Appointment> Appointments { get; set; } = new();
 }

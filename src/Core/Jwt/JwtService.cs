@@ -45,32 +45,26 @@ public class JwtService : IJwtService
 
   public Payload? ValidateToken(string token)
   {
-    try
+
+    _handler.ValidateToken(token, new TokenValidationParameters
     {
-      _handler.ValidateToken(token, new TokenValidationParameters
-      {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(_key),
-        ValidateIssuer = false,
-        ValidateAudience = false,
-        // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
-        ClockSkew = TimeSpan.Zero
-      }, out SecurityToken validatedToken);
+      ValidateIssuerSigningKey = true,
+      IssuerSigningKey = new SymmetricSecurityKey(_key),
+      ValidateIssuer = false,
+      ValidateAudience = false,
+      // set clockskew to zero so tokens expire exactly at token expiration time (instead of 5 minutes later)
+      ClockSkew = TimeSpan.Zero
+    }, out SecurityToken validatedToken);
 
-      var result = (JwtSecurityToken)validatedToken;
+    var result = (JwtSecurityToken)validatedToken;
 
-      var payload = new Payload()
-      {
-        UserId = Guid.Parse(result.Issuer),
-        RoleId = int.Parse(result.Claims.First(x => x.Type == "roleId").Value),
-        SessionId = Guid.Parse(result.Claims.First(x => x.Type == "sessionId").Value)
-      };
-
-      return payload;
-    }
-    catch (Exception e)
+    var payload = new Payload()
     {
-      throw e;
-    }
+      UserId = Guid.Parse(result.Issuer),
+      RoleId = int.Parse(result.Claims.First(x => x.Type == "roleId").Value),
+      SessionId = Guid.Parse(result.Claims.First(x => x.Type == "sessionId").Value)
+    };
+
+    return payload;
   }
 }

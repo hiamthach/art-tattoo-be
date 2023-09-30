@@ -1,8 +1,15 @@
 namespace art_tattoo_be.Application.DTOs.Auth;
 
+using System.ComponentModel.DataAnnotations;
+using art_tattoo_be.Application.Shared.Constant;
+
 public class LoginReq
 {
+  [Required]
+  [StringLength(30)]
+  [RegularExpression(RegexConst.EMAIL, ErrorMessage = "Invalid email address")]
   public string Email { get; set; } = null!;
+  [Required]
   public string Password { get; set; } = null!;
 }
 
