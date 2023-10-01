@@ -14,6 +14,7 @@ using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Application.Shared;
 using Microsoft.AspNetCore.Authorization;
 using art_tattoo_be.Application.Middlewares;
+using System.Security.Cryptography;
 
 [Produces("application/json")]
 [ApiController]
@@ -55,18 +56,27 @@ public class AuthController : ControllerBase
       Guid sessionId = Guid.NewGuid();
 
       var accessTk = GenerateAccessTk(user.Id, sessionId, user.RoleId);
-      var refreshTk = GenerateRefreshTk(user.Id, sessionId, user.RoleId);
+      var refreshTk = GenerateRefreshTk();
 
-      var redisKey = "ss:" + sessionId.ToString();
+      // create a redis refreshToken key
+      var redisRftKey = "rft:" + refreshTk;
+      await _cacheService.Set(redisRftKey, new RedisSession { UserId = user.Id, SessionId = sessionId }, TimeSpan.FromSeconds(JwtConst.REFRESH_TOKEN_EXP));
 
-      await _cacheService.Set(redisKey, refreshTk, TimeSpan.FromSeconds(JwtConst.REFRESH_TOKEN_EXP));
+      // create a session Id key
+      var redisKey = "ss:" + user.Id.ToString() + ":" + sessionId.ToString();
+      await _cacheService.Set(redisKey, new RedisSession
+      {
+        UserId = user.Id,
+        SessionId = sessionId,
+        Refresh = refreshTk,
+      }, TimeSpan.FromSeconds(JwtConst.REFRESH_TOKEN_EXP));
 
       TokenResp tokenResp = new()
       {
         AccessToken = accessTk,
         RefreshToken = refreshTk,
-        AccessTokenExp = JwtConst.ACCESS_TOKEN_EXP,
-        RefreshTokenExp = JwtConst.REFRESH_TOKEN_EXP
+        AccessTokenExp = DateTimeOffset.UtcNow.AddSeconds(JwtConst.ACCESS_TOKEN_EXP).ToUnixTimeSeconds(),
+        RefreshTokenExp = DateTimeOffset.UtcNow.AddSeconds(JwtConst.REFRESH_TOKEN_EXP).ToUnixTimeSeconds()
       };
 
       LoginResp resp = new()
@@ -91,6 +101,13 @@ public class AuthController : ControllerBase
     _logger.LogInformation("Register");
     try
     {
+      // check email exist
+      var userExist = _userRepo.GetUserByEmail(req.Email);
+      if (userExist != null)
+      {
+        return ErrorResp.BadRequest("Email already exist");
+      }
+
       var hashedPass = CryptoService.HashPassword(req.Password);
 
       var user = new User
@@ -125,32 +142,38 @@ public class AuthController : ControllerBase
   }
 
   [HttpPost("refresh")]
-  public async Task<IActionResult> Refresh()
+  public async Task<IActionResult> Refresh([FromBody] RefreshReq req)
   {
     _logger.LogInformation("Refresh");
 
     try
     {
-      var refreshTk = Request.Headers["Authorization"].ToString().Split(" ")[1];
-      var payload = _jwtService.ValidateToken(refreshTk);
+      // Get the refresh token from the request body, and get user id and session id from redis
+      // If not found, return error
+      var refreshTk = req.RefreshToken;
 
-      if (payload == null)
+      var redisRftKey = "rft:" + refreshTk;
+
+      var rft = await _cacheService.Get<RedisSession>(redisRftKey);
+      if (rft == null)
       {
         return ErrorResp.Unauthorized("Invalid token");
       }
 
-      var ssId = payload.SessionId;
-      var userId = payload.UserId;
+      var ssId = rft.SessionId;
+      var userId = rft.UserId;
 
-      var redisKey = "ss:" + ssId.ToString();
+      // Get the session of user from redis -> This session use to check if the refresh token is valid and force logout
+      // If not found, return error
+      var redisKey = "ss:" + userId + ":" + ssId.ToString();
 
-      var ss = await _cacheService.Get<string>(redisKey);
+      var ss = await _cacheService.Get<RedisSession>(redisKey);
       if (ss == null)
       {
         return ErrorResp.Unauthorized("Invalid token");
       }
 
-      if (ss != refreshTk)
+      if (ss.Refresh != refreshTk)
       {
         return ErrorResp.Unauthorized("Invalid token");
       }
@@ -166,7 +189,9 @@ public class AuthController : ControllerBase
       return Ok(new TokenResp
       {
         AccessToken = accessTk,
-        AccessTokenExp = JwtConst.ACCESS_TOKEN_EXP
+        AccessTokenExp = DateTimeOffset.UtcNow.AddSeconds(JwtConst.ACCESS_TOKEN_EXP).ToUnixTimeSeconds(),
+        RefreshToken = refreshTk,
+        RefreshTokenExp = -1
       });
     }
     catch (Exception e)
@@ -175,39 +200,60 @@ public class AuthController : ControllerBase
     }
   }
 
-  [Protected]
   [HttpPost("logout")]
-  public async Task<IActionResult> Logout()
+  public async Task<IActionResult> Logout([FromBody] LogoutReq req)
   {
     _logger.LogInformation("Logout");
 
     try
     {
-      if (HttpContext.Items["payload"] is not Payload payload)
+      var refreshTk = req.RefreshToken;
+
+      var redisRftKey = "rft:" + refreshTk;
+
+      var rft = await _cacheService.Get<RedisSession>(redisRftKey);
+      if (rft == null)
       {
-        return ErrorResp.BadRequest("Invalid token");
+        return ErrorResp.Unauthorized("Invalid token");
       }
 
-      var ssId = payload.SessionId;
+      var ssId = rft.SessionId;
+      var userId = rft.UserId;
 
-      var redisKey = "ss:" + ssId.ToString();
+      var redisKey = "ss:" + userId + ":" + ssId.ToString();
+
+      var ss = await _cacheService.Get<RedisSession>(redisKey);
+      if (ss == null)
+      {
+        return ErrorResp.Unauthorized("Invalid token");
+      }
+
+      if (ss.Refresh != refreshTk)
+      {
+        return ErrorResp.Unauthorized("Invalid token");
+      }
 
       await _cacheService.Remove(redisKey);
+      await _cacheService.Remove(redisRftKey);
+
+      return Ok(new BaseResp { Message = "Logout successfully", Success = true });
     }
     catch (Exception e)
     {
-      return ErrorResp.BadRequest(e.Message);
+      return ErrorResp.Unauthorized(e.Message);
     }
-
-    return Ok("Logout");
   }
+
   private string GenerateAccessTk(Guid userId, Guid sessionId, int roleId)
   {
     return _jwtService.GenerateToken(userId, sessionId, roleId, JwtConst.ACCESS_TOKEN_EXP);
   }
 
-  private string GenerateRefreshTk(Guid userId, Guid sessionId, int roleId)
+  private string GenerateRefreshTk()
   {
-    return _jwtService.GenerateToken(userId, sessionId, roleId, JwtConst.REFRESH_TOKEN_EXP);
+    var randomNumber = new byte[64];
+    using var rng = RandomNumberGenerator.Create();
+    rng.GetBytes(randomNumber);
+    return Convert.ToBase64String(randomNumber);
   }
 }
