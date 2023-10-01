@@ -12,6 +12,7 @@ using art_tattoo_be.Domain.Testimonial;
 using art_tattoo_be.Domain.Booking;
 using art_tattoo_be.Domain.Invoice;
 using art_tattoo_be.Domain.Media;
+using art_tattoo_be.Application.Shared.Constant;
 
 public class ArtTattooDbContext : IdentityDbContext
 {
@@ -23,9 +24,8 @@ public class ArtTattooDbContext : IdentityDbContext
   public DbSet<StudioService> StudioServices { get; set; } = null!;
   public DbSet<StudioWorkingTime> StudioWorkingTimes { get; set; } = null!;
   public DbSet<StudioUser> StudioUsers { get; set; } = null!;
-  public DbSet<StudioLocation> StudioLocations { get; set; } = null!;
   public DbSet<Testimonial> Testimonials { get; set; } = null!;
-  public DbSet<Schedule> Schedules { get; set; } = null!;
+  public DbSet<Shift> Shifts { get; set; } = null!;
   public DbSet<Appointment> Appointments { get; set; } = null!;
   public DbSet<Invoice> Invoices { get; set; } = null!;
   public DbSet<Media> Medias { get; set; } = null!;
@@ -45,6 +45,15 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Description).IsRequired(false).HasMaxLength(255);
       entity.HasMany(e => e.Permissions).WithMany(e => e.Roles);
       entity.HasIndex(e => e.Name).IsUnique();
+      // add default record
+      entity.HasData(
+        new Role { Id = RoleConst.GetRoleId(RoleConst.ADMIN), Name = RoleConst.ADMIN, Description = "Admin" },
+        new Role { Id = RoleConst.GetRoleId(RoleConst.SYSTEM_STAFF), Name = RoleConst.SYSTEM_STAFF, Description = "System Staff" },
+        new Role { Id = RoleConst.GetRoleId(RoleConst.STUDIO_MANAGER), Name = RoleConst.STUDIO_MANAGER, Description = "Studio Manager" },
+        new Role { Id = RoleConst.GetRoleId(RoleConst.STUDIO_STAFF), Name = RoleConst.STUDIO_STAFF, Description = "Studio Staff" },
+        new Role { Id = RoleConst.GetRoleId(RoleConst.ARTIST), Name = RoleConst.ARTIST, Description = "Studio Artist" },
+        new Role { Id = RoleConst.GetRoleId(RoleConst.MEMBER), Name = RoleConst.MEMBER, Description = "Member" }
+      );
     });
 
     builder.Entity<Permission>(entity =>
@@ -66,7 +75,7 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.HasIndex(e => e.Email).IsUnique();
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.Email).IsRequired().HasMaxLength(30);
-      entity.Property(e => e.Password).IsRequired().HasMaxLength(20);
+      entity.Property(e => e.Password).IsRequired().HasMaxLength(100);
       entity.Property(e => e.FullName).IsRequired().HasMaxLength(30);
       entity.Property(e => e.Phone).IsRequired(false).HasMaxLength(15);
       entity.Property(e => e.Address).IsRequired(false).HasMaxLength(255);
@@ -102,25 +111,12 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Email).IsRequired(false).HasMaxLength(30);
       entity.Property(e => e.Facebook).IsRequired(false).HasMaxLength(255);
       entity.Property(e => e.Instagram).IsRequired(false).HasMaxLength(255);
+      entity.Property(e => e.Address).IsRequired(false).HasMaxLength(255);
+      entity.Property(e => e.Latitude);
+      entity.Property(e => e.Longitude);
       entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
       entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
       entity.HasIndex(e => e.Name);
-    });
-
-    builder.Entity<StudioLocation>(entity =>
-    {
-      entity.ToTable("studio_locations");
-      entity.HasKey(e => e.Id);
-      entity.HasOne(e => e.Studio).WithMany(e => e.Locations).HasForeignKey(e => e.StudioId).IsRequired();
-      entity.Property(e => e.Id).ValueGeneratedOnAdd();
-      entity.Property(e => e.StudioId).IsRequired();
-      entity.Property(e => e.Address).IsRequired().HasMaxLength(255);
-      entity.Property(e => e.Province).IsRequired(false).HasMaxLength(50);
-      entity.Property(e => e.City).IsRequired(false).HasMaxLength(50);
-      entity.Property(e => e.Country).IsRequired(false).HasMaxLength(50);
-      entity.Property(e => e.PostalCode).IsRequired(false).HasMaxLength(10);
-      entity.Property(e => e.Latitude).IsRequired(false);
-      entity.Property(e => e.Longitude).IsRequired(false);
     });
 
     builder.Entity<StudioService>(entity =>
@@ -183,11 +179,11 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
     });
 
-    builder.Entity<Schedule>(entity =>
+    builder.Entity<Shift>(entity =>
     {
-      entity.ToTable("schedules");
+      entity.ToTable("Shifts");
       entity.HasKey(e => e.Id);
-      entity.HasOne(e => e.Artist).WithMany(e => e.Schedules).HasForeignKey(e => e.ArtistId).IsRequired();
+      entity.HasOne(e => e.Artist).WithMany(e => e.Shifts).HasForeignKey(e => e.ArtistId).IsRequired();
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.ArtistId).IsRequired();
       entity.Property(e => e.Start).IsRequired();
@@ -203,12 +199,12 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.HasKey(e => e.Id);
       entity.HasOne(e => e.Studio).WithMany(e => e.Appointments).HasForeignKey(e => e.StudioId).IsRequired().OnDelete(DeleteBehavior.Restrict); ;
       entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).IsRequired().OnDelete(DeleteBehavior.Restrict);
-      entity.HasOne(e => e.Schedule).WithMany(e => e.Appointments).HasForeignKey(e => e.ScheduleId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+      entity.HasOne(e => e.Shift).WithMany(e => e.Appointments).HasForeignKey(e => e.ShiftId).IsRequired().OnDelete(DeleteBehavior.Restrict);
       entity.HasOne(e => e.Artist).WithMany(e => e.Appointments).HasForeignKey(e => e.DoneBy).OnDelete(DeleteBehavior.Restrict);
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.StudioId).IsRequired();
       entity.Property(e => e.UserId).IsRequired();
-      entity.Property(e => e.ScheduleId).IsRequired();
+      entity.Property(e => e.ShiftId).IsRequired();
       entity.Property(e => e.DoneBy).IsRequired(false);
       entity.Property(e => e.Notes).IsRequired(false).HasMaxLength(500);
       entity.Property(e => e.Status).IsRequired().HasDefaultValue(AppointmentStatusEnum.Pending).HasConversion(
@@ -224,8 +220,10 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.HasKey(e => e.Id);
       entity.HasOne(e => e.Studio).WithMany(e => e.Invoices).HasForeignKey(e => e.StudioId).IsRequired();
       entity.HasOne(e => e.User).WithMany(e => e.Invoices).HasForeignKey(e => e.UserId).IsRequired();
+      entity.HasOne(e => e.Appointment).WithMany(e => e.ListInvoice).HasForeignKey(e => e.AppointmentId).IsRequired();
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.StudioId).IsRequired();
+      entity.Property(e => e.AppointmentId).IsRequired(false);
       entity.Property(e => e.UserId).IsRequired();
       entity.Property(e => e.Total).IsRequired();
       entity.Property(e => e.PayMethod).IsRequired().HasConversion(

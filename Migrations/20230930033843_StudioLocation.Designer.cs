@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using art_tattoo_be.Infrastructure.Database;
 
@@ -11,9 +12,11 @@ using art_tattoo_be.Infrastructure.Database;
 namespace art_tattoo_be.Migrations
 {
     [DbContext(typeof(ArtTattooDbContext))]
-    partial class ArtTattooDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230930033843_StudioLocation")]
+    partial class StudioLocation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -313,7 +316,7 @@ namespace art_tattoo_be.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<Guid>("ShiftId")
+                    b.Property<Guid>("ScheduleId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Status")
@@ -337,7 +340,7 @@ namespace art_tattoo_be.Migrations
 
                     b.HasIndex("DoneBy");
 
-                    b.HasIndex("ShiftId");
+                    b.HasIndex("ScheduleId");
 
                     b.HasIndex("StudioId");
 
@@ -346,7 +349,7 @@ namespace art_tattoo_be.Migrations
                     b.ToTable("appointments", (string)null);
                 });
 
-            modelBuilder.Entity("art_tattoo_be.Domain.Booking.Shift", b =>
+            modelBuilder.Entity("art_tattoo_be.Domain.Booking.Schedule", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -375,7 +378,7 @@ namespace art_tattoo_be.Migrations
 
                     b.HasIndex("ArtistId");
 
-                    b.ToTable("Shifts", (string)null);
+                    b.ToTable("schedules", (string)null);
                 });
 
             modelBuilder.Entity("art_tattoo_be.Domain.Category.Category", b =>
@@ -409,9 +412,6 @@ namespace art_tattoo_be.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("AppointmentId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -440,8 +440,6 @@ namespace art_tattoo_be.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AppointmentId");
 
                     b.HasIndex("StudioId");
 
@@ -819,8 +817,8 @@ namespace art_tattoo_be.Migrations
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("Phone")
                         .HasMaxLength(15)
@@ -983,9 +981,9 @@ namespace art_tattoo_be.Migrations
                         .HasForeignKey("DoneBy")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("art_tattoo_be.Domain.Booking.Shift", "Shift")
+                    b.HasOne("art_tattoo_be.Domain.Booking.Schedule", "Schedule")
                         .WithMany("Appointments")
-                        .HasForeignKey("ShiftId")
+                        .HasForeignKey("ScheduleId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1003,17 +1001,17 @@ namespace art_tattoo_be.Migrations
 
                     b.Navigation("Artist");
 
-                    b.Navigation("Shift");
+                    b.Navigation("Schedule");
 
                     b.Navigation("Studio");
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("art_tattoo_be.Domain.Booking.Shift", b =>
+            modelBuilder.Entity("art_tattoo_be.Domain.Booking.Schedule", b =>
                 {
                     b.HasOne("art_tattoo_be.Domain.Studio.StudioUser", "Artist")
-                        .WithMany("Shifts")
+                        .WithMany("Schedules")
                         .HasForeignKey("ArtistId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1023,12 +1021,6 @@ namespace art_tattoo_be.Migrations
 
             modelBuilder.Entity("art_tattoo_be.Domain.Invoice.Invoice", b =>
                 {
-                    b.HasOne("art_tattoo_be.Domain.Booking.Appointment", "Appointment")
-                        .WithMany("ListInvoice")
-                        .HasForeignKey("AppointmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("art_tattoo_be.Domain.Studio.Studio", "Studio")
                         .WithMany("Invoices")
                         .HasForeignKey("StudioId")
@@ -1040,8 +1032,6 @@ namespace art_tattoo_be.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Appointment");
 
                     b.Navigation("Studio");
 
@@ -1131,12 +1121,7 @@ namespace art_tattoo_be.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("art_tattoo_be.Domain.Booking.Appointment", b =>
-                {
-                    b.Navigation("ListInvoice");
-                });
-
-            modelBuilder.Entity("art_tattoo_be.Domain.Booking.Shift", b =>
+            modelBuilder.Entity("art_tattoo_be.Domain.Booking.Schedule", b =>
                 {
                     b.Navigation("Appointments");
                 });
@@ -1170,7 +1155,7 @@ namespace art_tattoo_be.Migrations
                 {
                     b.Navigation("Appointments");
 
-                    b.Navigation("Shifts");
+                    b.Navigation("Schedules");
                 });
 
             modelBuilder.Entity("art_tattoo_be.Domain.User.User", b =>

@@ -2,7 +2,7 @@ namespace art_tattoo_be.Domain.Booking;
 
 using art_tattoo_be.Domain.Studio;
 
-public class Schedule
+public class Shift
 {
   public Guid Id { get; set; }
   public Guid ArtistId { get; set; }

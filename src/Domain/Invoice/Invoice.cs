@@ -1,6 +1,7 @@
 namespace art_tattoo_be.Domain.Invoice;
 
 using art_tattoo_be.Application.Shared.Enum;
+using art_tattoo_be.Domain.Booking;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Domain.User;
 
@@ -13,9 +14,11 @@ public class Invoice
   public double Total { get; set; }
   public PayMethodEnum PayMethod { get; set; }
   public string? Notes { get; set; }
+  public Guid? AppointmentId { get; set; }
   public DateTime CreatedAt { get; set; }
   public DateTime UpdatedAt { get; set; }
 
   public virtual Studio Studio { get; set; } = null!;
   public virtual User User { get; set; } = null!;
+  public virtual Appointment Appointment { get; set; } = null!;
 }
