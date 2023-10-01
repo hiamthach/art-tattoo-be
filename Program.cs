@@ -10,8 +10,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddDistributedMemoryCache();
-
 builder.Services.AddCors(options =>
 {
   options.AddDefaultPolicy(
@@ -59,8 +57,6 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("localhost:6379"));
-
 builder.Services.AddScoped<ICacheService, CacheService>();
 
 builder.Services.AddDbContext<ArtTattooDbContext>(options =>
@@ -69,6 +65,9 @@ builder.Services.AddDbContext<ArtTattooDbContext>(options =>
   Console.WriteLine($"Connection string: {builder.Configuration.GetConnectionString("DatabaseConnection")}");
   options.UseSqlServer(builder.Configuration.GetConnectionString("DatabaseConnection"));
 });
+
+Console.WriteLine($"Redis connection string: {builder.Configuration.GetConnectionString("RedisConnection")}");
+builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("RedisConnection")));
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

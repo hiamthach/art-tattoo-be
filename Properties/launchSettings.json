@@ -18,7 +18,8 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "APP_VERSION": "0.0.1",
-        "JWT_SECRET": "ArtTattooSecret@@"
+        "JWT_SECRET": "ArtTattooSecret@@",
+        "REDIS_CONNECTION": "localhost:6379,password=ArtTattooRedis,abortConnect=false,ssl=true,sslprotocols=tls12"
       }
     }
   }
