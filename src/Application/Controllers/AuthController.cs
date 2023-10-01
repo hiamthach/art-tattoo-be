@@ -1,6 +1,7 @@
 namespace art_tattoo_be.Application.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Cryptography;
 using art_tattoo_be.Application.DTOs.Auth;
 using art_tattoo_be.Core.Jwt;
 using art_tattoo_be.Application.Shared.Constant;
@@ -12,9 +13,7 @@ using art_tattoo_be.Infrastructure.Cache;
 using art_tattoo_be.Core.Crypto;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Application.Shared;
-using Microsoft.AspNetCore.Authorization;
 using art_tattoo_be.Application.Middlewares;
-using System.Security.Cryptography;
 
 [Produces("application/json")]
 [ApiController]
@@ -32,6 +31,24 @@ public class AuthController : ControllerBase
     _jwtService = jwtService;
     _userRepo = new UserRepository(dbContext);
     _cacheService = cacheService;
+  }
+
+  [Protected]
+  [HttpGet("session")]
+  public IActionResult GetSession()
+  {
+    _logger.LogInformation("GetSession");
+    try
+    {
+      var payload = HttpContext.Items["payload"] as Payload;
+
+      return Ok(payload);
+    }
+    catch (Exception e)
+    {
+      _logger.LogError(e.Message);
+      return ErrorResp.SomethingWrong(e.Message);
+    }
   }
 
   [HttpPost("login")]
