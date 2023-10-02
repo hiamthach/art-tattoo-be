@@ -14,6 +14,7 @@ using art_tattoo_be.Core.Crypto;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Application.Shared;
 using art_tattoo_be.Application.Middlewares;
+using art_tattoo_be.Core.Mail;
 
 [Produces("application/json")]
 [ApiController]
@@ -23,14 +24,16 @@ public class AuthController : ControllerBase
   private readonly ILogger<AuthController> _logger;
   private readonly IJwtService _jwtService;
   private readonly ICacheService _cacheService;
+  private readonly IMailService _mailService;
   private readonly IUserRepository _userRepo;
 
-  public AuthController(ILogger<AuthController> logger, IJwtService jwtService, ArtTattooDbContext dbContext, ICacheService cacheService)
+  public AuthController(ILogger<AuthController> logger, IJwtService jwtService, ArtTattooDbContext dbContext, ICacheService cacheService, IMailService mailService)
   {
     _logger = logger;
     _jwtService = jwtService;
     _userRepo = new UserRepository(dbContext);
     _cacheService = cacheService;
+    _mailService = mailService;
   }
 
   [Protected]
@@ -216,6 +219,25 @@ public class AuthController : ControllerBase
       return ErrorResp.Unauthorized(e.Message);
     }
   }
+
+  [HttpPost("forget-password")]
+  public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordReq req)
+  {
+    _logger.LogInformation("ForgetPassword");
+
+    try
+    {
+      await _mailService.SendEmailAsync(req.Email, "Reset password", "Your reset password code is: 123456");
+
+      return Ok(new BaseResp { Message = "Send email successfully", Success = true });
+    }
+    catch (Exception e)
+    {
+      _logger.LogError(e.Message);
+      return ErrorResp.UnknownError(e.Message);
+    }
+  }
+
 
   [HttpPost("logout")]
   public async Task<IActionResult> Logout([FromBody] LogoutReq req)
