@@ -27,13 +27,15 @@ public class MailService : IMailService
   public async Task SendEmailAsync(string email, string subject, string message)
   {
     var mimeMessage = new MimeMessage();
-    mimeMessage.From.Add(new MailboxAddress("Sender Name", _smtpUsername));
+    mimeMessage.From.Add(new MailboxAddress("Art Tattoo Lover", _smtpUsername));
     mimeMessage.To.Add(new MailboxAddress("Receiver Name", email));
 
     mimeMessage.Subject = subject;
 
-    var bodyBuilder = new BodyBuilder();
-    bodyBuilder.HtmlBody = message;
+    var bodyBuilder = new BodyBuilder
+    {
+      HtmlBody = message
+    };
 
     mimeMessage.Body = bodyBuilder.ToMessageBody();
 

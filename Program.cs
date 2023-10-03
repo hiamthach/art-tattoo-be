@@ -70,7 +70,9 @@ builder.Services.AddDbContext<ArtTattooDbContext>(options =>
 Console.WriteLine($"Redis connection string: {builder.Configuration.GetConnectionString("RedisConnection")}");
 builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("RedisConnection")));
 
-builder.Services.AddSingleton<IMailService>(new MailService("smtp.gmail.com", 587, "arttattoolover@gmail.com", "ArtTattoo@@"));
+var smtpUsername = Environment.GetEnvironmentVariable("SMTP_EMAIL") ?? "default_username";
+var smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? "default_password";
+builder.Services.AddSingleton<IMailService>(new MailService("smtp.gmail.com", 587, smtpUsername, smtpPassword));
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -78,10 +80,6 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-// if (app.Environment.IsDevelopment())
-// {
-// }
 app.UseSwagger();
 app.UseSwaggerUI();
 
