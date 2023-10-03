@@ -14,6 +14,7 @@ using art_tattoo_be.Core.Crypto;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Application.Shared;
 using art_tattoo_be.Application.Middlewares;
+using art_tattoo_be.Core.Mail;
 
 [Produces("application/json")]
 [ApiController]
@@ -23,14 +24,16 @@ public class AuthController : ControllerBase
   private readonly ILogger<AuthController> _logger;
   private readonly IJwtService _jwtService;
   private readonly ICacheService _cacheService;
+  private readonly IMailService _mailService;
   private readonly IUserRepository _userRepo;
 
-  public AuthController(ILogger<AuthController> logger, IJwtService jwtService, ArtTattooDbContext dbContext, ICacheService cacheService)
+  public AuthController(ILogger<AuthController> logger, IJwtService jwtService, ArtTattooDbContext dbContext, ICacheService cacheService, IMailService mailService)
   {
     _logger = logger;
     _jwtService = jwtService;
     _userRepo = new UserRepository(dbContext);
     _cacheService = cacheService;
+    _mailService = mailService;
   }
 
   [Protected]
@@ -217,6 +220,84 @@ public class AuthController : ControllerBase
     }
   }
 
+  [HttpPost("request-code")]
+  public async Task<IActionResult> RequestResetCode([FromBody] RequestCodeReq req)
+  {
+    _logger.LogInformation("RequestResetCode");
+
+    try
+    {
+      // Create a reset password code
+      var code = GenerateResetPasswordCode();
+      // Save it to redis
+      var redisKey = $"reset-password:{req.Email}";
+
+      await _cacheService.Set(redisKey, code, TimeSpan.FromSeconds(60 * 5));
+
+      // Send email to user
+      await _mailService.SendEmailAsync(req.Email, "Reset Password Code", $"Your reset password code is: {code}, it will expire in 5 minutes");
+
+      return Ok(new BaseResp { Message = "Send email successfully", Success = true });
+    }
+    catch (Exception e)
+    {
+      _logger.LogError(e.Message);
+      return ErrorResp.UnknownError(e.Message);
+    }
+  }
+
+
+  [HttpPost("reset-password")]
+  public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordReq req)
+  {
+    _logger.LogInformation("ResetPassword");
+
+    try
+    {
+      // Check if the code is valid
+      var redisKey = $"reset-password:{req.Email}";
+      var code = await _cacheService.Get<string>(redisKey);
+
+      if (code == null)
+      {
+        return ErrorResp.BadRequest("Invalid code");
+      }
+
+      if (code != req.Code)
+      {
+        return ErrorResp.BadRequest("Invalid code");
+      }
+
+      // Update password
+      var hashedPass = CryptoService.HashPassword(req.Password);
+
+      var user = _userRepo.GetUserByEmail(req.Email);
+      if (user == null)
+      {
+        return ErrorResp.NotFound("User not found");
+      }
+
+      user.Password = hashedPass;
+
+      var result = _userRepo.UpdateUser(user);
+
+      if (result > 0)
+      {
+        await _cacheService.ForceLogout(user.Id);
+        return Ok(new BaseResp { Message = "Reset password successfully", Success = true });
+      }
+      else
+      {
+        return ErrorResp.BadRequest("Reset password failed");
+      }
+    }
+    catch (Exception e)
+    {
+      _logger.LogError(e.Message);
+      return ErrorResp.UnknownError(e.Message);
+    }
+  }
+
   [HttpPost("logout")]
   public async Task<IActionResult> Logout([FromBody] LogoutReq req)
   {
@@ -272,5 +353,23 @@ public class AuthController : ControllerBase
     using var rng = RandomNumberGenerator.Create();
     rng.GetBytes(randomNumber);
     return Convert.ToBase64String(randomNumber);
+  }
+
+  private string GenerateResetPasswordCode()
+  {
+    // Generate a random number 6 digits
+    const string chars = "0123456789";
+    Random random = new();
+    char[] otpArray = new char[6];
+
+    // Generate random characters for the OTP
+    for (int i = 0; i < 6; i++)
+    {
+      otpArray[i] = chars[random.Next(chars.Length)];
+    }
+
+    // Convert the character array to a string
+    string otp = new(otpArray);
+    return otp;
   }
 }
