@@ -232,7 +232,7 @@ public class AuthController : ControllerBase
       // Save it to redis
       var redisKey = $"reset-password:{req.Email}";
 
-      await _cacheService.Set(redisKey, code, TimeSpan.FromSeconds(60 * 5));
+      _ = _cacheService.Set(redisKey, code, TimeSpan.FromSeconds(60 * 5));
 
       // Send email to user
       await _mailService.SendEmailAsync(req.Email, "Reset Password Code", $"Your reset password code is: {code}, it will expire in 5 minutes");
