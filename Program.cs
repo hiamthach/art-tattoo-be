@@ -85,7 +85,11 @@ app.UseSwaggerUI();
 
 DbInitializer.UseInitializeDatabase(app);
 
-app.UseCors();
+// allow all origins cors
+app.UseCors(
+  options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
+);
+
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
