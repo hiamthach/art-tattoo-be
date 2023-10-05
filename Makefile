@@ -11,7 +11,9 @@ docker:
 	docker build -t art-tattoo-be -f Dockerfile .
 
 deploy:
-	docker-compose up -d
+	docker-compose down
+	docker-compose build --no-cache webapi
+	docker-compose up -d --no-recreate
 
 new-migration:
 	dotnet ef migrations add $(name)
