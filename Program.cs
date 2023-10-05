@@ -13,11 +13,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
 {
-  options.AddDefaultPolicy(
-  builder =>
-  {
-    builder.WithOrigins().AllowAnyHeader().AllowAnyMethod();
-  });
+  options.AddPolicy("AllowAllOrigins",
+        builder =>
+        {
+          builder.AllowAnyOrigin()
+                 .AllowAnyMethod()
+                 .AllowAnyHeader();
+        });
 });
 
 builder.Services.AddAuthorization();
@@ -86,9 +88,7 @@ app.UseSwaggerUI();
 DbInitializer.UseInitializeDatabase(app);
 
 // allow all origins cors
-app.UseCors(
-  options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
-);
+app.UseCors("AllowAllOrigins");
 
 app.UseHttpsRedirection();
 
