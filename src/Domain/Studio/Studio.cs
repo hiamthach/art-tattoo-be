@@ -5,6 +5,8 @@ using art_tattoo_be.Domain.Booking;
 using art_tattoo_be.Domain.Invoice;
 using art_tattoo_be.Domain.Media;
 using art_tattoo_be.Application.Shared.Enum;
+using art_tattoo_be.Domain.Blog;
+
 public class Studio
 {
   public Guid Id { get; set; }
@@ -30,4 +32,5 @@ public class Studio
   public List<Appointment> Appointments { get; set; } = new();
   public List<Invoice> Invoices { get; set; } = new();
   public List<Media> ListMedia { get; set; } = new();
+  public List<Blog> Blogs { get; set; } = new();
 }
