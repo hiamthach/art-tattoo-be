@@ -2,6 +2,7 @@ using art_tattoo_be.Application.DTOs.Pagination;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Infrastructure.Database;
+using Microsoft.EntityFrameworkCore;
 
 namespace art_tattoo_be.Infrastructure.Repository;
 
@@ -14,38 +15,47 @@ public class StudioRepository : IStudioRepository
     _dbContext = dbContext;
   }
 
-  public Task<int> CreateAsync(Studio studio)
+  public async Task<int> CreateAsync(Studio studio)
   {
-    throw new NotImplementedException();
+    await _dbContext.Studios.AddAsync(studio);
+    return await _dbContext.SaveChangesAsync();
   }
 
   public int DeleteStudio(Guid id)
   {
-    throw new NotImplementedException();
+    var studio = _dbContext.Studios.Find(id) ?? throw new Exception("Studio not found");
+
+    _dbContext.Remove(studio);
+
+    return _dbContext.SaveChanges();
   }
 
   public Task<Studio?> GetAsync(Guid id)
   {
-    throw new NotImplementedException();
+    return _dbContext.Studios.FindAsync(id).AsTask();
   }
 
-  public Task<IEnumerable<Studio>> GetStudioPages(PaginationReq req)
+  public IEnumerable<Studio> GetStudioPages(PaginationReq req)
   {
-    throw new NotImplementedException();
+    return _dbContext.Studios.Take(req.PageSize).Skip(req.Page).ToList();
   }
 
-  public Task<IEnumerable<Studio>> GetStudios()
+  public IEnumerable<Studio> GetStudios()
   {
-    throw new NotImplementedException();
+    return _dbContext.Studios.ToList();
   }
 
-  public Task<int> UpdateAsync(Studio studio)
+  public int Update(Studio studio)
   {
-    throw new NotImplementedException();
+    _dbContext.Studios.Update(studio);
+    return _dbContext.SaveChanges();
   }
 
   public int UpdateStudioStatus(Guid id, StudioStatusEnum status)
   {
-    throw new NotImplementedException();
+    var studio = _dbContext.Studios.Find(id) ?? throw new Exception("Studio not found");
+    studio.Status = status;
+    _dbContext.Studios.Update(studio);
+    return _dbContext.SaveChanges();
   }
 }
