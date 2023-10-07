@@ -4,7 +4,7 @@ using art_tattoo_be.Domain.Testimonial;
 using art_tattoo_be.Domain.Booking;
 using art_tattoo_be.Domain.Invoice;
 using art_tattoo_be.Domain.Media;
-
+using art_tattoo_be.Application.Shared.Enum;
 public class Studio
 {
   public Guid Id { get; set; }
@@ -19,6 +19,7 @@ public class Studio
   public string? Address { get; set; }
   public double Latitude { get; set; }
   public double Longitude { get; set; }
+  public StudioStatusEnum Status { get; set; }
   public DateTime CreatedAt { get; set; }
   public DateTime UpdatedAt { get; set; }
 
