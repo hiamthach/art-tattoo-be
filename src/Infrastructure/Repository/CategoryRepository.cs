@@ -1,5 +1,6 @@
 using art_tattoo_be.Domain.Category;
 using art_tattoo_be.Infrastructure.Database;
+using Microsoft.EntityFrameworkCore;
 
 namespace art_tattoo_be.Infrastructure.Repository;
 
@@ -14,22 +15,25 @@ public class CategoryRepository : ICategoryRepository
 
   public IEnumerable<Category> GetAll()
   {
-    throw new NotImplementedException();
+    return _dbContext.Categories.ToList();
   }
 
   public Category GetById(int id)
   {
-    throw new NotImplementedException();
+    return _dbContext.Categories.Find(id) ?? throw new Exception("Category not found");
   }
 
   public int CreateCategory(Category category)
   {
-    throw new NotImplementedException();
+    _dbContext.Categories.Add(category);
+    return _dbContext.SaveChanges();
   }
 
   public int Delete(int id)
   {
-    throw new NotImplementedException();
+      var category = _dbContext.Categories.Find(id) ?? throw new Exception("Category not found");
+      _dbContext.Remove(category);
+      return _dbContext.SaveChanges();
   }
 
 };
