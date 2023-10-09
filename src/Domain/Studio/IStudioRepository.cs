@@ -5,6 +5,7 @@ namespace art_tattoo_be.Domain.Studio;
 
 public interface IStudioRepository
 {
+  int Count();
   Task<Studio?> GetAsync(Guid id);
   IEnumerable<Studio> GetStudios();
   IEnumerable<Studio> GetStudioPages(PaginationReq req);

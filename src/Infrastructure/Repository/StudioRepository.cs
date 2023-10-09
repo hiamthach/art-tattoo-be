@@ -15,6 +15,11 @@ public class StudioRepository : IStudioRepository
     _dbContext = dbContext;
   }
 
+  public int Count()
+  {
+    return _dbContext.Studios.Where(stu => stu.Status == StudioStatusEnum.Active).Count();
+  }
+
   public async Task<int> CreateAsync(Studio studio)
   {
     await _dbContext.Studios.AddAsync(studio);
@@ -37,7 +42,13 @@ public class StudioRepository : IStudioRepository
 
   public IEnumerable<Studio> GetStudioPages(PaginationReq req)
   {
-    return _dbContext.Studios.Take(req.PageSize).Skip(req.Page).ToList();
+    return _dbContext.Studios
+            .Where(stu => stu.Status == StudioStatusEnum.Active)
+            .Include(stu => stu.WorkingTimes)
+            .Include(stu => stu.ListMedia)
+            .Take(req.PageSize)
+            .Skip(req.Page)
+            .ToList();
   }
 
   public IEnumerable<Studio> GetStudios()
