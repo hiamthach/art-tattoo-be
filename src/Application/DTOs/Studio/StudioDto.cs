@@ -29,6 +29,7 @@ public class StudioProfile : Profile
   public StudioProfile()
   {
     CreateMap<Studio, StudioDto>();
+    CreateMap<UpdateStudioReq, Studio>().ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
   }
 }
 
