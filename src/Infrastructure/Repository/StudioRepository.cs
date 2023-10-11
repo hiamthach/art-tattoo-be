@@ -2,6 +2,7 @@ using art_tattoo_be.Application.DTOs.Pagination;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Infrastructure.Database;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace art_tattoo_be.Infrastructure.Repository;
@@ -9,10 +10,12 @@ namespace art_tattoo_be.Infrastructure.Repository;
 public class StudioRepository : IStudioRepository
 {
   private readonly ArtTattooDbContext _dbContext;
+  private readonly IMapper _mapper;
 
-  public StudioRepository(ArtTattooDbContext dbContext)
+  public StudioRepository(IMapper mapper, ArtTattooDbContext dbContext)
   {
     _dbContext = dbContext;
+    _mapper = mapper;
   }
 
   public int Count()
@@ -23,6 +26,7 @@ public class StudioRepository : IStudioRepository
   public async Task<int> CreateAsync(Studio studio)
   {
     await _dbContext.Studios.AddAsync(studio);
+    await _dbContext.StudioWorkingTimes.AddRangeAsync(studio.WorkingTimes);
     return await _dbContext.SaveChangesAsync();
   }
 
@@ -58,7 +62,18 @@ public class StudioRepository : IStudioRepository
 
   public int Update(Studio studio)
   {
-    _dbContext.Studios.Update(studio);
+
+    // Check if the StudioWorkingTimes are being tracked by EF Core.
+    if (studio.WorkingTimes != null)
+    {
+      // Remove the existing StudioWorkingTimes and add the new ones.
+      _dbContext.StudioWorkingTimes.RemoveRange(_dbContext.StudioWorkingTimes.Where(w => w.StudioId == studio.Id));
+      _dbContext.StudioWorkingTimes.AddRange(studio.WorkingTimes);
+    }
+
+    // Update the Studio entity.
+    _dbContext.Update(studio);
+
     return _dbContext.SaveChanges();
   }
 

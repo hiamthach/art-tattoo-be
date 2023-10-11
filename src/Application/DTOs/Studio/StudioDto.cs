@@ -29,7 +29,13 @@ public class StudioProfile : Profile
   public StudioProfile()
   {
     CreateMap<Studio, StudioDto>();
-    CreateMap<UpdateStudioReq, Studio>().ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+    CreateMap<Studio, Studio>() // Map from Studio to Studio
+      .ForMember(dest => dest.Id, opt => opt.Ignore()) // Ignore updating the Id
+      .ForMember(dest => dest.WorkingTimes, opt => opt.MapFrom(src => src.WorkingTimes)); // Map WorkingTimes
+
+    CreateMap<UpdateStudioReq, Studio>()
+      .ForMember(dest => dest.WorkingTimes, opt => opt.Ignore())
+      .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
   }
 }
 

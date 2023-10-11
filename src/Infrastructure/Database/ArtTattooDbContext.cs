@@ -151,8 +151,8 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.StudioId).IsRequired();
       entity.Property(e => e.DayOfWeek).IsRequired();
-      entity.Property(e => e.OpenAt).IsRequired();
-      entity.Property(e => e.CloseAt).IsRequired();
+      entity.Property(e => e.OpenAt).HasColumnType("time").IsRequired();
+      entity.Property(e => e.CloseAt).HasColumnType("time").IsRequired();
     });
 
     builder.Entity<StudioUser>(entity =>

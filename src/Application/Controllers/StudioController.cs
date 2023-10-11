@@ -27,7 +27,7 @@ public class StudioController : ControllerBase
   {
     _logger = logger;
     _cacheService = cacheService;
-    _studioRepo = new StudioRepository(dbContext);
+    _studioRepo = new StudioRepository(mapper, dbContext);
     _mapper = mapper;
   }
 
@@ -134,6 +134,18 @@ public class StudioController : ControllerBase
         Status = StudioStatusEnum.Active,
       };
 
+      studio.WorkingTimes = req.WorkingTimes.Select(w =>
+      {
+        return new StudioWorkingTime
+        {
+          Id = Guid.NewGuid(),
+          StudioId = studio.Id,
+          DayOfWeek = w.DayOfWeek,
+          OpenAt = w.OpenAt,
+          CloseAt = w.CloseAt
+        };
+      }).ToList();
+
       var result = await _studioRepo.CreateAsync(studio);
 
       if (result > 0)
@@ -173,12 +185,29 @@ public class StudioController : ControllerBase
 
       var studioMapped = _mapper.Map(req, studio);
 
+      if (req.WorkingTimes != null)
+      {
+        studioMapped.WorkingTimes = req.WorkingTimes.Select(w =>
+        {
+          return new StudioWorkingTime
+          {
+            Id = Guid.NewGuid(),
+            StudioId = studioMapped.Id,
+            DayOfWeek = w.DayOfWeek,
+            OpenAt = w.OpenAt,
+            CloseAt = w.CloseAt
+          };
+        }).ToList();
+      }
+
+
       var result = _studioRepo.Update(studioMapped);
 
       if (result > 0)
       {
         var redisKey = $"studio:{id}";
         await _cacheService.Remove(redisKey);
+        await _cacheService.ClearWithPattern("studios");
 
         return Ok(new BaseResp
         {

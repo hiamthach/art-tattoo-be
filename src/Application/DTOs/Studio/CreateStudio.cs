@@ -14,4 +14,7 @@ public class CreateStudioReq
   public string? Address { get; set; }
   public double Latitude { get; set; }
   public double Longitude { get; set; }
+  /* The line `public IEnumerable<StudioWorkingTimeCreate> WorkingTimes { get; set; };` is declaring a
+  property named `WorkingTimes` of type `IEnumerable<StudioWorkingTimeCreate>`. */
+  public IEnumerable<StudioWorkingTimeCreate> WorkingTimes { get; set; } = new List<StudioWorkingTimeCreate>();
 }
