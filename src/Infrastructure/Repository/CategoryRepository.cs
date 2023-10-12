@@ -1,5 +1,8 @@
+using System.Runtime.CompilerServices;
+using art_tattoo_be.Application.DTOs.Category;
 using art_tattoo_be.Domain.Category;
 using art_tattoo_be.Infrastructure.Database;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace art_tattoo_be.Infrastructure.Repository;
@@ -7,20 +10,24 @@ namespace art_tattoo_be.Infrastructure.Repository;
 public class CategoryRepository : ICategoryRepository
 {
   private readonly ArtTattooDbContext _dbContext;
+  private readonly IMapper _mapper;
 
-  public CategoryRepository(ArtTattooDbContext dbContext)
+  public CategoryRepository(ArtTattooDbContext dbContext, IMapper mapper)
   {
     _dbContext = dbContext;
+    _mapper = mapper;
   }
 
-  public IEnumerable<Category> GetAll()
+  public IEnumerable<CategoryDto> GetAll()
   {
-    return _dbContext.Categories.ToList();
+    List<CategoryDto> listCategoryDto = _dbContext.Categories.Select(c => _mapper.Map<CategoryDto>(c)).ToList();
+    return listCategoryDto;
   }
 
-  public Category GetById(int id)
+  public CategoryDto GetById(int id)
   {
-    return _dbContext.Categories.Find(id) ?? throw new Exception("Category not found");
+    CategoryDto categoryDto = _mapper.Map<CategoryDto>(_dbContext.Categories.Find(id)) ?? throw new Exception("Category not found");
+    return categoryDto;
   }
 
   public int CreateCategory(Category category)
