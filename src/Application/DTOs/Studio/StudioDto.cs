@@ -10,7 +10,7 @@ public class StudioDto
   public Guid Id { get; set; }
   public string Name { get; set; } = null!;
   public string? Slogan { get; set; }
-
+  public string? Introduction { get; set; }
   public string? Detail { get; set; }
   public string? Logo { get; set; }
   public string Phone { get; set; } = null!;

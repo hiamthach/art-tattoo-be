@@ -121,7 +121,8 @@ public class StudioController : ControllerBase
     {
       var studio = new Studio
       {
-        Id = Guid.NewGuid()
+        Id = Guid.NewGuid(),
+        Status = StudioStatusEnum.Active,
       };
       studio = _mapper.Map(req, studio);
 
@@ -170,6 +171,45 @@ public class StudioController : ControllerBase
     }
   }
 
+  [HttpPut("/activate/{id}")]
+  public async Task<IActionResult> ActivateStudio([FromRoute] Guid id)
+  {
+    _logger.LogInformation("Activate Studio @id", id);
+
+    try
+    {
+      var studio = await _studioRepo.GetAsync(id);
+
+      if (studio == null)
+      {
+        return ErrorResp.NotFound("Studio Not found");
+      }
+
+      var result = _studioRepo.UpdateStudioStatus(id, StudioStatusEnum.Active);
+
+      if (result > 0)
+      {
+        var redisKey = $"studio:{id}";
+        await _cacheService.Remove(redisKey);
+        await _cacheService.ClearWithPattern("studios");
+
+        return Ok(new BaseResp
+        {
+          Message = "Activate studio successfully",
+          Success = true
+        });
+      }
+      else
+      {
+        return ErrorResp.BadRequest("Activate studio failed");
+      }
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
+
   [HttpPut("{id}")]
   public async Task<IActionResult> UpdateStudio([FromBody] UpdateStudioReq req, [FromRoute] Guid id)
   {
@@ -201,7 +241,6 @@ public class StudioController : ControllerBase
         }).ToList();
       }
 
-
       var result = _studioRepo.Update(studioMapped);
 
       if (result > 0)
@@ -219,6 +258,45 @@ public class StudioController : ControllerBase
       else
       {
         return ErrorResp.BadRequest("Update studio failed");
+      }
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
+
+  [HttpDelete("{id}")]
+  public async Task<IActionResult> DeleteStudio([FromRoute] Guid id)
+  {
+    _logger.LogInformation("Delete Studio @id", id);
+
+    try
+    {
+      var studio = await _studioRepo.GetAsync(id);
+
+      if (studio == null)
+      {
+        return ErrorResp.NotFound("Studio Not found");
+      }
+
+      var result = _studioRepo.UpdateStudioStatus(id, StudioStatusEnum.Inactive);
+
+      if (result > 0)
+      {
+        var redisKey = $"studio:{id}";
+        await _cacheService.Remove(redisKey);
+        await _cacheService.ClearWithPattern("studios");
+
+        return Ok(new BaseResp
+        {
+          Message = "Delete studio successfully",
+          Success = true
+        });
+      }
+      else
+      {
+        return ErrorResp.BadRequest("Delete studio failed");
       }
     }
     catch (Exception e)

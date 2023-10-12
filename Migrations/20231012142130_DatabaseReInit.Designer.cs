@@ -12,7 +12,7 @@ using art_tattoo_be.Infrastructure.Database;
 namespace art_tattoo_be.Migrations
 {
     [DbContext(typeof(ArtTattooDbContext))]
-    [Migration("20231011235524_DatabaseReInit")]
+    [Migration("20231012142130_DatabaseReInit")]
     partial class DatabaseReInit
     {
         /// <inheritdoc />
@@ -649,6 +649,9 @@ namespace art_tattoo_be.Migrations
                     b.Property<string>("Instagram")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Introduction")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<double>("Latitude")
                         .HasColumnType("float");

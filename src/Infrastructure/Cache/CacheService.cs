@@ -27,7 +27,7 @@ public class CacheService : ICacheService
 
   public Task Set<T>(string key, T value)
   {
-    return _database.StringSetAsync($"{_redisKey}:{key}", JsonSerializer.Serialize(value));
+    return _database.StringSetAsync($"{_redisKey}:{key}", JsonSerializer.Serialize(value), TimeSpan.FromMinutes(30));
   }
 
   public Task Set<T>(string key, T value, TimeSpan expiration)
