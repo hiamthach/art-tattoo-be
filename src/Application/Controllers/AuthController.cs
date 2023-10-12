@@ -112,11 +112,44 @@ public class AuthController : ControllerBase
       _logger.LogError(e.Message);
       return ErrorResp.SomethingWrong(e.Message);
     }
-
   }
 
+  [HttpPost("require-verify")]
+  public async Task<IActionResult> RequireVerify([FromBody] RequestCodeReq req)
+  {
+    _logger.LogInformation("RequireVerify");
+
+    try
+    {
+      // Check if the email exist
+      var user = await _userRepo.GetUserByEmailAsync(req.Email);
+      if (user != null)
+      {
+        return ErrorResp.BadRequest("Email already exist");
+      }
+
+      // Create a reset password code
+      var code = GenerateResetPasswordCode();
+      // Save it to redis
+      var redisKey = $"verify-email:{req.Email}";
+
+      _ = _cacheService.Set(redisKey, code, TimeSpan.FromSeconds(60 * 5));
+
+      // Send email to user
+      await _mailService.SendEmailAsync(req.Email, "Verify Email Code", $"Your verify email code is: {code}, it will expire in 5 minutes");
+
+      return Ok(new BaseResp { Message = "Send email successfully", Success = true });
+    }
+    catch (Exception e)
+    {
+      _logger.LogError(e.Message);
+      return ErrorResp.UnknownError(e.Message);
+    }
+  }
+
+
   [HttpPost("register")]
-  public IActionResult Register([FromBody] RegisterReq req)
+  public async Task<IActionResult> Register([FromBody] RegisterReq req)
   {
     _logger.LogInformation("Register");
     try
@@ -126,6 +159,19 @@ public class AuthController : ControllerBase
       if (userExist != null)
       {
         return ErrorResp.BadRequest("Email already exist");
+      }
+
+      var redisKey = $"verify-email:{req.Email}";
+      var code = await _cacheService.Get<string>(redisKey);
+
+      if (code == null)
+      {
+        return ErrorResp.BadRequest("Invalid code");
+      }
+
+      if (code != req.VerifyCode)
+      {
+        return ErrorResp.BadRequest("Invalid code");
       }
 
       var hashedPass = CryptoService.HashPassword(req.Password);
@@ -227,6 +273,13 @@ public class AuthController : ControllerBase
 
     try
     {
+      // Check if the email exist
+      var user = await _userRepo.GetUserByEmailAsync(req.Email);
+      if (user == null)
+      {
+        return ErrorResp.NotFound("User not found");
+      }
+
       // Create a reset password code
       var code = GenerateResetPasswordCode();
       // Save it to redis
@@ -245,7 +298,6 @@ public class AuthController : ControllerBase
       return ErrorResp.UnknownError(e.Message);
     }
   }
-
 
   [HttpPost("reset-password")]
   public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordReq req)

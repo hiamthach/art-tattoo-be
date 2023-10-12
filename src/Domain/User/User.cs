@@ -6,6 +6,7 @@ using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Domain.Testimonial;
 using art_tattoo_be.Domain.Invoice;
 using art_tattoo_be.Domain.Media;
+using art_tattoo_be.Domain.Blog;
 
 public class User
 {
@@ -27,4 +28,5 @@ public class User
   public List<Testimonial> Testimonials { get; set; } = new();
   public List<Invoice> Invoices { get; set; } = new();
   public List<Media> ListMedia { get; set; } = new();
+  public List<Blog> Blogs { get; set; } = new();
 }

@@ -13,6 +13,7 @@ using art_tattoo_be.Domain.Booking;
 using art_tattoo_be.Domain.Invoice;
 using art_tattoo_be.Domain.Media;
 using art_tattoo_be.Application.Shared.Constant;
+using art_tattoo_be.Domain.Blog;
 
 public class ArtTattooDbContext : IdentityDbContext
 {
@@ -105,15 +106,21 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
       entity.Property(e => e.Detail).IsRequired(false);
+      entity.Property(e => e.Introduction).IsRequired(false);
+      entity.Property(e => e.Slogan).IsRequired(false).HasMaxLength(50);
       entity.Property(e => e.Logo).IsRequired(false).HasMaxLength(255);
       entity.Property(e => e.Website).IsRequired(false).HasMaxLength(255);
-      entity.Property(e => e.Phone).IsRequired(false).HasMaxLength(15);
-      entity.Property(e => e.Email).IsRequired(false).HasMaxLength(30);
+      entity.Property(e => e.Phone).IsRequired().HasMaxLength(15);
+      entity.Property(e => e.Email).IsRequired().HasMaxLength(30);
       entity.Property(e => e.Facebook).IsRequired(false).HasMaxLength(255);
       entity.Property(e => e.Instagram).IsRequired(false).HasMaxLength(255);
-      entity.Property(e => e.Address).IsRequired(false).HasMaxLength(255);
+      entity.Property(e => e.Address).IsRequired().HasMaxLength(255);
       entity.Property(e => e.Latitude);
       entity.Property(e => e.Longitude);
+      entity.Property(e => e.Status).IsRequired().HasDefaultValue(StudioStatusEnum.Inactive).HasConversion(
+        v => v.ToString(),
+        v => (StudioStatusEnum)Enum.Parse(typeof(StudioStatusEnum), v)
+      );
       entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
       entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
       entity.HasIndex(e => e.Name);
@@ -146,8 +153,8 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.StudioId).IsRequired();
       entity.Property(e => e.DayOfWeek).IsRequired();
-      entity.Property(e => e.OpenAt).IsRequired();
-      entity.Property(e => e.CloseAt).IsRequired();
+      entity.Property(e => e.OpenAt).HasColumnType("time").IsRequired();
+      entity.Property(e => e.CloseAt).HasColumnType("time").IsRequired();
     });
 
     builder.Entity<StudioUser>(entity =>
@@ -159,6 +166,7 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.StudioId).IsRequired();
       entity.Property(e => e.UserId).IsRequired();
+      entity.Property(e => e.IsDisabled).IsRequired(false);
       entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
       entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
     });
@@ -220,7 +228,7 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.HasKey(e => e.Id);
       entity.HasOne(e => e.Studio).WithMany(e => e.Invoices).HasForeignKey(e => e.StudioId).IsRequired();
       entity.HasOne(e => e.User).WithMany(e => e.Invoices).HasForeignKey(e => e.UserId).IsRequired();
-      entity.HasOne(e => e.Appointment).WithMany(e => e.ListInvoice).HasForeignKey(e => e.AppointmentId).IsRequired();
+      entity.HasOne(e => e.Appointment).WithMany(e => e.ListInvoice).HasForeignKey(e => e.AppointmentId).IsRequired(false);
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.StudioId).IsRequired();
       entity.Property(e => e.AppointmentId).IsRequired(false);
@@ -243,6 +251,20 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Type).IsRequired().HasConversion(
         v => v.ToString(),
         v => (MediaTypeEnum)Enum.Parse(typeof(MediaTypeEnum), v));
+      entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
+    });
+
+    builder.Entity<Blog>(entity =>
+    {
+      entity.ToTable("blogs");
+      entity.HasKey(e => e.Id);
+      entity.HasOne(e => e.User).WithMany(e => e.Blogs).HasForeignKey(e => e.CreatedBy).IsRequired();
+      entity.HasOne(e => e.Studio).WithMany(e => e.Blogs).HasForeignKey(e => e.StudioId).IsRequired(false);
+      entity.Property(e => e.Id).ValueGeneratedOnAdd();
+      entity.Property(e => e.Title).IsRequired(true).HasMaxLength(50);
+      entity.Property(e => e.Slug).IsRequired(true).HasMaxLength(50);
+      entity.Property(e => e.Content).IsRequired(true).HasMaxLength(2000);
       entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
       entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
     });

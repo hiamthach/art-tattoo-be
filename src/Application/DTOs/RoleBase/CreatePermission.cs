@@ -1,7 +1,5 @@
 namespace art_tattoo_be.Application.DTOs.RoleBase;
 
-using art_tattoo_be.Domain.RoleBase;
-
 public class CreatePermissionReq
 {
 
