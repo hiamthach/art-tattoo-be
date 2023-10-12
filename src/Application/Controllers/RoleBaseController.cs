@@ -11,7 +11,7 @@ using art_tattoo_be.Application.Shared.Handler;
 
 [Produces("application/json")]
 [ApiController]
-[Route("api/v1")]
+[Route("api")]
 public class RoleBaseController : ControllerBase
 {
   private readonly ILogger<RoleBaseController> _logger;
