@@ -19,5 +19,11 @@ public class RegisterReq  // Path: src/Api/Auth/RegisterReq.cs
   [StringLength(30)]
   public string FullName { get; set; } = null!;
 
+  [Required]
+  public string VerifyCode { get; set; } = null!;
+
+  [Required]
+  [StringLength(15, ErrorMessage = "Phone number must be 0-15 characters")]
+  [RegularExpression(RegexConst.PHONE_NUMBER, ErrorMessage = "Invalid phone number")]
   public string PhoneNumber { get; set; } = null!;
 }

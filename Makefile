@@ -16,7 +16,7 @@ deploy:
 	docker-compose up -d --no-recreate
 
 new-migration:
-	dotnet ef migrations add $(name)
+	dotnet ef migrations add $(name) --verbose
 
 migration:
 	dotnet ef database update
