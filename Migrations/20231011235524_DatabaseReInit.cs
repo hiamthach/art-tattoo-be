@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace art_tattoo_be.Migrations
 {
     /// <inheritdoc />
-    public partial class DbInit : Migration
+    public partial class DatabaseReInit : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -98,13 +100,18 @@ namespace art_tattoo_be.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Slogan = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     Detail = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Logo = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    Phone = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: true),
+                    Phone = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
                     Website = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     Facebook = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     Instagram = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    Address = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Latitude = table.Column<double>(type: "float", nullable: false),
+                    Longitude = table.Column<double>(type: "float", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false, defaultValue: "Inactive"),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
@@ -264,7 +271,7 @@ namespace art_tattoo_be.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: true),
                     Address = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
@@ -311,39 +318,14 @@ namespace art_tattoo_be.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "studio_locations",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StudioId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    Province = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    City = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    Country = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    PostalCode = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
-                    Latitude = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Longitude = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_studio_locations", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_studio_locations_studios_StudioId",
-                        column: x => x.StudioId,
-                        principalTable: "studios",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "studio_working_time",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     StudioId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DayOfWeek = table.Column<int>(type: "int", nullable: false),
-                    OpenAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CloseAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    OpenAt = table.Column<TimeSpan>(type: "time", nullable: false),
+                    CloseAt = table.Column<TimeSpan>(type: "time", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -389,30 +371,30 @@ namespace art_tattoo_be.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "invoices",
+                name: "blogs",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StudioId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Total = table.Column<double>(type: "float", nullable: false),
-                    PayMethod = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Title = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Slug = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    IsPublish = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    StudioId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_invoices", x => x.Id);
+                    table.PrimaryKey("PK_blogs", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_invoices_studios_StudioId",
+                        name: "FK_blogs_studios_StudioId",
                         column: x => x.StudioId,
                         principalTable: "studios",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_invoices_users_UserId",
-                        column: x => x.UserId,
+                        name: "FK_blogs_users_CreatedBy",
+                        column: x => x.CreatedBy,
                         principalTable: "users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -449,6 +431,7 @@ namespace art_tattoo_be.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     StudioId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    IsDisabled = table.Column<bool>(type: "bit", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
@@ -530,7 +513,7 @@ namespace art_tattoo_be.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "schedules",
+                name: "Shifts",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -542,9 +525,9 @@ namespace art_tattoo_be.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_schedules", x => x.Id);
+                    table.PrimaryKey("PK_Shifts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_schedules_studio_users_ArtistId",
+                        name: "FK_Shifts_studio_users_ArtistId",
                         column: x => x.ArtistId,
                         principalTable: "studio_users",
                         principalColumn: "Id",
@@ -558,7 +541,7 @@ namespace art_tattoo_be.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     StudioId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ScheduleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ShiftId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DoneBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false, defaultValue: "Pending"),
@@ -569,9 +552,9 @@ namespace art_tattoo_be.Migrations
                 {
                     table.PrimaryKey("PK_appointments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_appointments_schedules_ScheduleId",
-                        column: x => x.ScheduleId,
-                        principalTable: "schedules",
+                        name: "FK_appointments_Shifts_ShiftId",
+                        column: x => x.ShiftId,
+                        principalTable: "Shifts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -618,6 +601,55 @@ namespace art_tattoo_be.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "invoices",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    StudioId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Total = table.Column<double>(type: "float", nullable: false),
+                    PayMethod = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    AppointmentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_invoices", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_invoices_appointments_AppointmentId",
+                        column: x => x.AppointmentId,
+                        principalTable: "appointments",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_invoices_studios_StudioId",
+                        column: x => x.StudioId,
+                        principalTable: "studios",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_invoices_users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "roles",
+                columns: new[] { "Id", "Description", "Name" },
+                values: new object[,]
+                {
+                    { 1, "Admin", "ADMIN" },
+                    { 2, "System Staff", "SYSTEM_STAFF" },
+                    { 3, "Studio Manager", "STUDIO_MANAGER" },
+                    { 4, "Studio Staff", "STUDIO_STAFF" },
+                    { 5, "Studio Artist", "ARTIST" },
+                    { 6, "Member", "MEMBER" }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AppointmentMedia_ListMediaId",
                 table: "AppointmentMedia",
@@ -629,9 +661,9 @@ namespace art_tattoo_be.Migrations
                 column: "DoneBy");
 
             migrationBuilder.CreateIndex(
-                name: "IX_appointments_ScheduleId",
+                name: "IX_appointments_ShiftId",
                 table: "appointments",
-                column: "ScheduleId");
+                column: "ShiftId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_appointments_StudioId",
@@ -683,6 +715,21 @@ namespace art_tattoo_be.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_blogs_CreatedBy",
+                table: "blogs",
+                column: "CreatedBy");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_blogs_StudioId",
+                table: "blogs",
+                column: "StudioId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_invoices_AppointmentId",
+                table: "invoices",
+                column: "AppointmentId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_invoices_StudioId",
                 table: "invoices",
                 column: "StudioId");
@@ -725,14 +772,9 @@ namespace art_tattoo_be.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_schedules_ArtistId",
-                table: "schedules",
+                name: "IX_Shifts_ArtistId",
+                table: "Shifts",
                 column: "ArtistId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_studio_locations_StudioId",
-                table: "studio_locations",
-                column: "StudioId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_studio_services_CategoryId",
@@ -814,6 +856,9 @@ namespace art_tattoo_be.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "blogs");
+
+            migrationBuilder.DropTable(
                 name: "invoices");
 
             migrationBuilder.DropTable(
@@ -829,22 +874,19 @@ namespace art_tattoo_be.Migrations
                 name: "PermissionRole");
 
             migrationBuilder.DropTable(
-                name: "studio_locations");
-
-            migrationBuilder.DropTable(
                 name: "studio_working_time");
 
             migrationBuilder.DropTable(
                 name: "testimonials");
 
             migrationBuilder.DropTable(
-                name: "appointments");
-
-            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "appointments");
 
             migrationBuilder.DropTable(
                 name: "studio_services");
@@ -856,7 +898,7 @@ namespace art_tattoo_be.Migrations
                 name: "permissions");
 
             migrationBuilder.DropTable(
-                name: "schedules");
+                name: "Shifts");
 
             migrationBuilder.DropTable(
                 name: "tattoo_categories");

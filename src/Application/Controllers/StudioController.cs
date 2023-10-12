@@ -5,6 +5,7 @@ using art_tattoo_be.Application.DTOs.Studio;
 using art_tattoo_be.Application.Shared;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Application.Shared.Handler;
+using art_tattoo_be.Domain.Media;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Infrastructure.Cache;
 using art_tattoo_be.Infrastructure.Database;
@@ -120,19 +121,9 @@ public class StudioController : ControllerBase
     {
       var studio = new Studio
       {
-        Id = Guid.NewGuid(),
-        Name = req.Name,
-        Detail = req.Detail,
-        Logo = req.Logo,
-        Address = req.Address,
-        Latitude = req.Latitude,
-        Longitude = req.Longitude,
-        Website = req.Website,
-        Instagram = req.Instagram,
-        Facebook = req.Facebook,
-        Phone = req.Phone,
-        Status = StudioStatusEnum.Active,
+        Id = Guid.NewGuid()
       };
+      studio = _mapper.Map(req, studio);
 
       studio.WorkingTimes = req.WorkingTimes.Select(w =>
       {
@@ -143,6 +134,16 @@ public class StudioController : ControllerBase
           DayOfWeek = w.DayOfWeek,
           OpenAt = w.OpenAt,
           CloseAt = w.CloseAt
+        };
+      }).ToList();
+
+      studio.ListMedia = req.ListMedia.Select(m =>
+      {
+        return new Media
+        {
+          Id = Guid.NewGuid(),
+          Url = m.Url,
+          Type = m.Type
         };
       }).ToList();
 

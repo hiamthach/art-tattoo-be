@@ -106,13 +106,14 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
       entity.Property(e => e.Detail).IsRequired(false);
+      entity.Property(e => e.Slogan).IsRequired(false).HasMaxLength(50);
       entity.Property(e => e.Logo).IsRequired(false).HasMaxLength(255);
       entity.Property(e => e.Website).IsRequired(false).HasMaxLength(255);
-      entity.Property(e => e.Phone).IsRequired(false).HasMaxLength(15);
-      entity.Property(e => e.Email).IsRequired(false).HasMaxLength(30);
+      entity.Property(e => e.Phone).IsRequired().HasMaxLength(15);
+      entity.Property(e => e.Email).IsRequired().HasMaxLength(30);
       entity.Property(e => e.Facebook).IsRequired(false).HasMaxLength(255);
       entity.Property(e => e.Instagram).IsRequired(false).HasMaxLength(255);
-      entity.Property(e => e.Address).IsRequired(false).HasMaxLength(255);
+      entity.Property(e => e.Address).IsRequired().HasMaxLength(255);
       entity.Property(e => e.Latitude);
       entity.Property(e => e.Longitude);
       entity.Property(e => e.Status).IsRequired().HasDefaultValue(StudioStatusEnum.Inactive).HasConversion(
@@ -164,6 +165,7 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.StudioId).IsRequired();
       entity.Property(e => e.UserId).IsRequired();
+      entity.Property(e => e.IsDisabled).IsRequired(false);
       entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
       entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
     });
