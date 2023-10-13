@@ -6,6 +6,8 @@ using art_tattoo_be.Infrastructure.Database;
 using art_tattoo_be.Infrastructure.Repository;
 using art_tattoo_be.Application.Shared.Handler;
 using art_tattoo_be.Application.DTOs.Category;
+using AutoMapper;
+using art_tattoo_be.Application.Shared;
 
 [Produces("application/json")]
 [ApiController]
@@ -16,10 +18,13 @@ public class CategoryController : ControllerBase
 
   private readonly ICategoryRepository _cateRepo;
 
-  public CategoryController(ILogger<CategoryController> logger, ArtTattooDbContext dbContext)
+  private readonly IMapper _mapper;
+
+  public CategoryController(ILogger<CategoryController> logger, ArtTattooDbContext dbContext, IMapper mapper)
   {
     _logger = logger;
     _cateRepo = new CategoryRepository(dbContext);
+    _mapper = mapper;
   }
 
   [HttpGet]
@@ -29,17 +34,31 @@ public class CategoryController : ControllerBase
 
     var categories = _cateRepo.GetAll();
 
-    return Ok(categories);
+    return Ok(_mapper.Map<List<CategoryDto>>(categories));
   }
 
   [HttpGet("{id}")]
   public IActionResult GetById([FromRoute] int id)
   {
-    _logger.LogInformation("Get category: @id", id);
+    try
+    {
+      _logger.LogInformation("Get category: @id", id);
 
-    var category = _cateRepo.GetById(id);
+      var category = _cateRepo.GetById(id);
 
-    return Ok(category);
+      if (category == null)
+      {
+        return ErrorResp.NotFound("Category not found");
+      }
+      else
+      {
+        return Ok(_mapper.Map<CategoryDto>(category));
+      }
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
   }
 
   [HttpPost]
@@ -58,7 +77,7 @@ public class CategoryController : ControllerBase
 
       if (result > 0)
       {
-        return Ok("Created");
+        return Ok(new BaseResp { Message = "Create successfully", Success = true });
       }
       else
       {
@@ -83,7 +102,7 @@ public class CategoryController : ControllerBase
       var result = _cateRepo.Delete(id);
       if (result > 0)
       {
-        return Ok("Deleted");
+        return Ok(new BaseResp { Message = "Delete successfully", Success = true });
       }
       else
       {
