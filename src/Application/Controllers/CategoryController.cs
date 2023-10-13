@@ -18,10 +18,13 @@ public class CategoryController : ControllerBase
 
   private readonly ICategoryRepository _cateRepo;
 
+  private readonly IMapper _mapper;
+
   public CategoryController(ILogger<CategoryController> logger, ArtTattooDbContext dbContext, IMapper mapper)
   {
     _logger = logger;
-    _cateRepo = new CategoryRepository(dbContext, mapper);
+    _cateRepo = new CategoryRepository(dbContext);
+    _mapper = mapper;
   }
 
   [HttpGet]
@@ -31,7 +34,7 @@ public class CategoryController : ControllerBase
 
     var categories = _cateRepo.GetAll();
 
-    return Ok(categories);
+    return Ok(_mapper.Map<List<CategoryDto>>(categories));
   }
 
   [HttpGet("{id}")]
@@ -49,7 +52,7 @@ public class CategoryController : ControllerBase
       }
       else
       {
-        return Ok(category);
+        return Ok(_mapper.Map<CategoryDto>(category));
       }
     }
     catch (Exception e)
