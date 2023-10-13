@@ -12,8 +12,8 @@ using art_tattoo_be.Infrastructure.Database;
 namespace art_tattoo_be.Migrations
 {
     [DbContext(typeof(ArtTattooDbContext))]
-    [Migration("20230930041623_ShiftRename")]
-    partial class ShiftRename
+    [Migration("20231012142130_DatabaseReInit")]
+    partial class DatabaseReInit
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -298,6 +298,55 @@ namespace art_tattoo_be.Migrations
                     b.ToTable("PermissionRole");
                 });
 
+            modelBuilder.Entity("art_tattoo_be.Domain.Blog.Blog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsPublish")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid?>("StudioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("StudioId");
+
+                    b.ToTable("blogs", (string)null);
+                });
+
             modelBuilder.Entity("art_tattoo_be.Domain.Booking.Appointment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -576,6 +625,7 @@ namespace art_tattoo_be.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Address")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
@@ -588,6 +638,7 @@ namespace art_tattoo_be.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
@@ -598,6 +649,9 @@ namespace art_tattoo_be.Migrations
                     b.Property<string>("Instagram")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Introduction")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<double>("Latitude")
                         .HasColumnType("float");
@@ -615,8 +669,19 @@ namespace art_tattoo_be.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Phone")
+                        .IsRequired()
                         .HasMaxLength(15)
                         .HasColumnType("nvarchar(15)");
+
+                    b.Property<string>("Slogan")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("Inactive");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnUpdate()
@@ -693,6 +758,9 @@ namespace art_tattoo_be.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<bool?>("IsDisabled")
+                        .HasColumnType("bit");
+
                     b.Property<Guid>("StudioId")
                         .HasColumnType("uniqueidentifier");
 
@@ -720,14 +788,14 @@ namespace art_tattoo_be.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CloseAt")
-                        .HasColumnType("datetime2");
+                    b.Property<TimeSpan>("CloseAt")
+                        .HasColumnType("time");
 
                     b.Property<int>("DayOfWeek")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("OpenAt")
-                        .HasColumnType("datetime2");
+                    b.Property<TimeSpan>("OpenAt")
+                        .HasColumnType("time");
 
                     b.Property<Guid>("StudioId")
                         .HasColumnType("uniqueidentifier");
@@ -979,6 +1047,23 @@ namespace art_tattoo_be.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("art_tattoo_be.Domain.Blog.Blog", b =>
+                {
+                    b.HasOne("art_tattoo_be.Domain.User.User", "User")
+                        .WithMany("Blogs")
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("art_tattoo_be.Domain.Studio.Studio", "Studio")
+                        .WithMany("Blogs")
+                        .HasForeignKey("StudioId");
+
+                    b.Navigation("Studio");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("art_tattoo_be.Domain.Booking.Appointment", b =>
                 {
                     b.HasOne("art_tattoo_be.Domain.Studio.StudioUser", "Artist")
@@ -1028,9 +1113,7 @@ namespace art_tattoo_be.Migrations
                 {
                     b.HasOne("art_tattoo_be.Domain.Booking.Appointment", "Appointment")
                         .WithMany("ListInvoice")
-                        .HasForeignKey("AppointmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("AppointmentId");
 
                     b.HasOne("art_tattoo_be.Domain.Studio.Studio", "Studio")
                         .WithMany("Invoices")
@@ -1158,6 +1241,8 @@ namespace art_tattoo_be.Migrations
                 {
                     b.Navigation("Appointments");
 
+                    b.Navigation("Blogs");
+
                     b.Navigation("Invoices");
 
                     b.Navigation("Services");
@@ -1178,6 +1263,8 @@ namespace art_tattoo_be.Migrations
 
             modelBuilder.Entity("art_tattoo_be.Domain.User.User", b =>
                 {
+                    b.Navigation("Blogs");
+
                     b.Navigation("Invoices");
 
                     b.Navigation("StudioUser")

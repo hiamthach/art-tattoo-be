@@ -20,6 +20,7 @@ public class ModelStateValidationMiddleware
 
   public async Task InvokeAsync(HttpContext context)
   {
+    _logger.LogInformation($"api request: {context.Request.Path} [{context.Request.Method}]:");
     if (!context.Request.Path.StartsWithSegments("/api")) // Adjust the path as needed
     {
       await _next(context);

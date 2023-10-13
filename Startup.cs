@@ -36,7 +36,6 @@ namespace MyApp
       // Configure middleware (e.g., routing, authentication, etc.)
       app.UseMiddleware<ModelStateValidationMiddleware>();
 
-      app.UseMiddleware<AuthMiddleware>();
       app.UseRouting();
       // ...
 

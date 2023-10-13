@@ -1,6 +1,7 @@
 namespace art_tattoo_be.Application.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Cryptography;
 using art_tattoo_be.Application.DTOs.Auth;
 using art_tattoo_be.Core.Jwt;
 using art_tattoo_be.Application.Shared.Constant;
@@ -12,8 +13,8 @@ using art_tattoo_be.Infrastructure.Cache;
 using art_tattoo_be.Core.Crypto;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Application.Shared;
-using Microsoft.AspNetCore.Authorization;
 using art_tattoo_be.Application.Middlewares;
+using art_tattoo_be.Core.Mail;
 
 [Produces("application/json")]
 [ApiController]
@@ -23,14 +24,34 @@ public class AuthController : ControllerBase
   private readonly ILogger<AuthController> _logger;
   private readonly IJwtService _jwtService;
   private readonly ICacheService _cacheService;
+  private readonly IMailService _mailService;
   private readonly IUserRepository _userRepo;
 
-  public AuthController(ILogger<AuthController> logger, IJwtService jwtService, ArtTattooDbContext dbContext, ICacheService cacheService)
+  public AuthController(ILogger<AuthController> logger, IJwtService jwtService, ArtTattooDbContext dbContext, ICacheService cacheService, IMailService mailService)
   {
     _logger = logger;
     _jwtService = jwtService;
     _userRepo = new UserRepository(dbContext);
     _cacheService = cacheService;
+    _mailService = mailService;
+  }
+
+  [Protected]
+  [HttpGet("session")]
+  public IActionResult GetSession()
+  {
+    _logger.LogInformation("GetSession");
+    try
+    {
+      var payload = HttpContext.Items["payload"] as Payload;
+
+      return Ok(payload);
+    }
+    catch (Exception e)
+    {
+      _logger.LogError(e.Message);
+      return ErrorResp.SomethingWrong(e.Message);
+    }
   }
 
   [HttpPost("login")]
@@ -55,18 +76,27 @@ public class AuthController : ControllerBase
       Guid sessionId = Guid.NewGuid();
 
       var accessTk = GenerateAccessTk(user.Id, sessionId, user.RoleId);
-      var refreshTk = GenerateRefreshTk(user.Id, sessionId, user.RoleId);
+      var refreshTk = GenerateRefreshTk();
 
-      var redisKey = "ss:" + sessionId.ToString();
+      // create a redis refreshToken key
+      var redisRftKey = "rft:" + refreshTk;
+      await _cacheService.Set(redisRftKey, new RedisSession { UserId = user.Id, SessionId = sessionId }, TimeSpan.FromSeconds(JwtConst.REFRESH_TOKEN_EXP));
 
-      await _cacheService.Set(redisKey, refreshTk, TimeSpan.FromSeconds(JwtConst.REFRESH_TOKEN_EXP));
+      // create a session Id key
+      var redisKey = "ss:" + user.Id.ToString() + ":" + sessionId.ToString();
+      await _cacheService.Set(redisKey, new RedisSession
+      {
+        UserId = user.Id,
+        SessionId = sessionId,
+        Refresh = refreshTk,
+      }, TimeSpan.FromSeconds(JwtConst.REFRESH_TOKEN_EXP));
 
       TokenResp tokenResp = new()
       {
         AccessToken = accessTk,
         RefreshToken = refreshTk,
-        AccessTokenExp = JwtConst.ACCESS_TOKEN_EXP,
-        RefreshTokenExp = JwtConst.REFRESH_TOKEN_EXP
+        AccessTokenExp = DateTimeOffset.UtcNow.AddSeconds(JwtConst.ACCESS_TOKEN_EXP).ToUnixTimeSeconds(),
+        RefreshTokenExp = DateTimeOffset.UtcNow.AddSeconds(JwtConst.REFRESH_TOKEN_EXP).ToUnixTimeSeconds()
       };
 
       LoginResp resp = new()
@@ -82,15 +112,68 @@ public class AuthController : ControllerBase
       _logger.LogError(e.Message);
       return ErrorResp.SomethingWrong(e.Message);
     }
-
   }
 
+  [HttpPost("require-verify")]
+  public async Task<IActionResult> RequireVerify([FromBody] RequestCodeReq req)
+  {
+    _logger.LogInformation("RequireVerify");
+
+    try
+    {
+      // Check if the email exist
+      var user = await _userRepo.GetUserByEmailAsync(req.Email);
+      if (user != null)
+      {
+        return ErrorResp.BadRequest("Email already exist");
+      }
+
+      // Create a reset password code
+      var code = GenerateResetPasswordCode();
+      // Save it to redis
+      var redisKey = $"verify-email:{req.Email}";
+
+      _ = _cacheService.Set(redisKey, code, TimeSpan.FromSeconds(60 * 5));
+
+      // Send email to user
+      await _mailService.SendEmailAsync(req.Email, "Verify Email Code", $"Your verify email code is: {code}, it will expire in 5 minutes");
+
+      return Ok(new BaseResp { Message = "Send email successfully", Success = true });
+    }
+    catch (Exception e)
+    {
+      _logger.LogError(e.Message);
+      return ErrorResp.UnknownError(e.Message);
+    }
+  }
+
+
   [HttpPost("register")]
-  public IActionResult Register([FromBody] RegisterReq req)
+  public async Task<IActionResult> Register([FromBody] RegisterReq req)
   {
     _logger.LogInformation("Register");
     try
     {
+      // check email exist
+      var userExist = _userRepo.GetUserByEmail(req.Email);
+      if (userExist != null)
+      {
+        return ErrorResp.BadRequest("Email already exist");
+      }
+
+      var redisKey = $"verify-email:{req.Email}";
+      var code = await _cacheService.Get<string>(redisKey);
+
+      if (code == null)
+      {
+        return ErrorResp.BadRequest("Invalid code");
+      }
+
+      if (code != req.VerifyCode)
+      {
+        return ErrorResp.BadRequest("Invalid code");
+      }
+
       var hashedPass = CryptoService.HashPassword(req.Password);
 
       var user = new User
@@ -125,32 +208,38 @@ public class AuthController : ControllerBase
   }
 
   [HttpPost("refresh")]
-  public async Task<IActionResult> Refresh()
+  public async Task<IActionResult> Refresh([FromBody] RefreshReq req)
   {
     _logger.LogInformation("Refresh");
 
     try
     {
-      var refreshTk = Request.Headers["Authorization"].ToString().Split(" ")[1];
-      var payload = _jwtService.ValidateToken(refreshTk);
+      // Get the refresh token from the request body, and get user id and session id from redis
+      // If not found, return error
+      var refreshTk = req.RefreshToken;
 
-      if (payload == null)
+      var redisRftKey = "rft:" + refreshTk;
+
+      var rft = await _cacheService.Get<RedisSession>(redisRftKey);
+      if (rft == null)
       {
         return ErrorResp.Unauthorized("Invalid token");
       }
 
-      var ssId = payload.SessionId;
-      var userId = payload.UserId;
+      var ssId = rft.SessionId;
+      var userId = rft.UserId;
 
-      var redisKey = "ss:" + ssId.ToString();
+      // Get the session of user from redis -> This session use to check if the refresh token is valid and force logout
+      // If not found, return error
+      var redisKey = "ss:" + userId + ":" + ssId.ToString();
 
-      var ss = await _cacheService.Get<string>(redisKey);
+      var ss = await _cacheService.Get<RedisSession>(redisKey);
       if (ss == null)
       {
         return ErrorResp.Unauthorized("Invalid token");
       }
 
-      if (ss != refreshTk)
+      if (ss.Refresh != refreshTk)
       {
         return ErrorResp.Unauthorized("Invalid token");
       }
@@ -166,7 +255,9 @@ public class AuthController : ControllerBase
       return Ok(new TokenResp
       {
         AccessToken = accessTk,
-        AccessTokenExp = JwtConst.ACCESS_TOKEN_EXP
+        AccessTokenExp = DateTimeOffset.UtcNow.AddSeconds(JwtConst.ACCESS_TOKEN_EXP).ToUnixTimeSeconds(),
+        RefreshToken = refreshTk,
+        RefreshTokenExp = -1
       });
     }
     catch (Exception e)
@@ -175,39 +266,162 @@ public class AuthController : ControllerBase
     }
   }
 
-  [Protected]
+  [HttpPost("request-code")]
+  public async Task<IActionResult> RequestResetCode([FromBody] RequestCodeReq req)
+  {
+    _logger.LogInformation("RequestResetCode");
+
+    try
+    {
+      // Check if the email exist
+      var user = await _userRepo.GetUserByEmailAsync(req.Email);
+      if (user == null)
+      {
+        return ErrorResp.NotFound("User not found");
+      }
+
+      // Create a reset password code
+      var code = GenerateResetPasswordCode();
+      // Save it to redis
+      var redisKey = $"reset-password:{req.Email}";
+
+      _ = _cacheService.Set(redisKey, code, TimeSpan.FromSeconds(60 * 5));
+
+      // Send email to user
+      await _mailService.SendEmailAsync(req.Email, "Reset Password Code", $"Your reset password code is: {code}, it will expire in 5 minutes");
+
+      return Ok(new BaseResp { Message = "Send email successfully", Success = true });
+    }
+    catch (Exception e)
+    {
+      _logger.LogError(e.Message);
+      return ErrorResp.UnknownError(e.Message);
+    }
+  }
+
+  [HttpPost("reset-password")]
+  public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordReq req)
+  {
+    _logger.LogInformation("ResetPassword");
+
+    try
+    {
+      // Check if the code is valid
+      var redisKey = $"reset-password:{req.Email}";
+      var code = await _cacheService.Get<string>(redisKey);
+
+      if (code == null)
+      {
+        return ErrorResp.BadRequest("Invalid code");
+      }
+
+      if (code != req.Code)
+      {
+        return ErrorResp.BadRequest("Invalid code");
+      }
+
+      // Update password
+      var hashedPass = CryptoService.HashPassword(req.Password);
+
+      var user = _userRepo.GetUserByEmail(req.Email);
+      if (user == null)
+      {
+        return ErrorResp.NotFound("User not found");
+      }
+
+      user.Password = hashedPass;
+
+      var result = _userRepo.UpdateUser(user);
+
+      if (result > 0)
+      {
+        await _cacheService.ForceLogout(user.Id);
+        return Ok(new BaseResp { Message = "Reset password successfully", Success = true });
+      }
+      else
+      {
+        return ErrorResp.BadRequest("Reset password failed");
+      }
+    }
+    catch (Exception e)
+    {
+      _logger.LogError(e.Message);
+      return ErrorResp.UnknownError(e.Message);
+    }
+  }
+
   [HttpPost("logout")]
-  public async Task<IActionResult> Logout()
+  public async Task<IActionResult> Logout([FromBody] LogoutReq req)
   {
     _logger.LogInformation("Logout");
 
     try
     {
-      if (HttpContext.Items["payload"] is not Payload payload)
+      var refreshTk = req.RefreshToken;
+
+      var redisRftKey = "rft:" + refreshTk;
+
+      var rft = await _cacheService.Get<RedisSession>(redisRftKey);
+      if (rft == null)
       {
-        return ErrorResp.BadRequest("Invalid token");
+        return ErrorResp.Unauthorized("Invalid token");
       }
 
-      var ssId = payload.SessionId;
+      var ssId = rft.SessionId;
+      var userId = rft.UserId;
 
-      var redisKey = "ss:" + ssId.ToString();
+      var redisKey = "ss:" + userId + ":" + ssId.ToString();
+
+      var ss = await _cacheService.Get<RedisSession>(redisKey);
+      if (ss == null)
+      {
+        return ErrorResp.Unauthorized("Invalid token");
+      }
+
+      if (ss.Refresh != refreshTk)
+      {
+        return ErrorResp.Unauthorized("Invalid token");
+      }
 
       await _cacheService.Remove(redisKey);
+      await _cacheService.Remove(redisRftKey);
+
+      return Ok(new BaseResp { Message = "Logout successfully", Success = true });
     }
     catch (Exception e)
     {
-      return ErrorResp.BadRequest(e.Message);
+      return ErrorResp.Unauthorized(e.Message);
     }
-
-    return Ok("Logout");
   }
+
   private string GenerateAccessTk(Guid userId, Guid sessionId, int roleId)
   {
     return _jwtService.GenerateToken(userId, sessionId, roleId, JwtConst.ACCESS_TOKEN_EXP);
   }
 
-  private string GenerateRefreshTk(Guid userId, Guid sessionId, int roleId)
+  private string GenerateRefreshTk()
   {
-    return _jwtService.GenerateToken(userId, sessionId, roleId, JwtConst.REFRESH_TOKEN_EXP);
+    var randomNumber = new byte[64];
+    using var rng = RandomNumberGenerator.Create();
+    rng.GetBytes(randomNumber);
+    return Convert.ToBase64String(randomNumber);
+  }
+
+  private string GenerateResetPasswordCode()
+  {
+    // Generate a random number 6 digits
+    const string chars = "0123456789";
+    Random random = new();
+    char[] otpArray = new char[6];
+
+    // Generate random characters for the OTP
+    for (int i = 0; i < 6; i++)
+    {
+      otpArray[i] = chars[random.Next(chars.Length)];
+    }
+
+    // Convert the character array to a string
+    string otp = new(otpArray);
+    return otp;
   }
 }

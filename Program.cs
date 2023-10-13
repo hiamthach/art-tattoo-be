@@ -5,12 +5,11 @@ using art_tattoo_be.Infrastructure.Database;
 using art_tattoo_be.Infrastructure.Cache;
 using StackExchange.Redis;
 using Microsoft.OpenApi.Models;
+using art_tattoo_be.Core.Mail;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddCors(options =>
 {
@@ -59,8 +58,6 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("localhost:6379"));
-
 builder.Services.AddScoped<ICacheService, CacheService>();
 
 builder.Services.AddDbContext<ArtTattooDbContext>(options =>
@@ -70,16 +67,19 @@ builder.Services.AddDbContext<ArtTattooDbContext>(options =>
   options.UseSqlServer(builder.Configuration.GetConnectionString("DatabaseConnection"));
 });
 
+Console.WriteLine($"Redis connection string: {builder.Configuration.GetConnectionString("RedisConnection")}");
+builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("RedisConnection")));
+
+var smtpUsername = Environment.GetEnvironmentVariable("SMTP_EMAIL") ?? "default_username";
+var smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? "default_password";
+builder.Services.AddSingleton<IMailService>(new MailService("smtp.gmail.com", 587, smtpUsername, smtpPassword));
+
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddScoped<IJwtService, JwtService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-// if (app.Environment.IsDevelopment())
-// {
-// }
 app.UseSwagger();
 app.UseSwaggerUI();
 

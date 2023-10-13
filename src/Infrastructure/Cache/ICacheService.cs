@@ -9,4 +9,5 @@ public interface ICacheService
   Task<bool> Exists(string key);
   Task Clear();
   Task ClearWithPattern(string pattern);
+  Task ForceLogout(Guid userId);
 }

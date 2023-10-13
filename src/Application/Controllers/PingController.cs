@@ -20,6 +20,6 @@ public class PingController : ControllerBase
 
     var appVer = Environment.GetEnvironmentVariable("APP_VERSION");
 
-    return Ok("{ \"message\": \"pong\", \"version\": \"" + appVer + "\" }");
+    return Ok(new { message = "pong", appVersion = appVer });
   }
 }

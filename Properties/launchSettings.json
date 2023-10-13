@@ -14,11 +14,14 @@
       "dotnetRunMessages": true,
       "launchBrowser": true,
       "launchUrl": "swagger",
-      "applicationUrl": "http://localhost:8088",
+      "applicationUrl": "http://localhost:8080",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "APP_VERSION": "0.0.1",
-        "JWT_SECRET": "ArtTattooSecret@@"
+        "JWT_SECRET": "ArtTattooSecret@@",
+        "REDIS_CONNECTION": "localhost:6379,password=ArtTattooRedis,abortConnect=false,ssl=true,sslprotocols=tls12",
+        "SMTP_EMAIL": "arttattoolover@gmail.com",
+        "SMTP_PASSWORD": "zoxeglocinfzmnei",
       }
     }
   }

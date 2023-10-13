@@ -27,7 +27,7 @@ public class CacheService : ICacheService
 
   public Task Set<T>(string key, T value)
   {
-    return _database.StringSetAsync($"{_redisKey}:{key}", JsonSerializer.Serialize(value));
+    return _database.StringSetAsync($"{_redisKey}:{key}", JsonSerializer.Serialize(value), TimeSpan.FromMinutes(30));
   }
 
   public Task Set<T>(string key, T value, TimeSpan expiration)
@@ -54,7 +54,14 @@ public class CacheService : ICacheService
   {
     var endpoints = _database.Multiplexer.GetEndPoints();
     var server = _database.Multiplexer.GetServer(endpoints.First());
-    var keys = server.Keys(pattern: $"{_redisKey}:{pattern}").ToArray();
+    var keys = server.Keys(pattern: $"{_redisKey}:{pattern}:*").ToArray();
     return _database.KeyDeleteAsync(keys);
+  }
+
+  public Task ForceLogout(Guid userId)
+  {
+    var redisKey = $"ss:{userId}";
+
+    return ClearWithPattern(redisKey);
   }
 }

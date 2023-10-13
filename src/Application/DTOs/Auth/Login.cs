@@ -22,7 +22,7 @@ public class LoginResp
 public class TokenResp
 {
   public string AccessToken { get; set; } = null!;
-  public int AccessTokenExp { get; set; }
+  public long AccessTokenExp { get; set; }
   public string RefreshToken { get; set; } = null!;
-  public int RefreshTokenExp { get; set; }
+  public long RefreshTokenExp { get; set; }
 }
