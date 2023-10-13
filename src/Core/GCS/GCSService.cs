@@ -13,25 +13,29 @@ public interface IGCSService
 
 public class GCSService : IGCSService
 {
+  private const string PROJECT_ID = "arttattoolover-adf51";
+  private const string FOLDER = "media/";
   private readonly string BucketName;
   private readonly StorageClient StorageClient;
+
+  private readonly string FilePrefix;
 
   public GCSService()
   {
     // Initialize the Google Cloud Storage client
-    string projectId = "arttattoolover-adf51";
     string credentialsPath = "firebase.json"; // Replace with your Service Account Key path
 
     var credentials = GoogleCredential.FromFile(credentialsPath);
     StorageClient = StorageClient.Create(credentials);
-    BucketName = projectId + ".appspot.com"; // Default Firebase Storage bucket
+    BucketName = PROJECT_ID + ".appspot.com"; // Default Firebase Storage bucket
+    FilePrefix = "https://storage.googleapis.com/" + BucketName + "/";
   }
 
   public async Task<string?> UploadFileAsync(Stream fileStream, string destinationFileName, string contentType)
   {
     try
     {
-      var objectName = destinationFileName;
+      var objectName = FOLDER + destinationFileName;
 
       // Upload the file to Firebase Storage
       var options = new UploadObjectOptions
@@ -40,11 +44,9 @@ public class GCSService : IGCSService
       };
       await StorageClient.UploadObjectAsync(BucketName, objectName, contentType, fileStream, options);
 
-      // Generate a download URL for the uploaded file
-      var objectInfo = await StorageClient.GetObjectAsync(BucketName, objectName);
-      var downloadUrl = objectInfo.MediaLink;
-
-      return downloadUrl;
+      // Generate a URL to the uploaded content
+      var fileUrl = FilePrefix + objectName;
+      return fileUrl;
     }
     catch (Exception ex)
     {

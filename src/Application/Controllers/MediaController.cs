@@ -6,6 +6,7 @@ using art_tattoo_be.Application.Shared.Handler;
 using art_tattoo_be.Application.DTOs.Media;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Core.GCS;
+using art_tattoo_be.Application.Shared.Constant;
 
 [Produces("application/json")]
 [ApiController]
@@ -46,7 +47,7 @@ public class MediaController : ControllerBase
   }
 
   [HttpPost("upload")]
-  public async Task<IActionResult> UploadFile([FromForm] IFormFile file)
+  public async Task<IActionResult> UploadFile([FromForm] IFormFile file, [FromForm] int type)
   {
     _logger.LogInformation("Upload file:");
 
@@ -57,8 +58,51 @@ public class MediaController : ControllerBase
         return ErrorResp.BadRequest("File is empty");
       }
 
-      var fileName = file.FileName;
       var contentType = file.ContentType;
+
+      // check file type is image
+      if (type == (int)MediaTypeEnum.Image)
+      {
+        if (!FileConst.IMAGE_CONTENT_TYPES.Contains(contentType))
+        {
+          return ErrorResp.BadRequest("File is not image type (jpg, png, gif, webp)");
+        }
+        else if (file.Length > FileConst.MAX_IMAGE_SIZE)
+        {
+          return ErrorResp.BadRequest("File is too large, max size is 5MB");
+        }
+      }
+      else if (type == (int)MediaTypeEnum.Video)
+      {
+        if (!FileConst.VIDEO_CONTENT_TYPES.Contains(contentType))
+        {
+          return ErrorResp.BadRequest("File is not video type (mp4, avi, mov, wmv, flv, mkv)");
+        }
+        else if (file.Length > FileConst.MAX_VIDEO_SIZE)
+        {
+          return ErrorResp.BadRequest("File is too large, max size is 20MB");
+        }
+      }
+      else if (type == (int)MediaTypeEnum.Cert)
+      {
+        if (!FileConst.CERT_CONTENT_TYPES.Contains(contentType))
+        {
+          return ErrorResp.BadRequest("File is not certificate type (pdf, doc, docx)");
+        }
+        else if (file.Length > FileConst.MAX_CERT_SIZE)
+        {
+          return ErrorResp.BadRequest("File is too large max size is 5MB");
+        }
+      }
+      else
+      {
+        return ErrorResp.BadRequest("File type is invalid");
+      }
+
+      // generate file name: GUID + file extension
+      var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+
+      // upload file to GCS
       var fileStream = file.OpenReadStream();
 
       var downloadUrl = await _gcsService.UploadFileAsync(fileStream, fileName, contentType);
@@ -68,7 +112,11 @@ public class MediaController : ControllerBase
         return ErrorResp.SomethingWrong("Error uploading file");
       }
 
-      return Ok(downloadUrl);
+      return Ok(new
+      {
+        success = true,
+        url = downloadUrl
+      });
     }
     catch (Exception e)
     {
