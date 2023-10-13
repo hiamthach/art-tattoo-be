@@ -6,6 +6,7 @@ using art_tattoo_be.Infrastructure.Cache;
 using StackExchange.Redis;
 using Microsoft.OpenApi.Models;
 using art_tattoo_be.Core.Mail;
+using art_tattoo_be.Core.GCS;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -82,6 +83,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Conn
 var smtpUsername = Environment.GetEnvironmentVariable("SMTP_EMAIL") ?? "default_username";
 var smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? "default_password";
 builder.Services.AddSingleton<IMailService>(new MailService("smtp.gmail.com", 587, smtpUsername, smtpPassword));
+builder.Services.AddSingleton<IGCSService, GCSService>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

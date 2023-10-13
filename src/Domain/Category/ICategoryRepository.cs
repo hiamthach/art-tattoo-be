@@ -1,3 +1,5 @@
+using art_tattoo_be.Application.DTOs.Category;
+
 namespace art_tattoo_be.Domain.Category;
 
 interface ICategoryRepository
