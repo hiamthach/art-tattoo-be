@@ -63,7 +63,6 @@ public class StudioRepository : IStudioRepository
     double west = Coordinates.MAX_WEST;
 
     string searchKeyword = req.SearchKeyword ?? "";
-    var unidecodedKeyword = StringHelper.ConvertVietnamese(searchKeyword);
 
     // check view exist
     if (req.ViewPortNE != null && req.ViewPortSW != null)
@@ -74,13 +73,13 @@ public class StudioRepository : IStudioRepository
       west = req.ViewPortSW.Lng;
     }
 
-    // var query = _dbContext.Studios
-    // // .Where(stu => stu.Status == StudioStatusEnum.Active)
-    // .Where(stu => stu.Latitude <= north && stu.Latitude >= south && stu.Longitude <= east && stu.Longitude >= west)
-    // .Where(stu => stu.Name.Collate(searchKeyword, CompareOptions.IgnoreNonSpace | CompareOptions.IgnoreCase) >= 0);
-
     var query = _dbContext.Studios
-     .FromSqlRaw("SELECT * FROM Studios WHERE Latitude <= {0} AND Latitude >= {1} AND Longitude <= {2} AND Longitude >= {3} AND Name COLLATE SQL_Latin1_General_CP1_CI_AI LIKE {4}", north, south, east, west, $"%{unidecodedKeyword}%");
+    // .Where(stu => stu.Status == StudioStatusEnum.Active)
+    .Where(stu => stu.Latitude <= north && stu.Latitude >= south && stu.Longitude <= east && stu.Longitude >= west)
+    .Where(stu => stu.Name.Contains(searchKeyword));
+
+    // var query = _dbContext.Studios
+    //  .FromSqlRaw("SELECT * FROM Studios WHERE Latitude <= {0} AND Latitude >= {1} AND Longitude <= {2} AND Longitude >= {3} AND Name COLLATE SQL_Latin1_General_CP1_CI_AI LIKE {4}", north, south, east, west, $"%{unidecodedKeyword}%");
 
     int totalCount = query.Count();
 
