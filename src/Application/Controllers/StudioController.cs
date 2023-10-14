@@ -32,14 +32,23 @@ public class StudioController : ControllerBase
     _mapper = mapper;
   }
 
-  [HttpGet]
-  public async Task<IActionResult> GetStudios([FromQuery] PaginationReq req)
+  [HttpPost()]
+  public async Task<IActionResult> GetStudios([FromBody] GetStudioQuery req)
   {
     _logger.LogInformation("Get Studio");
 
     try
     {
       var redisKey = $"studios:{req.Page}:{req.PageSize}";
+      if (req.ViewPortNE != null && req.ViewPortSW != null)
+      {
+        redisKey += $"?ne=[{req.ViewPortNE.Lat},{req.ViewPortNE.Lng}]&sw=[{req.ViewPortSW.Lat},{req.ViewPortSW.Lng}]";
+      }
+
+      if (req.SearchKeyword != null)
+      {
+        redisKey += $"?search={req.SearchKeyword}";
+      }
 
       var studiosCache = await _cacheService.Get<StudioResp>(redisKey);
 
@@ -54,17 +63,9 @@ public class StudioController : ControllerBase
         PageSize = req.PageSize,
       };
 
-      var count = _studioRepo.Count();
-      if (count == 0)
-      {
-        resp.Total = 0;
-
-        return Ok(resp);
-      }
-
       var studios = _studioRepo.GetStudioPages(req);
-      resp.Total = count;
-      resp.Data = _mapper.Map<List<StudioDto>>(studios);
+      resp.Total = studios.TotalCount;
+      resp.Data = _mapper.Map<List<StudioDto>>(studios.Studios);
 
       // set to cache
       await _cacheService.Set(redisKey, resp);
@@ -112,7 +113,7 @@ public class StudioController : ControllerBase
     }
   }
 
-  [HttpPost]
+  [HttpPost("create")]
   public async Task<IActionResult> CreateStudio([FromBody] CreateStudioReq req)
   {
     _logger.LogInformation("Create Studio");

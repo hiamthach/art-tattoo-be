@@ -36,3 +36,9 @@ public class Studio
   public List<Media> ListMedia { get; set; } = new();
   public List<Blog> Blogs { get; set; } = new();
 }
+
+public class StudioList
+{
+  public IEnumerable<Studio> Studios { get; set; } = new List<Studio>();
+  public int TotalCount { get; set; }
+}
