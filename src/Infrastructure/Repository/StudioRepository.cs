@@ -44,7 +44,10 @@ public class StudioRepository : IStudioRepository
 
   public Task<Studio?> GetAsync(Guid id)
   {
-    return _dbContext.Studios.FindAsync(id).AsTask();
+    return _dbContext.Studios
+    .Include(stu => stu.ListMedia)
+    .Include(stu => stu.WorkingTimes)
+    .FirstOrDefaultAsync(stu => stu.Id == id);
   }
 
   public StudioList GetStudioPages(GetStudioQuery req)
@@ -68,14 +71,14 @@ public class StudioRepository : IStudioRepository
 
     var query = _dbContext.Studios
     // .Where(stu => stu.Status == StudioStatusEnum.Active)
-    .Include(stu => stu.WorkingTimes)
-    .Include(stu => stu.ListMedia)
     .Where(stu => stu.Latitude <= north && stu.Latitude >= south && stu.Longitude <= east && stu.Longitude >= west)
     .Where(stu => stu.Name.Contains(searchKeyword));
 
     int totalCount = query.Count();
 
     var studios = query
+        .Include(stu => stu.WorkingTimes)
+        .Include(stu => stu.ListMedia)
         .Select(stu => new Studio
         {
           Id = stu.Id,
@@ -91,6 +94,8 @@ public class StudioRepository : IStudioRepository
           Address = stu.Address,
           Latitude = stu.Latitude,
           Longitude = stu.Longitude,
+          WorkingTimes = stu.WorkingTimes,
+          ListMedia = stu.ListMedia,
         })
         .OrderByDescending(stu => stu.Name)
         .Take(req.PageSize)
