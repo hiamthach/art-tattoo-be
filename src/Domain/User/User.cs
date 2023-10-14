@@ -17,6 +17,7 @@ public class User
   public string? Phone { get; set; }
   public string? Address { get; set; }
   public string? Avatar { get; set; }
+  public DateTime? Birthday { get; set; }
   public int RoleId { get; set; } = 1;
   public UserStatusEnum Status { get; set; }
   public DateTime CreatedAt { get; set; }

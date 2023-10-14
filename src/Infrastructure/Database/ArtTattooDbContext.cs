@@ -79,6 +79,7 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Password).IsRequired().HasMaxLength(100);
       entity.Property(e => e.FullName).IsRequired().HasMaxLength(30);
       entity.Property(e => e.Phone).IsRequired(false).HasMaxLength(15);
+      entity.Property(e => e.Birthday).IsRequired(false);
       entity.Property(e => e.Address).IsRequired(false).HasMaxLength(255);
       entity.Property(e => e.Avatar).IsRequired(false).HasMaxLength(255);
       entity.Property(e => e.RoleId).IsRequired();
