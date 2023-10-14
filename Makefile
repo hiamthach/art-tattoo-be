@@ -13,6 +13,9 @@ docker:
 deploy:
 	docker-compose up -d
 
+rebuild:
+	docker-compose up --no-deps --build webapi
+
 new-migration:
 	dotnet ef migrations add $(name) --verbose
 
