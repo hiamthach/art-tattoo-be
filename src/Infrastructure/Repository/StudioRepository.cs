@@ -1,4 +1,5 @@
 using art_tattoo_be.Application.DTOs.Pagination;
+using art_tattoo_be.Application.DTOs.Studio;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Infrastructure.Database;
@@ -46,34 +47,61 @@ public class StudioRepository : IStudioRepository
     return _dbContext.Studios.FindAsync(id).AsTask();
   }
 
-  public IEnumerable<Studio> GetStudioPages(PaginationReq req)
+  public StudioList GetStudioPages(GetStudioQuery req)
   {
-    var studios = _dbContext.Studios
-            // .Where(stu => stu.Status == StudioStatusEnum.Active)
-            .Include(stu => stu.WorkingTimes)
-            .Include(stu => stu.ListMedia)
-            .Select(stu => new Studio
-            {
-              Id = stu.Id,
-              Name = stu.Name,
-              Slogan = stu.Slogan,
-              Introduction = stu.Introduction,
-              Logo = stu.Logo,
-              Phone = stu.Phone,
-              Email = stu.Email,
-              Website = stu.Website,
-              Facebook = stu.Facebook,
-              Instagram = stu.Instagram,
-              Address = stu.Address,
-              Latitude = stu.Latitude,
-              Longitude = stu.Longitude,
-            })
-            .OrderByDescending(stu => stu.Name)
-            .Take(req.PageSize)
-            .Skip(req.Page)
-            .ToList();
+    // Init maximum north, east, south, west
+    double north = 90;
+    double east = 180;
+    double south = -90;
+    double west = -180;
 
-    return studios;
+    string searchKeyword = req.SearchKeyword ?? "";
+
+    // check view exist
+    if (req.ViewPortNE != null && req.ViewPortSW != null)
+    {
+      north = req.ViewPortNE.Lat;
+      east = req.ViewPortNE.Lng;
+      south = req.ViewPortSW.Lat;
+      west = req.ViewPortSW.Lng;
+    }
+
+    var query = _dbContext.Studios
+    // .Where(stu => stu.Status == StudioStatusEnum.Active)
+    .Include(stu => stu.WorkingTimes)
+    .Include(stu => stu.ListMedia)
+    .Where(stu => stu.Latitude <= north && stu.Latitude >= south && stu.Longitude <= east && stu.Longitude >= west)
+    .Where(stu => stu.Name.Contains(searchKeyword));
+
+    int totalCount = query.Count();
+
+    var studios = query
+        .Select(stu => new Studio
+        {
+          Id = stu.Id,
+          Name = stu.Name,
+          Slogan = stu.Slogan,
+          Introduction = stu.Introduction,
+          Logo = stu.Logo,
+          Phone = stu.Phone,
+          Email = stu.Email,
+          Website = stu.Website,
+          Facebook = stu.Facebook,
+          Instagram = stu.Instagram,
+          Address = stu.Address,
+          Latitude = stu.Latitude,
+          Longitude = stu.Longitude,
+        })
+        .OrderByDescending(stu => stu.Name)
+        .Take(req.PageSize)
+        .Skip(req.Page)
+        .ToList();
+
+    return new StudioList
+    {
+      Studios = studios,
+      TotalCount = totalCount
+    };
   }
 
   public IEnumerable<Studio> GetStudios()
