@@ -4,6 +4,8 @@ public class UpdateStudioReq
 {
   public string? Name { get; set; }
 
+  public string? Slogan { get; set; }
+  public string? Introduction { get; set; }
   public string? Detail { get; set; }
   public string? Logo { get; set; }
   public string? Phone { get; set; }

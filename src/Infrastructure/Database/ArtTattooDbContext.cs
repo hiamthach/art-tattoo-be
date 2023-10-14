@@ -247,7 +247,7 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.ToTable("media");
       entity.HasKey(e => e.Id);
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
-      entity.Property(e => e.Url).IsRequired().HasMaxLength(255);
+      entity.Property(e => e.Url).IsRequired().HasMaxLength(5000);
       entity.Property(e => e.Type).IsRequired().HasConversion(
         v => v.ToString(),
         v => (MediaTypeEnum)Enum.Parse(typeof(MediaTypeEnum), v));
