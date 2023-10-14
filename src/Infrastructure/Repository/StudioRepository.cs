@@ -1,9 +1,13 @@
+using System.Globalization;
 using art_tattoo_be.Application.DTOs.Pagination;
 using art_tattoo_be.Application.DTOs.Studio;
+using art_tattoo_be.Application.Shared.Constant;
 using art_tattoo_be.Application.Shared.Enum;
+using art_tattoo_be.Application.Shared.Helper;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Infrastructure.Database;
 using AutoMapper;
+using BinaryAnalysis.UnidecodeSharp;
 using Microsoft.EntityFrameworkCore;
 
 namespace art_tattoo_be.Infrastructure.Repository;
@@ -53,12 +57,13 @@ public class StudioRepository : IStudioRepository
   public StudioList GetStudioPages(GetStudioQuery req)
   {
     // Init maximum north, east, south, west
-    double north = 90;
-    double east = 180;
-    double south = -90;
-    double west = -180;
+    double north = Coordinates.MAX_NORTH;
+    double east = Coordinates.MAX_EAST;
+    double south = Coordinates.MAX_SOUTH;
+    double west = Coordinates.MAX_WEST;
 
     string searchKeyword = req.SearchKeyword ?? "";
+    var unidecodedKeyword = StringHelper.ConvertVietnamese(searchKeyword);
 
     // check view exist
     if (req.ViewPortNE != null && req.ViewPortSW != null)
@@ -69,10 +74,13 @@ public class StudioRepository : IStudioRepository
       west = req.ViewPortSW.Lng;
     }
 
+    // var query = _dbContext.Studios
+    // // .Where(stu => stu.Status == StudioStatusEnum.Active)
+    // .Where(stu => stu.Latitude <= north && stu.Latitude >= south && stu.Longitude <= east && stu.Longitude >= west)
+    // .Where(stu => stu.Name.Collate(searchKeyword, CompareOptions.IgnoreNonSpace | CompareOptions.IgnoreCase) >= 0);
+
     var query = _dbContext.Studios
-    // .Where(stu => stu.Status == StudioStatusEnum.Active)
-    .Where(stu => stu.Latitude <= north && stu.Latitude >= south && stu.Longitude <= east && stu.Longitude >= west)
-    .Where(stu => stu.Name.Contains(searchKeyword));
+     .FromSqlRaw("SELECT * FROM Studios WHERE Latitude <= {0} AND Latitude >= {1} AND Longitude <= {2} AND Longitude >= {3} AND Name COLLATE SQL_Latin1_General_CP1_CI_AI LIKE {4}", north, south, east, west, $"%{unidecodedKeyword}%");
 
     int totalCount = query.Count();
 
@@ -98,8 +106,8 @@ public class StudioRepository : IStudioRepository
           ListMedia = stu.ListMedia,
         })
         .OrderByDescending(stu => stu.Name)
+        .Skip(req.Page * req.PageSize)
         .Take(req.PageSize)
-        .Skip(req.Page)
         .ToList();
 
     return new StudioList
