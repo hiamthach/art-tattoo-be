@@ -4,6 +4,7 @@ using art_tattoo_be.Application.DTOs.Studio;
 using art_tattoo_be.Application.Shared.Constant;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Application.Shared.Helper;
+using art_tattoo_be.Domain.Media;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Infrastructure.Database;
 using AutoMapper;
@@ -121,19 +122,43 @@ public class StudioRepository : IStudioRepository
     return _dbContext.Studios.ToList();
   }
 
-  public int Update(Studio studio)
+  public int Update(Studio studio, IEnumerable<Media> mediaList)
   {
 
     // Check if the StudioWorkingTimes are being tracked by EF Core.
     if (studio.WorkingTimes != null)
     {
       // Remove the existing StudioWorkingTimes and add the new ones.
-      _dbContext.StudioWorkingTimes.RemoveRange(_dbContext.StudioWorkingTimes.Where(w => w.StudioId == studio.Id));
-      _dbContext.StudioWorkingTimes.AddRange(studio.WorkingTimes);
+      // filter out working times that has empty Guid
+
+      var workingTimes = studio.WorkingTimes.Where(w => w.Id == Guid.Empty).ToList();
+
+      if (workingTimes.Count > 0)
+      {
+        _dbContext.StudioWorkingTimes.RemoveRange(_dbContext.StudioWorkingTimes.Where(w => w.StudioId == studio.Id));
+        _dbContext.StudioWorkingTimes.AddRange(studio.WorkingTimes.Select(w =>
+        {
+          w.Id = Guid.NewGuid();
+          return w;
+        }));
+      }
     }
 
+    // clear old media
+    var removeMedia = studio.ListMedia.Where(m => !mediaList.Select(m => m.Id).Contains(m.Id)).ToList();
+    var newMedia = mediaList.Where(m => !studio.ListMedia.Select(m => m.Id).Contains(m.Id)).ToList();
+
+    if (removeMedia.Count > 0)
+    {
+      _dbContext.Medias.RemoveRange(removeMedia);
+      studio.ListMedia.RemoveAll(m => removeMedia.Select(m => m.Id).Contains(m.Id));
+    }
+
+    _dbContext.Medias.AddRange(newMedia);
+    studio.ListMedia.AddRange(newMedia);
+
     // Update the Studio entity.
-    _dbContext.Update(studio);
+    _dbContext.Studios.Update(studio);
 
     return _dbContext.SaveChanges();
   }
