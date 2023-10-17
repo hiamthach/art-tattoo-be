@@ -31,6 +31,8 @@ public class ArtTattooDbContext : IdentityDbContext
   public DbSet<Invoice> Invoices { get; set; } = null!;
   public DbSet<Media> Medias { get; set; } = null!;
 
+  private readonly string COLLATION = "SQL_Latin1_General_CP1_CI_AI";
+
   public ArtTattooDbContext(DbContextOptions<ArtTattooDbContext> options) : base(options) { }
 
   protected override void OnModelCreating(ModelBuilder builder)
@@ -77,7 +79,7 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.Email).IsRequired().HasMaxLength(30);
       entity.Property(e => e.Password).IsRequired().HasMaxLength(100);
-      entity.Property(e => e.FullName).IsRequired().HasMaxLength(30);
+      entity.Property(e => e.FullName).UseCollation(COLLATION).IsRequired().HasMaxLength(30);
       entity.Property(e => e.Phone).IsRequired(false).HasMaxLength(15);
       entity.Property(e => e.Birthday).IsRequired(false);
       entity.Property(e => e.Address).IsRequired(false).HasMaxLength(255);
@@ -105,7 +107,7 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.HasKey(e => e.Id);
       entity.HasMany(e => e.ListMedia).WithMany(e => e.StudioMedia);
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
-      entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
+      entity.Property(e => e.Name).UseCollation(COLLATION).IsRequired().HasMaxLength(50);
       entity.Property(e => e.Detail).IsRequired(false);
       entity.Property(e => e.Introduction).IsRequired(false);
       entity.Property(e => e.Slogan).IsRequired(false).HasMaxLength(50);
@@ -137,7 +139,7 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.StudioId).IsRequired();
       entity.Property(e => e.CategoryId).IsRequired();
-      entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
+      entity.Property(e => e.Name).UseCollation("SQL_Latin1_General_CP1_CI_AI").IsRequired().HasMaxLength(50);
       entity.Property(e => e.Description).IsRequired(false);
       entity.Property(e => e.MinPrice).IsRequired();
       entity.Property(e => e.MaxPrice).IsRequired();
@@ -263,7 +265,7 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.HasOne(e => e.User).WithMany(e => e.Blogs).HasForeignKey(e => e.CreatedBy).IsRequired();
       entity.HasOne(e => e.Studio).WithMany(e => e.Blogs).HasForeignKey(e => e.StudioId).IsRequired(false);
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
-      entity.Property(e => e.Title).IsRequired(true).HasMaxLength(50);
+      entity.Property(e => e.Title).UseCollation(COLLATION).IsRequired(true).HasMaxLength(50);
       entity.Property(e => e.Slug).IsRequired(true).HasMaxLength(50);
       entity.Property(e => e.Content).IsRequired(true).HasMaxLength(2000);
       entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
