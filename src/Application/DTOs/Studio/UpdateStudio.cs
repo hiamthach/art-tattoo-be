@@ -1,3 +1,5 @@
+using art_tattoo_be.Application.DTOs.Media;
+
 namespace art_tattoo_be.Application.DTOs.Studio;
 
 public class UpdateStudioReq
@@ -17,5 +19,7 @@ public class UpdateStudioReq
   public double? Latitude { get; set; }
   public double? Longitude { get; set; }
 
+  public IEnumerable<string>? ListRemoveMedia { get; set; }
   public IEnumerable<StudioWorkingTimeCreate>? WorkingTimes { get; set; }
+  public IEnumerable<MediaCreate>? ListNewMedia { get; set; }
 }

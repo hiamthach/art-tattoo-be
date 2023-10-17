@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using art_tattoo_be.Infrastructure.Database;
 
@@ -11,9 +12,11 @@ using art_tattoo_be.Infrastructure.Database;
 namespace art_tattoo_be.Migrations
 {
     [DbContext(typeof(ArtTattooDbContext))]
-    partial class ArtTattooDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231014141528_StudioCollation")]
+    partial class StudioCollation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -328,8 +331,7 @@ namespace art_tattoo_be.Migrations
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .UseCollation("SQL_Latin1_General_CP1_CI_AI");
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnUpdate()
@@ -727,8 +729,7 @@ namespace art_tattoo_be.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .UseCollation("SQL_Latin1_General_CP1_CI_AI");
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<Guid>("StudioId")
                         .HasColumnType("uniqueidentifier");
@@ -886,8 +887,7 @@ namespace art_tattoo_be.Migrations
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)")
-                        .UseCollation("SQL_Latin1_General_CP1_CI_AI");
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<DateTime>("LastLoginAt")
                         .HasColumnType("datetime2");
