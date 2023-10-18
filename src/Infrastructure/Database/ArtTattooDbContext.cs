@@ -14,6 +14,7 @@ using art_tattoo_be.Domain.Invoice;
 using art_tattoo_be.Domain.Media;
 using art_tattoo_be.Application.Shared.Constant;
 using art_tattoo_be.Domain.Blog;
+using art_tattoo_be.Application.Shared;
 
 public class ArtTattooDbContext : IdentityDbContext
 {
@@ -67,6 +68,31 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Name).IsRequired().HasMaxLength(30);
       entity.Property(e => e.Description).IsRequired(false).HasMaxLength(255);
       entity.HasIndex(e => e.Slug).IsUnique();
+
+      entity.HasData(
+        new Permission { Slug = PermissionSlugConst.MANAGE_USERS, Name = "Manage users" },
+        new Permission { Slug = PermissionSlugConst.MANAGE_ROLE, Name = "Manage role" },
+        new Permission { Slug = PermissionSlugConst.MANAGE_PERMISSION, Name = "Manage permission" },
+        new Permission { Slug = PermissionSlugConst.MANAGE_CATEGORY, Name = "Manage category" },
+        new Permission { Slug = PermissionSlugConst.MANAGE_BLOG, Name = "Manage blog" },
+        new Permission { Slug = PermissionSlugConst.MANAGE_OWNED_BLOG, Name = "Manage owned blog" },
+        new Permission { Slug = PermissionSlugConst.MANAGE_STUDIO, Name = "Manage studio" },
+        new Permission { Slug = PermissionSlugConst.MANAGE_OWNED_STUDIO, Name = "Manage owned studio" },
+        new Permission { Slug = PermissionSlugConst.MANAGE_STUDIO_ARTISTS, Name = "Manage studio artists" },
+        new Permission { Slug = PermissionSlugConst.MANAGE_STUDIO_SERVICES, Name = "Manage studio services" },
+        new Permission { Slug = PermissionSlugConst.MANAGE_STUDIO_ARTIST_SCHEDULE, Name = "Manage studio artists schedule" },
+        new Permission { Slug = PermissionSlugConst.MANAGE_STUDIO_BOOKING, Name = "Manage studio booking" },
+        new Permission { Slug = PermissionSlugConst.MANAGE_STUDIO_INVOICE, Name = "Manage studio invoice" },
+        new Permission { Slug = PermissionSlugConst.VIEW_STUDIO_CUSTOMERS, Name = "Manage studio customers" },
+        new Permission { Slug = PermissionSlugConst.VIEW_STUDIO_ARTISTS, Name = "View studio artists" },
+        new Permission { Slug = PermissionSlugConst.VIEW_STUDIO_ARTIST_SCHEDULE, Name = "View studio artists schedule" },
+        new Permission { Slug = PermissionSlugConst.VIEW_STUDIO_SERVICES, Name = "View studio services" },
+        new Permission { Slug = PermissionSlugConst.VIEW_STUDIO_BOOKING, Name = "View studio booking" },
+        new Permission { Slug = PermissionSlugConst.VIEW_STUDIO_INVOICE, Name = "View studio invoice" },
+        new Permission { Slug = PermissionSlugConst.VIEW_OWNED_INVOICE, Name = "View owned invoice" },
+        new Permission { Slug = PermissionSlugConst.MANAGE_TESTIMONIAL, Name = "Manage testimonial" },
+        new Permission { Slug = PermissionSlugConst.MANAGE_OWN_TESTIMONIAL, Name = "Manage owned testimonial" }
+      );
     });
 
     builder.Entity<User>(entity =>
