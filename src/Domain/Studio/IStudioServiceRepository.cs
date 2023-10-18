@@ -9,8 +9,8 @@ namespace art_tattoo_be.src.Domain.Studio
     public interface IStudioServiceRepository
     {   
         IEnumerable<StudioService> GetAll();
-        StudioService GetById(int id);
+        StudioService GetById(Guid id);
         int CreateStudioService(StudioService studioService);
-        int DeleteStudioService(int id);
+        int DeleteStudioService(Guid id);
     }
 }

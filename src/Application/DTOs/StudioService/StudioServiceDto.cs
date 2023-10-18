@@ -18,8 +18,6 @@ namespace art_tattoo_be.src.Application.DTOs.StudioService
         public double MinPrice { get; set; }
         public double MaxPrice { get; set; }
         public double Discount { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
     }
 }
 public class StudioServiceProfile : Profile
