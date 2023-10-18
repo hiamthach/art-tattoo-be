@@ -279,13 +279,14 @@ public class RoleBaseController : ControllerBase
     }
   }
 
-  [Permission(PermissionSlugConst.MANAGE_ROLE)]
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_STUDIO_INVOICE)]
   [HttpGet("role-base/test")]
   public IActionResult Test()
   {
     _logger.LogInformation("Test");
 
-    var permissions = HttpContext.Items["permission"] as string[];
+    var permissions = HttpContext.Items["permission"];
 
     return Ok(new
     {

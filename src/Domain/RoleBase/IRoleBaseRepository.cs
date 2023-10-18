@@ -5,6 +5,7 @@ public interface IRoleBaseRepository
   // Role
   IEnumerable<Role> GetRoles();
   Role? GetRoleById(int id);
+  IEnumerable<string> GetRolePermissionSlugs(int id);
 
   int CreateRole(Role role);
 
