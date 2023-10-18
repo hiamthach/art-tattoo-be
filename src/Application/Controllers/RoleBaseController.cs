@@ -3,11 +3,11 @@ namespace art_tattoo_be.Application.Controllers;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using art_tattoo_be.Application.DTOs.RoleBase;
-using art_tattoo_be.Infrastructure.Repository;
 using art_tattoo_be.Domain.RoleBase;
-using art_tattoo_be.Infrastructure.Database;
 using art_tattoo_be.Application.Shared;
 using art_tattoo_be.Application.Shared.Handler;
+using art_tattoo_be.Application.Middlewares;
+using art_tattoo_be.Infrastructure.Repository;
 
 [Produces("application/json")]
 [ApiController]
@@ -18,10 +18,10 @@ public class RoleBaseController : ControllerBase
   private readonly IRoleBaseRepository _roleBaseRepo;
   private readonly IMapper _mapper;
 
-  public RoleBaseController(ILogger<RoleBaseController> logger, ArtTattooDbContext dbContext, IMapper mapper)
+  public RoleBaseController(ILogger<RoleBaseController> logger, IMapper mapper, IRoleBaseRepository roleBaseRepository)
   {
     _logger = logger;
-    _roleBaseRepo = new RoleBaseRepository(dbContext);
+    _roleBaseRepo = roleBaseRepository;
     _mapper = mapper;
   }
 
@@ -277,5 +277,20 @@ public class RoleBaseController : ControllerBase
     {
       return ErrorResp.SomethingWrong("Delete role failed!");
     }
+  }
+
+  [Permission(PermissionSlugConst.MANAGE_ROLE)]
+  [HttpGet("role-base/test")]
+  public IActionResult Test()
+  {
+    _logger.LogInformation("Test");
+
+    var permissions = HttpContext.Items["permission"] as string[];
+
+    return Ok(new
+    {
+      Permission = permissions,
+      Message = "Success"
+    });
   }
 }

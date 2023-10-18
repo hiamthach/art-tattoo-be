@@ -7,10 +7,23 @@ using StackExchange.Redis;
 using Microsoft.OpenApi.Models;
 using art_tattoo_be.Core.Mail;
 using art_tattoo_be.Core.GCS;
+using art_tattoo_be.Domain.RoleBase;
+using art_tattoo_be.Infrastructure.Repository;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddRateLimiter(_ => _
+    .AddFixedWindowLimiter(policyName: "fixed", options =>
+    {
+      options.PermitLimit = 4;
+      options.Window = TimeSpan.FromSeconds(12);
+      options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+      options.QueueLimit = 2;
+    }));
 
 builder.Services.AddCors(options =>
 {
@@ -79,6 +92,7 @@ builder.Services.AddSingleton<IGCSService, GCSService>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IRoleBaseRepository, RoleBaseRepository>();
 
 var app = builder.Build();
 
@@ -87,6 +101,7 @@ app.UseSwaggerUI();
 
 DbInitializer.UseInitializeDatabase(app);
 
+app.UseRateLimiter();
 app.UseCors();
 app.UseHttpsRedirection();
 

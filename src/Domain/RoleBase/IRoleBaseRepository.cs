@@ -1,6 +1,6 @@
 namespace art_tattoo_be.Domain.RoleBase;
 
-interface IRoleBaseRepository
+public interface IRoleBaseRepository
 {
   // Role
   IEnumerable<Role> GetRoles();
