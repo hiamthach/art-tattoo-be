@@ -20,16 +20,6 @@ namespace MyApp
     {
       // Configure services (e.g., database, authentication, etc.)
       services.AddAutoMapper(typeof(Startup));
-      services.AddCors(options =>
-      {
-        options.AddPolicy("AllowAllOrigins",
-            builder =>
-            {
-              builder.AllowAnyOrigin()
-                      .AllowAnyMethod()
-                      .AllowAnyHeader();
-            });
-      });
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

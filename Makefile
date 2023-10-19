@@ -11,9 +11,7 @@ docker:
 	docker build -t art-tattoo-be -f Dockerfile .
 
 deploy:
-	docker-compose down
-	docker-compose build --no-cache webapi
-	docker-compose up -d --no-recreate
+	docker-compose up -d
 
 rebuild:
 	docker-compose up --no-deps --build webapi
