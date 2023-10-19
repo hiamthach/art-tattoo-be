@@ -27,11 +27,20 @@ builder.Services.AddRateLimiter(_ => _
 
 builder.Services.AddCors(options =>
 {
+  options.AddPolicy("AllowAllOrigins",
+    builder =>
+    {
+      builder.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
   options.AddDefaultPolicy(
-  builder =>
-  {
-    builder.WithOrigins().AllowAnyHeader().AllowAnyMethod();
-  });
+    builder =>
+    {
+      builder.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
 });
 
 builder.Services.AddAuthorization();
@@ -103,6 +112,7 @@ DbInitializer.UseInitializeDatabase(app);
 
 app.UseRateLimiter();
 app.UseCors();
+
 app.UseHttpsRedirection();
 
 app.UseAuthentication();

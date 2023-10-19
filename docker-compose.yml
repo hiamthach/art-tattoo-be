@@ -32,6 +32,8 @@ services:
       - ConnectionStrings__RedisConnection=cache:6379,password=ArtTattooRedis,abortConnect=false
       - APP_VERSION=0.1.1
       - JWT_SECRET=ArtTattooSecret@@
+      - SMTP_EMAIL=arttattoolover@gmail.com
+      - SMTP_PASSWORD=zoxeglocinfzmnei
     ports:
       - 8080:8080
     restart: on-failure
