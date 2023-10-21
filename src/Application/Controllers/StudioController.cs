@@ -1,11 +1,9 @@
 namespace art_tattoo_be.Application.Controllers;
 
-using art_tattoo_be.Application.DTOs.Pagination;
 using art_tattoo_be.Application.DTOs.Studio;
 using art_tattoo_be.Application.Shared;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Application.Shared.Handler;
-using art_tattoo_be.Application.Shared.Helper;
 using art_tattoo_be.Domain.Media;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Infrastructure.Cache;
@@ -48,7 +46,6 @@ public class StudioController : ControllerBase
 
       if (req.SearchKeyword != null)
       {
-        // var searchKeyWord = StringHelper.ConvertVietnamese(req.SearchKeyword);
         redisKey += $"?search={req.SearchKeyword}";
       }
 

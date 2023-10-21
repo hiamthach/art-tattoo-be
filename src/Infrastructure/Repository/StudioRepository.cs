@@ -1,9 +1,6 @@
-using System.Globalization;
-using art_tattoo_be.Application.DTOs.Pagination;
 using art_tattoo_be.Application.DTOs.Studio;
 using art_tattoo_be.Application.Shared.Constant;
 using art_tattoo_be.Application.Shared.Enum;
-using art_tattoo_be.Application.Shared.Helper;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Infrastructure.Database;
 using AutoMapper;

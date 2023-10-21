@@ -89,4 +89,15 @@ public class RoleBaseRepository : IRoleBaseRepository
     _dbContext.Permissions.Remove(permission);
     return _dbContext.SaveChanges();
   }
+
+  public IEnumerable<string> GetRolePermissionSlugs(int id)
+  {
+    var role = _dbContext.Roles.Include(r => r.Permissions).FirstOrDefault(r => r.Id == id);
+    if (role == null)
+    {
+      return new List<string>();
+    }
+
+    return role.Permissions.Select(p => p.Slug).ToList();
+  }
 }

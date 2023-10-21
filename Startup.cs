@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using AutoMapper;
 using art_tattoo_be.Application.Middlewares;
+using art_tattoo_be.Domain.RoleBase;
+using art_tattoo_be.Infrastructure.Repository;
 
 namespace MyApp
 {
@@ -20,6 +22,7 @@ namespace MyApp
     {
       // Configure services (e.g., database, authentication, etc.)
       services.AddAutoMapper(typeof(Startup));
+      services.AddScoped<IRoleBaseRepository, RoleBaseRepository>();
       services.AddCors(options =>
       {
         options.AddPolicy("AllowAllOrigins",
