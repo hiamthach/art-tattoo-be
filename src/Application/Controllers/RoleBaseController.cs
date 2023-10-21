@@ -7,7 +7,6 @@ using art_tattoo_be.Domain.RoleBase;
 using art_tattoo_be.Application.Shared;
 using art_tattoo_be.Application.Shared.Handler;
 using art_tattoo_be.Application.Middlewares;
-using art_tattoo_be.Infrastructure.Repository;
 
 [Produces("application/json")]
 [ApiController]
@@ -280,7 +279,7 @@ public class RoleBaseController : ControllerBase
   }
 
   [Protected]
-  [Permission(PermissionSlugConst.MANAGE_STUDIO_INVOICE)]
+  [Permission(PermissionSlugConst.MANAGE_ROLE)]
   [HttpGet("role-base/test")]
   public IActionResult Test()
   {
