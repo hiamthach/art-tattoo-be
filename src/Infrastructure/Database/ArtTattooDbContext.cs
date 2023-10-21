@@ -15,6 +15,7 @@ using art_tattoo_be.Domain.Media;
 using art_tattoo_be.Application.Shared.Constant;
 using art_tattoo_be.Domain.Blog;
 using art_tattoo_be.Application.Shared;
+using art_tattoo_be.Core.Crypto;
 
 public class ArtTattooDbContext : IdentityDbContext
 {
@@ -116,6 +117,16 @@ public class ArtTattooDbContext : IdentityDbContext
         v => (UserStatusEnum)Enum.Parse(typeof(UserStatusEnum), v));
       entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
       entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.HasData(
+        new User
+        {
+          Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+          Email = "admin@arttattoo.com",
+          Password = CryptoService.HashPassword("ArtTattooLover@@"),
+          FullName = "Admin Art Tattoo Lover",
+          RoleId = RoleConst.GetRoleId(RoleConst.ADMIN),
+        }
+      );
     });
 
     builder.Entity<Category>(entity =>
