@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.src.Application.DTOs.StudioService;
@@ -13,6 +14,8 @@ namespace art_tattoo_be.src.Application.DTOs.StudioService
         public Guid Id { get; set; }
         public Guid StudioId { get; set; }
         public int CategoryId { get; set; }
+        public string? CategoryDescription { get; set; }
+        public string? CategoryImage { get; set; }
         public string Name { get; set; } = null!;
         public string Description { get; set; } = null!;
         public double MinPrice { get; set; }

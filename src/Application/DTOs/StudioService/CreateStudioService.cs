@@ -17,9 +17,10 @@ namespace art_tattoo_be.src.Application.DTOs.StudioService
         public string Name { get; set; } = null!;
         public string Description { get; set; } = null!;
         [Required]
-        [StringLength(ErrorMessage = "Min Price larger than 0", 0)]
-        [RegularExpression(RegexConst.PHONE_NUMBER, ErrorMessage = "Invalid phone number")]
+        [Range(1,double.MaxValue,ErrorMessage ="Min Price must larger than 0")]
         public double MinPrice { get; set; }
+        [Required]
+        [Range(1,double.MaxValue,ErrorMessage ="Max Price must larger than 0")]
         public double MaxPrice { get; set; }
         public double Discount { get; set; }
     }

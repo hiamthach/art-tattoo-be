@@ -40,8 +40,12 @@ namespace art_tattoo_be.src.Application.Controllers
         public IActionResult GetAll()
         {
             _logger.LogInformation("Get Studio Service:");
-            var studioService = _stuserRepo.GetAll();
-            return Ok(_mapper.Map<List<StudioServiceDto>>(studioService));
+            var StudioServiceDto = _mapper.Map<List<StudioServiceDto>>(_stuserRepo.GetAll());
+            StudioServiceDto.ForEach(s => {
+                s.CategoryDescription = _cateRepo.GetById(s.CategoryId).Description;
+                s.CategoryImage = _cateRepo.GetById(s.CategoryId).Image;
+            });
+            return Ok(StudioServiceDto);
         }
         [HttpGet("{id}")]
         public IActionResult GetById([FromRoute] Guid id)
@@ -49,14 +53,16 @@ namespace art_tattoo_be.src.Application.Controllers
             try
             {
                 _logger.LogInformation("Get Studio Service by @id: ", id);
-                var studioService = _stuserRepo.GetById(id);
-                if (studioService == null)
+                var StudioServiceDto = _mapper.Map<StudioServiceDto>(_stuserRepo.GetById(id));
+                StudioServiceDto.CategoryDescription = _cateRepo.GetById(StudioServiceDto.CategoryId).Description;
+                StudioServiceDto.CategoryImage = _cateRepo.GetById(StudioServiceDto.CategoryId).Image;
+                if (StudioServiceDto == null)
                 {
                     return ErrorResp.NotFound("Studio Service not found");
                 }
                 else
                 {
-                    return Ok(_mapper.Map<StudioServiceDto>(studioService));
+                    return Ok(StudioServiceDto);
                 }
             }
             catch (Exception e)
