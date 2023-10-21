@@ -9,7 +9,7 @@ using art_tattoo_be.Application.Shared.Handler;
 using art_tattoo_be.Infrastructure.Cache;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
-public class PermissionAttribute : System.Attribute, IAuthorizationFilter
+public class PermissionAttribute : Attribute, IAuthorizationFilter
 {
   private readonly string _permission;
 
@@ -38,7 +38,7 @@ public class PermissionAttribute : System.Attribute, IAuthorizationFilter
       {
         if (cacheService != null)
         {
-          var redisKey = $"role:{payload.RoleId}:permissions";
+          var redisKey = $"roles:{payload.RoleId}:permissions";
           var rolePermissionsCache = await cacheService.Get<List<string>>(redisKey);
 
           if (rolePermissionsCache != null)
