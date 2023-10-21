@@ -33,6 +33,13 @@ public class StudioRepository : IStudioRepository
     return await _dbContext.SaveChangesAsync();
   }
 
+  public async Task<int> CreateStudioUserAsync(StudioUser studioUser)
+  {
+    await _dbContext.StudioUsers.AddAsync(studioUser);
+
+    return await _dbContext.SaveChangesAsync();
+  }
+
   public int DeleteStudio(Guid id)
   {
     var studio = _dbContext.Studios.Find(id) ?? throw new Exception("Studio not found");
@@ -117,6 +124,19 @@ public class StudioRepository : IStudioRepository
     return _dbContext.Studios.ToList();
   }
 
+  public IEnumerable<StudioUser> GetStudioUsers(Guid studioId)
+  {
+    return _dbContext.StudioUsers
+    .Include(stu => stu.User)
+    .Where(stu => stu.StudioId == studioId)
+    .ToList();
+  }
+
+  public bool IsExist(Guid id)
+  {
+    return _dbContext.Studios.Any(stu => stu.Id == id);
+  }
+
   public int Update(Studio studio)
   {
 
@@ -139,6 +159,14 @@ public class StudioRepository : IStudioRepository
     var studio = _dbContext.Studios.Find(id) ?? throw new Exception("Studio not found");
     studio.Status = status;
     _dbContext.Studios.Update(studio);
+    return _dbContext.SaveChanges();
+  }
+
+  public int UpdateStudioUserStatus(Guid id, bool status)
+  {
+    var studioUser = _dbContext.StudioUsers.Find(id) ?? throw new Exception("Studio user not found");
+    studioUser.IsDisabled = status;
+    _dbContext.StudioUsers.Update(studioUser);
     return _dbContext.SaveChanges();
   }
 }
