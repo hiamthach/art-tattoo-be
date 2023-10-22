@@ -5,3 +5,8 @@ public class StudioResp : PaginationResp
 {
   public List<StudioDto> Data { get; set; } = new();
 }
+
+public class StudioUserResp : PaginationResp
+{
+  public List<StudioUserDto> Data { get; set; } = new();
+}

@@ -36,12 +36,21 @@ namespace art_tattoo_be.src.Application.Controllers
             _cateRepo = new CategoryRepository(dbContext);
             _stuRepo = new StudioRepository(mapper, dbContext);
         }
-        [HttpGet]
-        public IActionResult GetAll()
+        [HttpPost]
+        public IActionResult GetAll([FromBody] GetStudioServiceQuery req)
         {
+            try
+            {
+
+            }
+            catch (Exception e)
+            {
+                return ErrorResp.SomethingWrong(e.Message);
+            }
             _logger.LogInformation("Get Studio Service:");
             var StudioServiceDto = _mapper.Map<List<StudioServiceDto>>(_stuserRepo.GetAll());
-            StudioServiceDto.ForEach(s => {
+            StudioServiceDto.ForEach(s =>
+            {
                 s.CategoryDescription = _cateRepo.GetById(s.CategoryId).Description;
                 s.CategoryImage = _cateRepo.GetById(s.CategoryId).Image;
             });
