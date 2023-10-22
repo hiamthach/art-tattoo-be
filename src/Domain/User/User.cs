@@ -31,3 +31,9 @@ public class User
   public List<Media> ListMedia { get; set; } = new();
   public List<Blog> Blogs { get; set; } = new();
 }
+
+public class UserList
+{
+  public IEnumerable<User> Users { get; set; } = new List<User>();
+  public int TotalCount { get; set; }
+}
