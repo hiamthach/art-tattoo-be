@@ -27,6 +27,8 @@ public class RoleBaseController : ControllerBase
     _cacheService = cacheService;
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_PERMISSION)]
   [HttpGet("permission")]
   public async Task<IActionResult> GetPermission()
   {
@@ -56,6 +58,8 @@ public class RoleBaseController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_PERMISSION)]
   [HttpPost("permission")]
   public async Task<IActionResult> CreatePermission([FromBody] CreatePermissionReq req)
   {
@@ -92,6 +96,8 @@ public class RoleBaseController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_PERMISSION)]
   [HttpPut("permission/{slug}")]
   public async Task<IActionResult> UpdatePermission([FromRoute] string slug, [FromBody] UpdatePermissionReq req)
   {
@@ -128,7 +134,8 @@ public class RoleBaseController : ControllerBase
       {
         return Ok(new BaseResp
         {
-          Message = "Update permission successfully!"
+          Message = "Update permission successfully!",
+          Success = true
         });
       }
       else
@@ -142,6 +149,8 @@ public class RoleBaseController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_PERMISSION)]
   [HttpDelete("permission/{slug}")]
   public async Task<IActionResult> DeletePermission([FromRoute] string slug)
   {
@@ -159,7 +168,8 @@ public class RoleBaseController : ControllerBase
       {
         return Ok(new BaseResp
         {
-          Message = "Delete permission successfully!"
+          Message = "Delete permission successfully!",
+          Success = true
         });
       }
       else
@@ -173,6 +183,8 @@ public class RoleBaseController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_ROLE)]
   [HttpGet("role")]
   public async Task<IActionResult> GetRole()
   {
@@ -202,6 +214,8 @@ public class RoleBaseController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_ROLE)]
   [HttpPost("role")]
   public async Task<IActionResult> CreateRole([FromBody] CreateRoleReq req)
   {
@@ -220,9 +234,10 @@ public class RoleBaseController : ControllerBase
 
       if (result > 0)
       {
-        return Ok(new CreateRoleResp
+        return Ok(new BaseResp
         {
-          Message = "Create role successfully!"
+          Message = "Create role successfully!",
+          Success = true
         });
       }
       else
@@ -236,6 +251,8 @@ public class RoleBaseController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_ROLE)]
   [HttpGet("role/{id}")]
   public async Task<IActionResult> GetRoleById([FromRoute] int id)
   {
@@ -270,6 +287,8 @@ public class RoleBaseController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_ROLE)]
   [HttpPut("role/{id}")]
   public async Task<IActionResult> UpdateRole([FromRoute] int id, [FromBody] UpdateRoleReq req)
   {
@@ -298,7 +317,8 @@ public class RoleBaseController : ControllerBase
       {
         return Ok(new BaseResp
         {
-          Message = "Update role successfully!"
+          Message = "Update role successfully!",
+          Success = true
         });
       }
       else
@@ -312,6 +332,8 @@ public class RoleBaseController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_ROLE)]
   [HttpDelete("role/{id}")]
   public async Task<IActionResult> DeleteRole([FromRoute] int id)
   {
@@ -327,7 +349,8 @@ public class RoleBaseController : ControllerBase
     {
       return Ok(new BaseResp
       {
-        Message = "Delete role successfully!"
+        Message = "Delete role successfully!",
+        Success = true
       });
     }
     else
