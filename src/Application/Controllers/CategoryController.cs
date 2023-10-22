@@ -8,6 +8,7 @@ using art_tattoo_be.Application.Shared.Handler;
 using art_tattoo_be.Application.DTOs.Category;
 using AutoMapper;
 using art_tattoo_be.Application.Shared;
+using art_tattoo_be.Application.Middlewares;
 
 [Produces("application/json")]
 [ApiController]
@@ -61,6 +62,8 @@ public class CategoryController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_CATEGORY)]
   [HttpPost]
   public IActionResult CreateCategory([FromBody] CreateCategoryReq body)
   {
@@ -92,6 +95,8 @@ public class CategoryController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_CATEGORY)]
   [HttpDelete("{id}")]
   public IActionResult DeleteCategory([FromRoute] int id)
   {

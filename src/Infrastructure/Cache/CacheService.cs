@@ -54,7 +54,7 @@ public class CacheService : ICacheService
   {
     var endpoints = _database.Multiplexer.GetEndPoints();
     var server = _database.Multiplexer.GetServer(endpoints.First());
-    var keys = server.Keys(pattern: $"{_redisKey}:{pattern}:*").ToArray();
+    var keys = server.Keys(pattern: $"{_redisKey}:{pattern}*").ToArray();
     return _database.KeyDeleteAsync(keys);
   }
 

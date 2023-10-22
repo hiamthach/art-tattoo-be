@@ -1,7 +1,17 @@
 using System.ComponentModel.DataAnnotations;
 using art_tattoo_be.Application.Shared.Constant;
+using art_tattoo_be.Application.Shared.Enum;
 
 namespace art_tattoo_be.Application.DTOs.User;
+
+public class UpdateUserProfileReq
+{
+  public string? FullName { get; set; }
+  public string? Phone { get; set; }
+  public string? Address { get; set; }
+  public string? Avatar { get; set; }
+  public DateTime? Birthday { get; set; }
+}
 
 public class UpdateUserReq
 {
@@ -10,6 +20,8 @@ public class UpdateUserReq
   public string? Address { get; set; }
   public string? Avatar { get; set; }
   public DateTime? Birthday { get; set; }
+  public int? RoleId { get; set; }
+  public UserStatusEnum? Status { get; set; }
 }
 
 public class UpdatePasswordReq

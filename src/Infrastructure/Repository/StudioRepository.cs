@@ -1,14 +1,9 @@
-using System.Globalization;
-using art_tattoo_be.Application.DTOs.Pagination;
 using art_tattoo_be.Application.DTOs.Studio;
 using art_tattoo_be.Application.Shared.Constant;
 using art_tattoo_be.Application.Shared.Enum;
-using art_tattoo_be.Application.Shared.Helper;
-using art_tattoo_be.Domain.Media;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Infrastructure.Database;
 using AutoMapper;
-using BinaryAnalysis.UnidecodeSharp;
 using Microsoft.EntityFrameworkCore;
 
 namespace art_tattoo_be.Infrastructure.Repository;
@@ -38,11 +33,36 @@ public class StudioRepository : IStudioRepository
     return await _dbContext.SaveChangesAsync();
   }
 
+  public async Task<int> CreateStudioUserAsync(StudioUser studioUser, int roleId)
+  {
+    var user = await _dbContext.Users.FindAsync(studioUser.UserId);
+
+    if (user == null)
+    {
+      return 0;
+    }
+    user.RoleId = roleId;
+
+    await _dbContext.StudioUsers.AddAsync(studioUser);
+
+    return await _dbContext.SaveChangesAsync();
+  }
+
   public int DeleteStudio(Guid id)
   {
     var studio = _dbContext.Studios.Find(id) ?? throw new Exception("Studio not found");
 
     _dbContext.Remove(studio);
+
+    return _dbContext.SaveChanges();
+  }
+
+  public int DeleteStudioUser(Guid id)
+  {
+    var studioUser = _dbContext.StudioUsers.FirstOrDefault(s => s.UserId == id) ?? throw new Exception("Studio user not found");
+
+    studioUser.IsDisabled = true;
+    studioUser.UserId = Guid.Parse(UserConst.USER_DELETED);
 
     return _dbContext.SaveChanges();
   }
@@ -53,6 +73,24 @@ public class StudioRepository : IStudioRepository
     .Include(stu => stu.ListMedia)
     .Include(stu => stu.WorkingTimes)
     .FirstOrDefaultAsync(stu => stu.Id == id);
+  }
+
+  public IEnumerable<StudioUser> GetStudioArtist(Guid studioId)
+  {
+    return _dbContext.StudioUsers
+    .Include(user => user.User)
+    .Where(user => user.StudioId == studioId)
+    .Where(user => user.User.RoleId == RoleConst.ARTIST_ID)
+    .Where(user => user.UserId != Guid.Parse(UserConst.USER_DELETED))
+    .Where(user => user.IsDisabled == false)
+    .OrderByDescending(user => user.CreatedAt)
+    .ToList();
+  }
+
+  public Guid GetStudioIdByUserId(Guid userId)
+  {
+    var studioUser = _dbContext.StudioUsers.FirstOrDefault(s => s.UserId == userId) ?? throw new Exception("Studio user not found");
+    return studioUser.StudioId;
   }
 
   public StudioList GetStudioPages(GetStudioQuery req)
@@ -122,43 +160,76 @@ public class StudioRepository : IStudioRepository
     return _dbContext.Studios.ToList();
   }
 
-  public int Update(Studio studio, IEnumerable<Media> mediaList)
+  public StudioUser? GetStudioUser(Guid id)
+  {
+    return _dbContext.StudioUsers
+    .Include(stu => stu.User)
+    .FirstOrDefault(stu => stu.Id == id);
+  }
+
+  public StudioUserList GetStudioUsers(GetStudioUserQuery req)
+  {
+    string searchKeyword = req.SearchKeyword ?? "";
+
+    var query = _dbContext.StudioUsers
+    .Include(user => user.User)
+    .Where(user => user.StudioId == req.StudioId)
+    .Where(user => user.UserId != Guid.Parse(UserConst.USER_DELETED))
+    .Where(user => user.User.FullName.Contains(searchKeyword) || user.User.Email.Contains(searchKeyword));
+
+    int totalCount = query.Count();
+
+    var studioUsers = query
+    .Select(user => new StudioUser
+    {
+      Id = user.Id,
+      StudioId = user.StudioId,
+      UserId = user.UserId,
+      IsDisabled = user.IsDisabled,
+      CreatedAt = user.CreatedAt,
+      UpdatedAt = user.UpdatedAt,
+      User = user.User,
+    })
+    .OrderByDescending(user => user.CreatedAt)
+    .Skip(req.Page * req.PageSize)
+    .Take(req.PageSize)
+    .ToList();
+
+    return new StudioUserList
+    {
+      Users = studioUsers,
+      TotalCount = totalCount
+    };
+  }
+
+  public bool IsExist(Guid id)
+  {
+    return _dbContext.Studios.Any(stu => stu.Id == id);
+  }
+
+  public bool IsStudioUserExist(Guid userId)
+  {
+    return _dbContext.StudioUsers.Any(stu => stu.UserId == userId);
+  }
+
+  public bool IsStudioUserExist(Guid userId, Guid studioId)
+  {
+    return _dbContext.StudioUsers.Any(stu => stu.UserId == userId && stu.StudioId == studioId);
+  }
+
+  public int Update(Studio studio)
   {
 
     // Check if the StudioWorkingTimes are being tracked by EF Core.
     if (studio.WorkingTimes != null)
     {
       // Remove the existing StudioWorkingTimes and add the new ones.
-      // filter out working times that has empty Guid
-
-      var workingTimes = studio.WorkingTimes.Where(w => w.Id == Guid.Empty).ToList();
-
-      if (workingTimes.Count > 0)
-      {
-        _dbContext.StudioWorkingTimes.RemoveRange(_dbContext.StudioWorkingTimes.Where(w => w.StudioId == studio.Id));
-        _dbContext.StudioWorkingTimes.AddRange(studio.WorkingTimes.Select(w =>
-        {
-          w.Id = Guid.NewGuid();
-          return w;
-        }));
-      }
+      _dbContext.StudioWorkingTimes.RemoveRange(_dbContext.StudioWorkingTimes.Where(w => w.StudioId == studio.Id));
+      _dbContext.StudioWorkingTimes.AddRange(studio.WorkingTimes);
     }
-
-    // clear old media
-    var removeMedia = studio.ListMedia.Where(m => !mediaList.Select(m => m.Id).Contains(m.Id)).ToList();
-    var newMedia = mediaList.Where(m => !studio.ListMedia.Select(m => m.Id).Contains(m.Id)).ToList();
-
-    if (removeMedia.Count > 0)
-    {
-      _dbContext.Medias.RemoveRange(removeMedia);
-      studio.ListMedia.RemoveAll(m => removeMedia.Select(m => m.Id).Contains(m.Id));
-    }
-
-    _dbContext.Medias.AddRange(newMedia);
-    studio.ListMedia.AddRange(newMedia);
 
     // Update the Studio entity.
-    _dbContext.Studios.Update(studio);
+    _dbContext.Update(studio);
 
     return _dbContext.SaveChanges();
   }
@@ -168,6 +239,20 @@ public class StudioRepository : IStudioRepository
     var studio = _dbContext.Studios.Find(id) ?? throw new Exception("Studio not found");
     studio.Status = status;
     _dbContext.Studios.Update(studio);
+    return _dbContext.SaveChanges();
+  }
+
+  public int UpdateStudioUser(Guid id, UpdateStudioUserReq req)
+  {
+    var studioUser = _dbContext.StudioUsers.Find(id) ?? throw new Exception("Studio user not found");
+    studioUser.IsDisabled = req.IsDisabled;
+
+    if (req.RoleId != null)
+    {
+      studioUser.User.RoleId = req.RoleId.Value;
+    }
+
+    _dbContext.StudioUsers.Update(studioUser);
     return _dbContext.SaveChanges();
   }
 }

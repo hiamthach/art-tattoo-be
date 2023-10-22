@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using art_tattoo_be.Infrastructure.Database;
 
@@ -11,9 +12,11 @@ using art_tattoo_be.Infrastructure.Database;
 namespace art_tattoo_be.Migrations
 {
     [DbContext(typeof(ArtTattooDbContext))]
-    partial class ArtTattooDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231018041354_PermissionSlug")]
+    partial class PermissionSlug
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -888,7 +891,8 @@ namespace art_tattoo_be.Migrations
 
                     b.HasIndex("StudioId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("studio_users", (string)null);
                 });
@@ -1034,32 +1038,6 @@ namespace art_tattoo_be.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("users", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000012345"),
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "arttattoolover@gmail.com",
-                            FullName = "Admin Art Tattoo Lover",
-                            LastLoginAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Password = "$2a$11$jesHlHj8SfMmzB6ZcGLXPeHaDsS.8D9/k8hK128fhRs7J1J56/Yca",
-                            RoleId = 1,
-                            Status = "Inactive",
-                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
-                        },
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000404"),
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "",
-                            FullName = "Deleted User",
-                            LastLoginAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Password = "",
-                            RoleId = 6,
-                            Status = "Inactive",
-                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
-                        });
                 });
 
             modelBuilder.Entity("AppointmentMedia", b =>
@@ -1303,8 +1281,8 @@ namespace art_tattoo_be.Migrations
                         .IsRequired();
 
                     b.HasOne("art_tattoo_be.Domain.User.User", "User")
-                        .WithMany("StudioUsers")
-                        .HasForeignKey("UserId")
+                        .WithOne("StudioUser")
+                        .HasForeignKey("art_tattoo_be.Domain.Studio.StudioUser", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1408,7 +1386,8 @@ namespace art_tattoo_be.Migrations
 
                     b.Navigation("Invoices");
 
-                    b.Navigation("StudioUsers");
+                    b.Navigation("StudioUser")
+                        .IsRequired();
 
                     b.Navigation("Testimonials");
                 });
