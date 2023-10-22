@@ -1,6 +1,7 @@
 namespace art_tattoo_be.Infrastructure.Repository;
 
 using System.Threading.Tasks;
+using art_tattoo_be.Application.DTOs.User;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Domain.User;
 using art_tattoo_be.Infrastructure.Database;
@@ -48,9 +49,25 @@ public class UserRepository : IUserRepository
     return _dbContext.Users.FindAsync(id).AsTask();
   }
 
-  public IEnumerable<User> GetUsers()
+  public UserList GetUsers(GetUserQuery req)
   {
-    return _dbContext.Users.ToList();
+    string searchKeyword = req.SearchKeyword ?? "";
+    var query = _dbContext.Users
+      .Where(u => u.Email.Contains(searchKeyword) || u.FullName.Contains(searchKeyword));
+
+    int totalCount = query.Count();
+
+    var users = query
+      .OrderByDescending(user => user.CreatedAt)
+      .Skip(req.Page * req.PageSize)
+      .Take(req.PageSize)
+      .ToList();
+
+    return new UserList
+    {
+      Users = users,
+      TotalCount = totalCount
+    };
   }
 
   public int UpdateUser(User user)

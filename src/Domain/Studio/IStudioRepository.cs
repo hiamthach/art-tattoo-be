@@ -8,8 +8,10 @@ public interface IStudioRepository
   int Count();
   bool IsExist(Guid id);
   bool IsStudioUserExist(Guid userId);
+  bool IsStudioUserExist(Guid userId, Guid studioId);
   Task<Studio?> GetAsync(Guid id);
   StudioUser? GetStudioUser(Guid id);
+  Guid GetStudioIdByUserId(Guid userId);
   IEnumerable<Studio> GetStudios();
   IEnumerable<StudioUser> GetStudioArtist(Guid studioId);
   StudioUserList GetStudioUsers(GetStudioUserQuery req);

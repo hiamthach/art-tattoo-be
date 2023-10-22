@@ -25,9 +25,15 @@ public class User
   public DateTime LastLoginAt { get; set; }
 
   public Role Role { get; set; } = null!;
-  public StudioUser StudioUser { get; set; } = null!;
+  public List<StudioUser> StudioUsers { get; set; } = null!;
   public List<Testimonial> Testimonials { get; set; } = new();
   public List<Invoice> Invoices { get; set; } = new();
   public List<Media> ListMedia { get; set; } = new();
   public List<Blog> Blogs { get; set; } = new();
+}
+
+public class UserList
+{
+  public IEnumerable<User> Users { get; set; } = new List<User>();
+  public int TotalCount { get; set; }
 }
