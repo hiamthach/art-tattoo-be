@@ -360,7 +360,7 @@ public class RoleBaseController : ControllerBase
   }
 
   [Protected]
-  [Permission(PermissionSlugConst.MANAGE_ROLE)]
+  [Permission(PermissionSlugConst.MANAGE_OWNED_STUDIO, PermissionSlugConst.MANAGE_STUDIO)]
   [HttpGet("role-base/test")]
   public IActionResult Test()
   {

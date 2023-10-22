@@ -1,9 +1,12 @@
 namespace art_tattoo_be.Application.Controllers;
 
 using art_tattoo_be.Application.DTOs.Studio;
+using art_tattoo_be.Application.Middlewares;
 using art_tattoo_be.Application.Shared;
+using art_tattoo_be.Application.Shared.Constant;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Application.Shared.Handler;
+using art_tattoo_be.Core.Jwt;
 using art_tattoo_be.Domain.Media;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Domain.User;
@@ -115,6 +118,8 @@ public class StudioController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_STUDIO)]
   [HttpPost("create")]
   public async Task<IActionResult> CreateStudio([FromBody] CreateStudioReq req)
   {
@@ -174,6 +179,8 @@ public class StudioController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_STUDIO)]
   [HttpPut("/activate/{id}")]
   public async Task<IActionResult> ActivateStudio([FromRoute] Guid id)
   {
@@ -213,6 +220,8 @@ public class StudioController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_STUDIO, PermissionSlugConst.MANAGE_OWNED_STUDIO)]
   [HttpPut("{id}")]
   public async Task<IActionResult> UpdateStudio([FromBody] UpdateStudioReq req, [FromRoute] Guid id)
   {
@@ -269,6 +278,8 @@ public class StudioController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_STUDIO)]
   [HttpDelete("{id}")]
   public async Task<IActionResult> DeleteStudio([FromRoute] Guid id)
   {
@@ -341,12 +352,25 @@ public class StudioController : ControllerBase
       return ErrorResp.SomethingWrong(e.Message);
     }
   }
+
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_STUDIO, PermissionSlugConst.MANAGE_OWNED_STUDIO)]
   [HttpGet("user")]
   public async Task<IActionResult> GetStudioUsers([FromQuery] GetStudioUserQuery query)
   {
     _logger.LogInformation("Get Studio Users @req", query.StudioId);
     try
     {
+      if (HttpContext.Items["permission"] is string permission && permission == PermissionSlugConst.MANAGE_OWNED_STUDIO && HttpContext.Items["payload"] is Payload payload)
+      {
+        var isFromStudio = _studioRepo.IsStudioUserExist(payload.UserId, query.StudioId);
+
+        if (!isFromStudio)
+        {
+          return ErrorResp.Forbidden("You don't have permission to access this studio");
+        }
+      }
+
       var redisKey = $"studio-users:{query.StudioId}:{query.Page}:{query.PageSize}";
 
       if (query.SearchKeyword != null)
@@ -387,12 +411,24 @@ public class StudioController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_STUDIO, PermissionSlugConst.MANAGE_OWNED_STUDIO)]
   [HttpGet("user/{id}")]
   public async Task<IActionResult> GetStudioUserById([FromRoute] Guid id)
   {
     _logger.LogInformation("Get Studio User @req", id);
     try
     {
+      if (HttpContext.Items["permission"] is string permission && permission == PermissionSlugConst.MANAGE_OWNED_STUDIO && HttpContext.Items["payload"] is Payload payload)
+      {
+        var studioId = _studioRepo.GetStudioIdByUserId(payload.UserId);
+        var isFromStudio = _studioRepo.IsStudioUserExist(payload.UserId, studioId);
+
+        if (!isFromStudio)
+        {
+          return ErrorResp.Forbidden("You don't have permission to access this studio");
+        }
+      }
       var redisKey = $"studio-user:{id}";
 
       var studioUserCache = await _cacheService.Get<StudioUserDto>(redisKey);
@@ -421,10 +457,21 @@ public class StudioController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_STUDIO, PermissionSlugConst.MANAGE_OWNED_STUDIO)]
   [HttpPost("create/user")]
   public async Task<IActionResult> CreateStudioUser([FromBody] CreateStudioUser req)
   {
     _logger.LogInformation("Create Studio User");
+    if (HttpContext.Items["permission"] is string permission && permission == PermissionSlugConst.MANAGE_OWNED_STUDIO && HttpContext.Items["payload"] is Payload payload)
+    {
+      var isFromStudio = _studioRepo.IsStudioUserExist(payload.UserId, req.StudioId);
+
+      if (!isFromStudio)
+      {
+        return ErrorResp.Forbidden("You don't have permission to access this studio");
+      }
+    }
 
     try
     {
@@ -481,6 +528,8 @@ public class StudioController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_STUDIO, PermissionSlugConst.MANAGE_OWNED_STUDIO)]
   [HttpPut("user/{id}")]
   public async Task<IActionResult> UpdateStudioUser([FromRoute] Guid id, [FromBody] UpdateStudioUserReq req)
   {
@@ -488,10 +537,15 @@ public class StudioController : ControllerBase
 
     try
     {
-      var studioUser = _studioRepo.GetStudioUser(id);
-      if (studioUser == null)
+      if (HttpContext.Items["permission"] is string permission && permission == PermissionSlugConst.MANAGE_OWNED_STUDIO && HttpContext.Items["payload"] is Payload payload)
       {
-        return ErrorResp.NotFound("Studio User Not found");
+        var studioId = _studioRepo.GetStudioIdByUserId(payload.UserId);
+        var isFromStudio = _studioRepo.IsStudioUserExist(payload.UserId, studioId);
+
+        if (!isFromStudio)
+        {
+          return ErrorResp.Forbidden("You don't have permission to access this studio");
+        }
       }
 
       var result = _studioRepo.UpdateStudioUser(id, req);
@@ -517,6 +571,8 @@ public class StudioController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_STUDIO, PermissionSlugConst.MANAGE_OWNED_STUDIO)]
   [HttpDelete("user/{id}")]
   public async Task<IActionResult> DeleteStudioUser([FromRoute] Guid id)
   {
@@ -524,7 +580,21 @@ public class StudioController : ControllerBase
 
     try
     {
-      var result = _studioRepo.DeleteStudioUser(id);
+      var studioUser = _studioRepo.GetStudioUser(id);
+      if (studioUser == null)
+      {
+        return ErrorResp.NotFound("Studio User Not found");
+      }
+      if (HttpContext.Items["permission"] is string permission && permission == PermissionSlugConst.MANAGE_OWNED_STUDIO && HttpContext.Items["payload"] is Payload payload)
+      {
+        var isFromStudio = _studioRepo.IsStudioUserExist(payload.UserId, studioUser.StudioId);
+
+        if (!isFromStudio || studioUser.User.RoleId == RoleConst.STUDIO_MANAGER_ID)
+        {
+          return ErrorResp.Forbidden("You don't have permission to access this studio");
+        }
+      }
+      var result = _studioRepo.DeleteStudioUser(studioUser.UserId);
 
       if (result > 0)
       {

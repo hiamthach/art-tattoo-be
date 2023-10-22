@@ -25,7 +25,7 @@ public class User
   public DateTime LastLoginAt { get; set; }
 
   public Role Role { get; set; } = null!;
-  public StudioUser StudioUser { get; set; } = null!;
+  public List<StudioUser> StudioUsers { get; set; } = null!;
   public List<Testimonial> Testimonials { get; set; } = new();
   public List<Invoice> Invoices { get; set; } = new();
   public List<Media> ListMedia { get; set; } = new();

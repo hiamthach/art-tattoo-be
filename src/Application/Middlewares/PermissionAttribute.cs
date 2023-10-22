@@ -31,7 +31,7 @@ public class PermissionAttribute : Attribute, IAuthorizationFilter
     var cacheService = serviceProvider.GetService<ICacheService>();
     try
     {
-      var isForbidden = false;
+      var isForbidden = true;
       var payload = context.HttpContext.Items["payload"] as Payload;
 
       if (payload != null && repo != null)
@@ -45,9 +45,10 @@ public class PermissionAttribute : Attribute, IAuthorizationFilter
           {
             for (int i = 0; i < _permissions.Length; i++)
             {
-              if (!rolePermissionsCache.Contains(_permissions[i]))
+              if (rolePermissionsCache.Contains(_permissions[i]))
               {
-                isForbidden = true;
+                isForbidden = false;
+                context.HttpContext.Items["permission"] = _permissions[i];
                 break;
               }
             }
@@ -63,14 +64,11 @@ public class PermissionAttribute : Attribute, IAuthorizationFilter
               {
                 if (!rolePermissions.Contains(_permissions[i]))
                 {
-                  isForbidden = true;
+                  isForbidden = false;
+                  context.HttpContext.Items["permission"] = _permissions[i];
                   break;
                 }
               }
-            }
-            else
-            {
-              isForbidden = true;
             }
           }
         }
@@ -85,10 +83,6 @@ public class PermissionAttribute : Attribute, IAuthorizationFilter
         context.HttpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
         context.Result = ErrorResp.Forbidden("Permission denied");
         return;
-      }
-      else
-      {
-        context.HttpContext.Items["permissions"] = _permissions;
       }
     }
     catch (Exception)
