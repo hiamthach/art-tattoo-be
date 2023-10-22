@@ -62,7 +62,7 @@ public class PermissionAttribute : Attribute, IAuthorizationFilter
 
               for (int i = 0; i < _permissions.Length; i++)
               {
-                if (!rolePermissions.Contains(_permissions[i]))
+                if (rolePermissions.Contains(_permissions[i]))
                 {
                   isForbidden = false;
                   context.HttpContext.Items["permission"] = _permissions[i];
