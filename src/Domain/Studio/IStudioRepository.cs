@@ -7,10 +7,11 @@ public interface IStudioRepository
 {
   int Count();
   bool IsExist(Guid id);
-  bool IsStudioUserExist(Guid userId, Guid studioId);
+  bool IsStudioUserExist(Guid userId);
   Task<Studio?> GetAsync(Guid id);
   StudioUser? GetStudioUser(Guid id);
   IEnumerable<Studio> GetStudios();
+  IEnumerable<StudioUser> GetStudioArtist(Guid studioId);
   StudioUserList GetStudioUsers(GetStudioUserQuery req);
   StudioList GetStudioPages(GetStudioQuery req);
   Task<int> CreateAsync(Studio studio);

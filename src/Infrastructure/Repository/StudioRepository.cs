@@ -75,6 +75,18 @@ public class StudioRepository : IStudioRepository
     .FirstOrDefaultAsync(stu => stu.Id == id);
   }
 
+  public IEnumerable<StudioUser> GetStudioArtist(Guid studioId)
+  {
+    return _dbContext.StudioUsers
+    .Include(user => user.User)
+    .Where(user => user.StudioId == studioId)
+    .Where(user => user.User.RoleId == RoleConst.ARTIST_ID)
+    .Where(user => user.UserId != Guid.Parse(UserConst.USER_DELETED))
+    .Where(user => user.IsDisabled == false)
+    .OrderByDescending(user => user.CreatedAt)
+    .ToList();
+  }
+
   public StudioList GetStudioPages(GetStudioQuery req)
   {
     // Init maximum north, east, south, west
@@ -189,9 +201,9 @@ public class StudioRepository : IStudioRepository
     return _dbContext.Studios.Any(stu => stu.Id == id);
   }
 
-  public bool IsStudioUserExist(Guid userId, Guid studioId)
+  public bool IsStudioUserExist(Guid userId)
   {
-    return _dbContext.StudioUsers.Any(stu => stu.UserId == userId && stu.StudioId == studioId);
+    return _dbContext.StudioUsers.Any(stu => stu.UserId == userId);
   }
 
   public int Update(Studio studio)

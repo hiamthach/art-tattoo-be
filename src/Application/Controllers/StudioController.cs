@@ -308,6 +308,39 @@ public class StudioController : ControllerBase
     }
   }
 
+  [HttpGet("artists")]
+  public async Task<IActionResult> GetStudioArtists([FromQuery] Guid studioId)
+  {
+    _logger.LogInformation("Get Studio Artists @req", studioId);
+    try
+    {
+      var redisKey = $"studio-users:artists:{studioId}";
+
+      var studioArtistsCache = await _cacheService.Get<List<StudioUserDto>>(redisKey);
+
+      if (studioArtistsCache != null)
+      {
+        return Ok(studioArtistsCache);
+      }
+
+      var studioArtists = _studioRepo.GetStudioArtist(studioId);
+
+      if (studioArtists == null)
+      {
+        return ErrorResp.NotFound("Studio Artists Not found");
+      }
+
+      var studioArtistsDto = _mapper.Map<List<StudioUserDto>>(studioArtists);
+
+      await _cacheService.Set(redisKey, studioArtistsDto);
+
+      return Ok(studioArtistsDto);
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
   [HttpGet("user")]
   public async Task<IActionResult> GetStudioUsers([FromQuery] GetStudioUserQuery query)
   {
@@ -411,7 +444,7 @@ public class StudioController : ControllerBase
       }
 
       // check studio user exist
-      var studioUserExist = _studioRepo.IsStudioUserExist(user.Id, req.StudioId);
+      var studioUserExist = _studioRepo.IsStudioUserExist(user.Id);
       if (studioUserExist)
       {
         return ErrorResp.BadRequest("Studio User Exist");
