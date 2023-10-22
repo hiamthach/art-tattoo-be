@@ -33,8 +33,16 @@ public class StudioRepository : IStudioRepository
     return await _dbContext.SaveChangesAsync();
   }
 
-  public async Task<int> CreateStudioUserAsync(StudioUser studioUser)
+  public async Task<int> CreateStudioUserAsync(StudioUser studioUser, int roleId)
   {
+    var user = await _dbContext.Users.FindAsync(studioUser.UserId);
+
+    if (user == null)
+    {
+      return 0;
+    }
+    user.RoleId = roleId;
+
     await _dbContext.StudioUsers.AddAsync(studioUser);
 
     return await _dbContext.SaveChangesAsync();
@@ -45,6 +53,16 @@ public class StudioRepository : IStudioRepository
     var studio = _dbContext.Studios.Find(id) ?? throw new Exception("Studio not found");
 
     _dbContext.Remove(studio);
+
+    return _dbContext.SaveChanges();
+  }
+
+  public int DeleteStudioUser(Guid id)
+  {
+    var studioUser = _dbContext.StudioUsers.FirstOrDefault(s => s.UserId == id) ?? throw new Exception("Studio user not found");
+
+    studioUser.IsDisabled = true;
+    studioUser.UserId = Guid.Parse(UserConst.USER_DELETED);
 
     return _dbContext.SaveChanges();
   }
@@ -124,17 +142,56 @@ public class StudioRepository : IStudioRepository
     return _dbContext.Studios.ToList();
   }
 
-  public IEnumerable<StudioUser> GetStudioUsers(Guid studioId)
+  public StudioUser? GetStudioUser(Guid id)
   {
     return _dbContext.StudioUsers
     .Include(stu => stu.User)
-    .Where(stu => stu.StudioId == studioId)
+    .FirstOrDefault(stu => stu.Id == id);
+  }
+
+  public StudioUserList GetStudioUsers(GetStudioUserQuery req)
+  {
+    string searchKeyword = req.SearchKeyword ?? "";
+
+    var query = _dbContext.StudioUsers
+    .Include(user => user.User)
+    .Where(user => user.StudioId == req.StudioId)
+    .Where(user => user.UserId != Guid.Parse(UserConst.USER_DELETED))
+    .Where(user => user.User.FullName.Contains(searchKeyword) || user.User.Email.Contains(searchKeyword));
+
+    int totalCount = query.Count();
+
+    var studioUsers = query
+    .Select(user => new StudioUser
+    {
+      Id = user.Id,
+      StudioId = user.StudioId,
+      UserId = user.UserId,
+      IsDisabled = user.IsDisabled,
+      CreatedAt = user.CreatedAt,
+      UpdatedAt = user.UpdatedAt,
+      User = user.User,
+    })
+    .OrderByDescending(user => user.CreatedAt)
+    .Skip(req.Page * req.PageSize)
+    .Take(req.PageSize)
     .ToList();
+
+    return new StudioUserList
+    {
+      Users = studioUsers,
+      TotalCount = totalCount
+    };
   }
 
   public bool IsExist(Guid id)
   {
     return _dbContext.Studios.Any(stu => stu.Id == id);
+  }
+
+  public bool IsStudioUserExist(Guid userId, Guid studioId)
+  {
+    return _dbContext.StudioUsers.Any(stu => stu.UserId == userId && stu.StudioId == studioId);
   }
 
   public int Update(Studio studio)
@@ -162,10 +219,16 @@ public class StudioRepository : IStudioRepository
     return _dbContext.SaveChanges();
   }
 
-  public int UpdateStudioUserStatus(Guid id, bool status)
+  public int UpdateStudioUser(Guid id, UpdateStudioUserReq req)
   {
     var studioUser = _dbContext.StudioUsers.Find(id) ?? throw new Exception("Studio user not found");
-    studioUser.IsDisabled = status;
+    studioUser.IsDisabled = req.IsDisabled;
+
+    if (req.RoleId != null)
+    {
+      studioUser.User.RoleId = req.RoleId.Value;
+    }
+
     _dbContext.StudioUsers.Update(studioUser);
     return _dbContext.SaveChanges();
   }

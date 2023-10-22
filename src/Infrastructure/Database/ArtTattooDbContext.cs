@@ -52,12 +52,12 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.HasIndex(e => e.Name).IsUnique();
       // add default record
       entity.HasData(
-        new Role { Id = RoleConst.GetRoleId(RoleConst.ADMIN), Name = RoleConst.ADMIN, Description = "Admin" },
-        new Role { Id = RoleConst.GetRoleId(RoleConst.SYSTEM_STAFF), Name = RoleConst.SYSTEM_STAFF, Description = "System Staff" },
-        new Role { Id = RoleConst.GetRoleId(RoleConst.STUDIO_MANAGER), Name = RoleConst.STUDIO_MANAGER, Description = "Studio Manager" },
-        new Role { Id = RoleConst.GetRoleId(RoleConst.STUDIO_STAFF), Name = RoleConst.STUDIO_STAFF, Description = "Studio Staff" },
-        new Role { Id = RoleConst.GetRoleId(RoleConst.ARTIST), Name = RoleConst.ARTIST, Description = "Studio Artist" },
-        new Role { Id = RoleConst.GetRoleId(RoleConst.MEMBER), Name = RoleConst.MEMBER, Description = "Member" }
+        new Role { Id = RoleConst.ADMIN_ID, Name = RoleConst.ADMIN, Description = "Admin" },
+        new Role { Id = RoleConst.SYSTEM_STAFF_ID, Name = RoleConst.SYSTEM_STAFF, Description = "System Staff" },
+        new Role { Id = RoleConst.STUDIO_MANAGER_ID, Name = RoleConst.STUDIO_MANAGER, Description = "Studio Manager" },
+        new Role { Id = RoleConst.STUDIO_STAFF_ID, Name = RoleConst.STUDIO_STAFF, Description = "Studio Staff" },
+        new Role { Id = RoleConst.ARTIST_ID, Name = RoleConst.ARTIST, Description = "Studio Artist" },
+        new Role { Id = RoleConst.MEMBER_ID, Name = RoleConst.MEMBER, Description = "Member" }
       );
     });
 
@@ -120,11 +120,21 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.HasData(
         new User
         {
-          Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-          Email = "admin@arttattoo.com",
+          Id = Guid.Parse("00000000-0000-0000-0000-000000012345"),
+          Email = "arttattoolover@gmail.com",
           Password = CryptoService.HashPassword("ArtTattooLover@@"),
           FullName = "Admin Art Tattoo Lover",
           RoleId = RoleConst.GetRoleId(RoleConst.ADMIN),
+        }
+      );
+      entity.HasData(
+        new User
+        {
+          Id = Guid.Parse(UserConst.USER_DELETED),
+          Email = "",
+          Password = "",
+          FullName = "Deleted User",
+          RoleId = RoleConst.GetRoleId(RoleConst.MEMBER),
         }
       );
     });

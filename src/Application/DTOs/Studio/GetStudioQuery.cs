@@ -14,3 +14,9 @@ public class GetStudioQuery : PaginationReq
   public ViewPort? ViewPortSW { get; set; }
   public string? SearchKeyword { get; set; } = null!;
 }
+
+public class GetStudioUserQuery : PaginationReq
+{
+  public Guid StudioId { get; set; }
+  public string? SearchKeyword { get; set; } = null!;
+}

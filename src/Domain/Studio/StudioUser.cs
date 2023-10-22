@@ -18,3 +18,9 @@ public class StudioUser
   public List<Shift> Shifts { get; set; } = new();
   public List<Appointment> Appointments { get; set; } = new();
 }
+
+public class StudioUserList
+{
+  public IEnumerable<StudioUser> Users { get; set; } = new List<StudioUser>();
+  public int TotalCount { get; set; }
+}
