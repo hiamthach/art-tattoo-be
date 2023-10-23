@@ -34,7 +34,7 @@ namespace art_tattoo_be.src.Application.Controllers
             _stuserRepo = new StudioServiceRepository(dbContext);
             _mapper = mapper;
             _cateRepo = new CategoryRepository(dbContext);
-            _stuRepo = new StudioRepository(mapper, dbContext);
+            _stuRepo = new StudioRepository(dbContext);
         }
         [HttpGet]
         public IActionResult GetAll()
