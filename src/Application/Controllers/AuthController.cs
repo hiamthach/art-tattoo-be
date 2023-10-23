@@ -15,6 +15,7 @@ using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Application.Shared;
 using art_tattoo_be.Application.Middlewares;
 using art_tattoo_be.Core.Mail;
+using art_tattoo_be.Domain.RoleBase;
 
 [Produces("application/json")]
 [ApiController]
@@ -26,26 +27,44 @@ public class AuthController : ControllerBase
   private readonly ICacheService _cacheService;
   private readonly IMailService _mailService;
   private readonly IUserRepository _userRepo;
+  private readonly IRoleBaseRepository _roleBaseRepo;
 
   public AuthController(ILogger<AuthController> logger, IJwtService jwtService, ArtTattooDbContext dbContext, ICacheService cacheService, IMailService mailService)
   {
     _logger = logger;
     _jwtService = jwtService;
     _userRepo = new UserRepository(dbContext);
+    _roleBaseRepo = new RoleBaseRepository(dbContext);
     _cacheService = cacheService;
     _mailService = mailService;
   }
 
   [Protected]
   [HttpGet("session")]
-  public IActionResult GetSession()
+  public async Task<IActionResult> GetSession()
   {
     _logger.LogInformation("GetSession");
     try
     {
-      var payload = HttpContext.Items["payload"] as Payload;
+      if (HttpContext.Items["payload"] is not Payload payload)
+      {
+        return ErrorResp.Unauthorized("Invalid token");
+      }
+      var permissionKey = $"roles:{payload.RoleId}:permissions";
+      var permissions = await _cacheService.Get<List<string>>(permissionKey);
+      if (permissions == null)
+      {
+        permissions = _roleBaseRepo.GetRolePermissionSlugs(payload.RoleId).ToList();
+        await _cacheService.Set(permissionKey, permissions);
+      }
 
-      return Ok(payload);
+      return Ok(new
+      {
+        UserId = payload.UserId,
+        RoleId = payload.RoleId,
+        SessionId = payload.SessionId,
+        Permissions = permissions
+      });
     }
     catch (Exception e)
     {
