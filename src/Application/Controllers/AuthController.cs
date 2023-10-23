@@ -16,6 +16,7 @@ using art_tattoo_be.Application.Shared;
 using art_tattoo_be.Application.Middlewares;
 using art_tattoo_be.Core.Mail;
 using art_tattoo_be.Domain.RoleBase;
+using art_tattoo_be.Domain.Studio;
 
 [Produces("application/json")]
 [ApiController]
@@ -28,6 +29,7 @@ public class AuthController : ControllerBase
   private readonly IMailService _mailService;
   private readonly IUserRepository _userRepo;
   private readonly IRoleBaseRepository _roleBaseRepo;
+  private readonly IStudioRepository _studioRepo;
 
   public AuthController(ILogger<AuthController> logger, IJwtService jwtService, ArtTattooDbContext dbContext, ICacheService cacheService, IMailService mailService)
   {
@@ -35,6 +37,7 @@ public class AuthController : ControllerBase
     _jwtService = jwtService;
     _userRepo = new UserRepository(dbContext);
     _roleBaseRepo = new RoleBaseRepository(dbContext);
+    _studioRepo = new StudioRepository(dbContext);
     _cacheService = cacheService;
     _mailService = mailService;
   }
@@ -58,12 +61,44 @@ public class AuthController : ControllerBase
         await _cacheService.Set(permissionKey, permissions);
       }
 
+      var studioUserKey = $"studio-user:{payload.UserId}:studio";
+      var studio = await _cacheService.Get<string>(studioUserKey);
+
+      if (studio != null && studio != Guid.Empty.ToString())
+      {
+        return Ok(new
+        {
+          UserId = payload.UserId,
+          RoleId = payload.RoleId,
+          SessionId = payload.SessionId,
+          Permissions = permissions,
+          StudioId = studio
+        });
+      }
+      else
+      {
+        var studioId = _studioRepo.GetStudioIdByUserId(payload.UserId);
+
+        if (studioId != Guid.Empty)
+        {
+          await _cacheService.Set(studioUserKey, studioId);
+          return Ok(new
+          {
+            UserId = payload.UserId,
+            RoleId = payload.RoleId,
+            SessionId = payload.SessionId,
+            Permissions = permissions,
+            StudioId = studioId
+          });
+        }
+      }
+
       return Ok(new
       {
         UserId = payload.UserId,
         RoleId = payload.RoleId,
         SessionId = payload.SessionId,
-        Permissions = permissions
+        Permissions = permissions,
       });
     }
     catch (Exception e)
@@ -442,5 +477,19 @@ public class AuthController : ControllerBase
     // Convert the character array to a string
     string otp = new(otpArray);
     return otp;
+  }
+}
+
+internal interface IStudioUserRepository
+{
+}
+
+internal class StudioUserRepository
+{
+  private ArtTattooDbContext dbContext;
+
+  public StudioUserRepository(ArtTattooDbContext dbContext)
+  {
+    this.dbContext = dbContext;
   }
 }
