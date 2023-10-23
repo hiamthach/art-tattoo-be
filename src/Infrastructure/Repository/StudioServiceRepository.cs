@@ -52,7 +52,6 @@ namespace art_tattoo_be.src.Infrastructure.Repository
       int totalCount = query.Count();
 
       var studioService = query
-      .Include(stuser => stuser.Studio)
       .Include(stuser => stuser.Category)
       .Select(stuser => new StudioService
       {
@@ -64,7 +63,6 @@ namespace art_tattoo_be.src.Infrastructure.Repository
         MinPrice = stuser.MinPrice,
         MaxPrice = stuser.MaxPrice,
         Discount = stuser.Discount,
-        Studio = stuser.Studio,
         Category = stuser.Category
       })
       .OrderByDescending(stuser => stuser.Name)

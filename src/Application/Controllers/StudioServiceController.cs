@@ -13,6 +13,7 @@ using art_tattoo_be.src.Application.DTOs.StudioService;
 using art_tattoo_be.src.Domain.Studio;
 using art_tattoo_be.src.Infrastructure.Repository;
 using AutoMapper;
+using Azure;
 using Microsoft.AspNetCore.Mvc;
 
 namespace art_tattoo_be.src.Application.Controllers
@@ -36,25 +37,29 @@ namespace art_tattoo_be.src.Application.Controllers
             _cateRepo = new CategoryRepository(dbContext);
             _stuRepo = new StudioRepository(mapper, dbContext);
         }
-        [HttpPost]
+        [HttpPost()]
         public IActionResult GetAll([FromBody] GetStudioServiceQuery req)
         {
+            _logger.LogInformation("Get All Studio Service");
             try
             {
+                StudioServiceResp resp = new()
+                {
+                    Page = req.Page,
+                    PageSize = req.PageSize
+                };
 
+                var studioServices = _stuserRepo.GetStudioServicePages(req);
+                resp.Total = studioServices.TotalCount;
+                resp.Data = _mapper.Map<List<StudioServiceDto>>(studioServices.StudioServices);
+                return Ok(resp);
             }
             catch (Exception e)
             {
                 return ErrorResp.SomethingWrong(e.Message);
             }
-            _logger.LogInformation("Get Studio Service:");
-            var StudioServiceDto = _mapper.Map<List<StudioServiceDto>>(_stuserRepo.GetAll());
-            StudioServiceDto.ForEach(s =>
-            {
-                s.CategoryDescription = _cateRepo.GetById(s.CategoryId).Description;
-                s.CategoryImage = _cateRepo.GetById(s.CategoryId).Image;
-            });
-            return Ok(StudioServiceDto);
+            
+            
         }
         [HttpGet("{id}")]
         public IActionResult GetById([FromRoute] Guid id)
@@ -63,8 +68,6 @@ namespace art_tattoo_be.src.Application.Controllers
             {
                 _logger.LogInformation("Get Studio Service by @id: ", id);
                 var StudioServiceDto = _mapper.Map<StudioServiceDto>(_stuserRepo.GetById(id));
-                StudioServiceDto.CategoryDescription = _cateRepo.GetById(StudioServiceDto.CategoryId).Description;
-                StudioServiceDto.CategoryImage = _cateRepo.GetById(StudioServiceDto.CategoryId).Image;
                 if (StudioServiceDto == null)
                 {
                     return ErrorResp.NotFound("Studio Service not found");
@@ -79,7 +82,7 @@ namespace art_tattoo_be.src.Application.Controllers
                 return ErrorResp.SomethingWrong(e.Message);
             }
         }
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> CreateStudioService([FromBody] CreateStuioServiceReq body)
         {
             _logger.LogInformation("Create Studio Service: @body", body);
