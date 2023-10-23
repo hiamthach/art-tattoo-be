@@ -127,9 +127,15 @@ public class UserController : ControllerBase
         return ErrorResp.NotFound("User not found");
       }
 
+      var isForceLogout = false;
+
       if (req.RoleId == null)
       {
         req.RoleId = user.RoleId;
+      }
+      else
+      {
+        isForceLogout = true;
       }
 
       var userMapped = _mapper.Map(req, user);
@@ -139,6 +145,10 @@ public class UserController : ControllerBase
       if (result > 0)
       {
         await _cacheService.ClearWithPattern("users");
+        if (isForceLogout)
+        {
+          await _cacheService.ForceLogout(id);
+        }
         return Ok(new BaseResp { Message = "Update user success", Success = true });
       }
       else
