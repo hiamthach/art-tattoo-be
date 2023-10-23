@@ -32,6 +32,128 @@ public class UserController : ControllerBase
   }
 
   [Protected]
+  [Permission(PermissionSlugConst.MANAGE_USERS)]
+  [HttpGet]
+  public async Task<IActionResult> GetUsers([FromQuery] GetUserQuery req)
+  {
+    _logger.LogInformation("Get Users");
+
+    try
+    {
+      var redisKey = $"users:{req.Page}:{req.PageSize}";
+
+      if (req.SearchKeyword != null)
+      {
+        redisKey += $"?search={req.SearchKeyword}";
+      }
+
+      var usersCache = await _cacheService.Get<UserResp>(redisKey);
+      if (usersCache != null)
+      {
+        return Ok(usersCache);
+      }
+
+      var users = _userRepo.GetUsers(req);
+
+      var usersDto = _mapper.Map<List<UserDto>>(users.Users);
+
+      var usersResp = new UserResp
+      {
+        Data = usersDto,
+        Page = req.Page,
+        PageSize = req.PageSize,
+        Total = users.TotalCount
+      };
+
+      await _cacheService.Set(redisKey, usersResp);
+      return Ok(usersResp);
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
+
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_USERS)]
+  [HttpPost]
+  public async Task<IActionResult> CreateUser([FromBody] CreateUserReq req)
+  {
+    _logger.LogInformation($"Create User {req.Email}");
+
+    try
+    {
+      var user = _userRepo.GetUserByEmail(req.Email);
+      if (user != null)
+      {
+        return ErrorResp.BadRequest("Email already exists");
+      }
+
+      var userMapped = _mapper.Map<User>(req);
+
+      userMapped.Password = CryptoService.HashPassword(req.Password);
+
+      var result = _userRepo.CreateUser(userMapped);
+
+      if (result > 0)
+      {
+        await _cacheService.ClearWithPattern("users");
+        return Ok(new BaseResp { Message = "Create user success", Success = true });
+      }
+      else
+      {
+        return ErrorResp.SomethingWrong("Create user failed");
+      }
+    }
+    catch (Exception e)
+    {
+      _logger.LogError(e.Message);
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
+
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_USERS)]
+  [HttpPut("{id}")]
+  public async Task<IActionResult> UpdateUser([FromRoute] Guid id, [FromBody] UpdateUserReq req)
+  {
+    _logger.LogInformation($"Update User {id}");
+
+    try
+    {
+      var user = _userRepo.GetUserById(id);
+      if (user == null)
+      {
+        return ErrorResp.NotFound("User not found");
+      }
+
+      if (req.RoleId == null)
+      {
+        req.RoleId = user.RoleId;
+      }
+
+      var userMapped = _mapper.Map(req, user);
+
+      var result = _userRepo.UpdateUser(userMapped);
+
+      if (result > 0)
+      {
+        await _cacheService.ClearWithPattern("users");
+        return Ok(new BaseResp { Message = "Update user success", Success = true });
+      }
+      else
+      {
+        return ErrorResp.SomethingWrong("Update user failed");
+      }
+    }
+    catch (Exception e)
+    {
+      _logger.LogError(e.Message);
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
+
+  [Protected]
   [HttpGet("profile")]
   public async Task<IActionResult> GetProfile()
   {
@@ -73,7 +195,7 @@ public class UserController : ControllerBase
 
   [Protected]
   [HttpPut("profile")]
-  public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserReq req)
+  public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserProfileReq req)
   {
 
     if (HttpContext.Items["payload"] is not Payload payload)
@@ -161,4 +283,5 @@ public class UserController : ControllerBase
       return ErrorResp.SomethingWrong(e.Message);
     }
   }
+
 }

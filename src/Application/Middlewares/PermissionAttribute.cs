@@ -11,11 +11,11 @@ using art_tattoo_be.Infrastructure.Cache;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
 public class PermissionAttribute : Attribute, IAuthorizationFilter
 {
-  private readonly string _permission;
+  private readonly string[] _permissions;
 
-  public PermissionAttribute(string permission)
+  public PermissionAttribute(params string[] permission)
   {
-    _permission = permission;
+    _permissions = permission;
   }
 
   public void OnAuthorization(AuthorizationFilterContext context)
@@ -31,7 +31,7 @@ public class PermissionAttribute : Attribute, IAuthorizationFilter
     var cacheService = serviceProvider.GetService<ICacheService>();
     try
     {
-      var isForbidden = false;
+      var isForbidden = true;
       var payload = context.HttpContext.Items["payload"] as Payload;
 
       if (payload != null && repo != null)
@@ -43,9 +43,14 @@ public class PermissionAttribute : Attribute, IAuthorizationFilter
 
           if (rolePermissionsCache != null)
           {
-            if (!rolePermissionsCache.Contains(_permission))
+            for (int i = 0; i < _permissions.Length; i++)
             {
-              isForbidden = true;
+              if (rolePermissionsCache.Contains(_permissions[i]))
+              {
+                isForbidden = false;
+                context.HttpContext.Items["permission"] = _permissions[i];
+                break;
+              }
             }
           }
           else
@@ -54,14 +59,16 @@ public class PermissionAttribute : Attribute, IAuthorizationFilter
             if (rolePermissions != null)
             {
               await cacheService.Set(redisKey, rolePermissions, TimeSpan.FromDays(1));
-              if (!rolePermissions.Contains(_permission))
+
+              for (int i = 0; i < _permissions.Length; i++)
               {
-                isForbidden = true;
+                if (rolePermissions.Contains(_permissions[i]))
+                {
+                  isForbidden = false;
+                  context.HttpContext.Items["permission"] = _permissions[i];
+                  break;
+                }
               }
-            }
-            else
-            {
-              isForbidden = true;
             }
           }
         }
@@ -76,10 +83,6 @@ public class PermissionAttribute : Attribute, IAuthorizationFilter
         context.HttpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
         context.Result = ErrorResp.Forbidden("Permission denied");
         return;
-      }
-      else
-      {
-        context.HttpContext.Items["permission"] = _permission;
       }
     }
     catch (Exception)

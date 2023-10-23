@@ -1,5 +1,6 @@
 namespace art_tattoo_be.Application.DTOs.User;
 
+using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Domain.User;
 using AutoMapper;
 
@@ -13,6 +14,7 @@ public class UserDto
   public string? Avatar { get; set; }
   public DateTime? Birthday { get; set; }
   public int RoleId { get; set; }
+  public UserStatusEnum Status { get; set; }
 }
 
 public class UserProfile : Profile
@@ -23,5 +25,8 @@ public class UserProfile : Profile
     CreateMap<User, UserDto>();
     CreateMap<UpdateUserReq, User>()
       .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+    CreateMap<UpdateUserProfileReq, User>()
+      .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+    CreateMap<CreateUserReq, User>();
   }
 }

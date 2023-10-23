@@ -87,6 +87,12 @@ public class StudioRepository : IStudioRepository
     .ToList();
   }
 
+  public Guid GetStudioIdByUserId(Guid userId)
+  {
+    var studioUser = _dbContext.StudioUsers.FirstOrDefault(s => s.UserId == userId) ?? throw new Exception("Studio user not found");
+    return studioUser.StudioId;
+  }
+
   public StudioList GetStudioPages(GetStudioQuery req)
   {
     // Init maximum north, east, south, west
@@ -204,6 +210,11 @@ public class StudioRepository : IStudioRepository
   public bool IsStudioUserExist(Guid userId)
   {
     return _dbContext.StudioUsers.Any(stu => stu.UserId == userId);
+  }
+
+  public bool IsStudioUserExist(Guid userId, Guid studioId)
+  {
+    return _dbContext.StudioUsers.Any(stu => stu.UserId == userId && stu.StudioId == studioId);
   }
 
   public int Update(Studio studio)
