@@ -41,7 +41,9 @@ namespace art_tattoo_be.src.Infrastructure.Repository
 
     public StudioService GetById(Guid id)
     {
-      return _dbContext.StudioServices.Find(id) ?? throw new Exception("Studio Service not found");
+      var studioService = _dbContext.StudioServices.Find(id) ?? throw new Exception("Studio Service not found");
+      studioService.Category = _dbContext.Categories.Find(studioService.CategoryId) ?? throw new Exception("Category not found");
+      return studioService;
     }
 
     public StudioServiceList GetStudioServicePages(GetStudioServiceQuery req)

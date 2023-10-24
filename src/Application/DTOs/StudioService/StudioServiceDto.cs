@@ -20,13 +20,14 @@ namespace art_tattoo_be.src.Application.DTOs.StudioService
         public double MinPrice { get; set; }
         public double MaxPrice { get; set; }
         public double Discount { get; set; }
-        public Category Catogory {get;set;} = new();
+        public Category Catogory { get; set; } = new();
     }
 }
 public class StudioServiceProfile : Profile
 {
     public StudioServiceProfile()
     {
-        CreateMap<StudioService, StudioServiceDto>();
+        CreateMap<StudioService, StudioServiceDto>()
+    .ForMember(dest => dest.Catogory, opt => opt.MapFrom(src => src.Category));
     }
 }
