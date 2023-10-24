@@ -32,7 +32,7 @@ public class StudioController : ControllerBase
   {
     _logger = logger;
     _cacheService = cacheService;
-    _studioRepo = new StudioRepository(mapper, dbContext);
+    _studioRepo = new StudioRepository(dbContext);
     _userRepo = new UserRepository(dbContext);
     _mapper = mapper;
   }

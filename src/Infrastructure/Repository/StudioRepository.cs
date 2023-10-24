@@ -3,7 +3,6 @@ using art_tattoo_be.Application.Shared.Constant;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Infrastructure.Database;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace art_tattoo_be.Infrastructure.Repository;
@@ -11,12 +10,10 @@ namespace art_tattoo_be.Infrastructure.Repository;
 public class StudioRepository : IStudioRepository
 {
   private readonly ArtTattooDbContext _dbContext;
-  private readonly IMapper _mapper;
 
-  public StudioRepository(IMapper mapper, ArtTattooDbContext dbContext)
+  public StudioRepository(ArtTattooDbContext dbContext)
   {
     _dbContext = dbContext;
-    _mapper = mapper;
   }
 
   public int Count()
@@ -89,8 +86,8 @@ public class StudioRepository : IStudioRepository
 
   public Guid GetStudioIdByUserId(Guid userId)
   {
-    var studioUser = _dbContext.StudioUsers.FirstOrDefault(s => s.UserId == userId) ?? throw new Exception("Studio user not found");
-    return studioUser.StudioId;
+    var studioUser = _dbContext.StudioUsers.FirstOrDefault(s => s.UserId == userId);
+    return studioUser != null ? studioUser.StudioId : Guid.Empty;
   }
 
   public StudioList GetStudioPages(GetStudioQuery req)

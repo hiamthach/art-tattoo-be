@@ -15,6 +15,8 @@ using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Application.Shared;
 using art_tattoo_be.Application.Middlewares;
 using art_tattoo_be.Core.Mail;
+using art_tattoo_be.Domain.RoleBase;
+using art_tattoo_be.Domain.Studio;
 
 [Produces("application/json")]
 [ApiController]
@@ -26,26 +28,78 @@ public class AuthController : ControllerBase
   private readonly ICacheService _cacheService;
   private readonly IMailService _mailService;
   private readonly IUserRepository _userRepo;
+  private readonly IRoleBaseRepository _roleBaseRepo;
+  private readonly IStudioRepository _studioRepo;
 
   public AuthController(ILogger<AuthController> logger, IJwtService jwtService, ArtTattooDbContext dbContext, ICacheService cacheService, IMailService mailService)
   {
     _logger = logger;
     _jwtService = jwtService;
     _userRepo = new UserRepository(dbContext);
+    _roleBaseRepo = new RoleBaseRepository(dbContext);
+    _studioRepo = new StudioRepository(dbContext);
     _cacheService = cacheService;
     _mailService = mailService;
   }
 
   [Protected]
   [HttpGet("session")]
-  public IActionResult GetSession()
+  public async Task<IActionResult> GetSession()
   {
     _logger.LogInformation("GetSession");
     try
     {
-      var payload = HttpContext.Items["payload"] as Payload;
+      if (HttpContext.Items["payload"] is not Payload payload)
+      {
+        return ErrorResp.Unauthorized("Invalid token");
+      }
+      var permissionKey = $"roles:{payload.RoleId}:permissions";
+      var permissions = await _cacheService.Get<List<string>>(permissionKey);
+      if (permissions == null)
+      {
+        permissions = _roleBaseRepo.GetRolePermissionSlugs(payload.RoleId).ToList();
+        await _cacheService.Set(permissionKey, permissions);
+      }
 
-      return Ok(payload);
+      var studioUserKey = $"studio-user:{payload.UserId}:studio";
+      var studio = await _cacheService.Get<string>(studioUserKey);
+
+      if (studio != null && studio != Guid.Empty.ToString())
+      {
+        return Ok(new
+        {
+          UserId = payload.UserId,
+          RoleId = payload.RoleId,
+          SessionId = payload.SessionId,
+          Permissions = permissions,
+          StudioId = studio
+        });
+      }
+      else
+      {
+        var studioId = _studioRepo.GetStudioIdByUserId(payload.UserId);
+
+        if (studioId != Guid.Empty)
+        {
+          await _cacheService.Set(studioUserKey, studioId);
+          return Ok(new
+          {
+            UserId = payload.UserId,
+            RoleId = payload.RoleId,
+            SessionId = payload.SessionId,
+            Permissions = permissions,
+            StudioId = studioId
+          });
+        }
+      }
+
+      return Ok(new
+      {
+        UserId = payload.UserId,
+        RoleId = payload.RoleId,
+        SessionId = payload.SessionId,
+        Permissions = permissions,
+      });
     }
     catch (Exception e)
     {
@@ -423,5 +477,19 @@ public class AuthController : ControllerBase
     // Convert the character array to a string
     string otp = new(otpArray);
     return otp;
+  }
+}
+
+internal interface IStudioUserRepository
+{
+}
+
+internal class StudioUserRepository
+{
+  private ArtTattooDbContext dbContext;
+
+  public StudioUserRepository(ArtTattooDbContext dbContext)
+  {
+    this.dbContext = dbContext;
   }
 }
