@@ -1,12 +1,12 @@
+using art_tattoo_be.Application.DTOs.Shift;
+
 namespace art_tattoo_be.Domain.Booking;
 
 public interface IShiftRepository
 {
-  Task<IEnumerable<Shift>> GetAllAsync();
-  Task<IEnumerable<Shift>> GetByDateAsync(DateTime date);
-  Task<IEnumerable<Shift>> GetByDateRangeAsync(DateTime start, DateTime end);
-  Task<Shift> GetByIdAsync(int id);
-  Task<Shift> CreateAsync(Shift shift);
-  Task<Shift> UpdateAsync(int id, Shift shift);
-  Task<Shift> DeleteAsync(int id);
+  IEnumerable<Shift> GetAllAsync(ShiftQuery query);
+  Task<Shift?> GetByIdAsync(Guid id);
+  Task<int> CreateAsync(Shift shift);
+  Task<int> UpdateAsync(Guid id, Shift shift);
+  Task<int> DeleteAsync(Guid id);
 }
