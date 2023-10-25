@@ -241,9 +241,10 @@ public class ArtTattooDbContext : IdentityDbContext
     {
       entity.ToTable("Shifts");
       entity.HasKey(e => e.Id);
-      entity.HasOne(e => e.Artist).WithMany(e => e.Shifts).HasForeignKey(e => e.ArtistId).IsRequired();
+      entity.HasMany(e => e.Artists).WithMany(e => e.Shifts);
+      entity.HasOne(e => e.Studio).WithMany(e => e.Shifts).HasForeignKey(e => e.StudioId).IsRequired().OnDelete(DeleteBehavior.Restrict);
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
-      entity.Property(e => e.ArtistId).IsRequired();
+      entity.Property(e => e.StudioId).IsRequired();
       entity.Property(e => e.Start).IsRequired();
       entity.Property(e => e.End).IsRequired();
       entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
