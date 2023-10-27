@@ -244,7 +244,6 @@ public class StudioController : ControllerBase
         {
           return new StudioWorkingTime
           {
-            Id = Guid.NewGuid(),
             StudioId = studioMapped.Id,
             DayOfWeek = w.DayOfWeek,
             OpenAt = w.OpenAt,
@@ -253,7 +252,30 @@ public class StudioController : ControllerBase
         }).ToList();
       }
 
-      var result = _studioRepo.Update(studioMapped);
+      var mediaList = new List<Media>();
+      mediaList.AddRange(studioMapped.ListMedia);
+      if (req.ListNewMedia != null)
+      {
+        var newMedia = req.ListNewMedia.Select(m =>
+        {
+          return new Media
+          {
+            Id = Guid.NewGuid(),
+            Url = m.Url,
+            Type = m.Type
+          };
+        }).ToList();
+
+        mediaList.AddRange(newMedia);
+      }
+
+      if (req.ListRemoveMedia != null)
+      {
+        var removeMedia = studioMapped.ListMedia.Where(m => req.ListRemoveMedia.Contains(m.Id.ToString())).ToList();
+        mediaList.RemoveAll(m => removeMedia.Select(m => m.Id).Contains(m.Id));
+      }
+
+      var result = _studioRepo.Update(studioMapped, mediaList);
 
       if (result > 0)
       {
@@ -617,3 +639,4 @@ public class StudioController : ControllerBase
     }
   }
 }
+
