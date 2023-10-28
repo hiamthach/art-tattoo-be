@@ -578,6 +578,7 @@ public class StudioController : ControllerBase
       {
         // clear cache
         await _cacheService.ClearWithPattern("studio-users");
+        await _cacheService.Remove($"studio-user:{id}");
         return Ok(new BaseResp
         {
           Message = "Update studio user successfully",

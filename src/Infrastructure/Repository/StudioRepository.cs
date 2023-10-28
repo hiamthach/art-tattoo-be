@@ -271,10 +271,10 @@ public class StudioRepository : IStudioRepository
 
   public int UpdateStudioUser(Guid id, UpdateStudioUserReq req)
   {
-    var studioUser = _dbContext.StudioUsers.Find(id) ?? throw new Exception("Studio user not found");
+    var studioUser = _dbContext.StudioUsers.Include(u => u.User).FirstOrDefault(s => s.Id == id) ?? throw new Exception("Studio user not found");
     studioUser.IsDisabled = req.IsDisabled;
 
-    if (req.RoleId != null)
+    if (req != null && req.RoleId != null)
     {
       studioUser.User.RoleId = req.RoleId.Value;
     }
