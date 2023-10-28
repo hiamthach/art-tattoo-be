@@ -22,6 +22,7 @@ public class ShiftRepository : IShiftRepository
       .Where(s => s.Start >= query.Start && s.End <= query.End)
       .Where(s => query.ArtistId == null || s.Artists.Any(a => a.Id == query.ArtistId))
       .Where(s => query.StudioId == null || s.StudioId == query.StudioId)
+      .OrderBy(s => s.Start)
       .ToList();
   }
 

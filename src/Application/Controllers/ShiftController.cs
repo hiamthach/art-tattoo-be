@@ -1,5 +1,7 @@
 using art_tattoo_be.Application.DTOs.Shift;
+using art_tattoo_be.Application.Shared;
 using art_tattoo_be.Application.Shared.Handler;
+using art_tattoo_be.Application.Shared.Helper;
 using art_tattoo_be.Domain.Booking;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Infrastructure.Cache;
@@ -7,6 +9,7 @@ using art_tattoo_be.Infrastructure.Database;
 using art_tattoo_be.Infrastructure.Repository;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Asn1.Cms;
 using Org.BouncyCastle.Ocsp;
 
 namespace art_tattoo_be.Application.Controllers;
@@ -42,16 +45,16 @@ public class ShiftController : ControllerBase
 
     try
     {
-      var redisKey = $"shifts:{query.Start}:{query.End}";
+      var redisKey = $"shifts:{query.Start.Ticks}:{query.End.Ticks}";
 
       if (query.ArtistId != null)
       {
-        redisKey += $":{query.ArtistId}";
+        redisKey += $":a_{query.ArtistId}";
       }
 
       if (query.StudioId != null)
       {
-        redisKey += $":{query.StudioId}";
+        redisKey += $":stu_{query.StudioId}";
       }
 
       var cachedShifts = await _cacheService.Get<IEnumerable<Shift>>(redisKey);
@@ -114,7 +117,11 @@ public class ShiftController : ControllerBase
       if (result > 0)
       {
         await _cacheService.ClearWithPattern("shifts");
-        return Ok(result);
+        return Ok(new BaseResp
+        {
+          Message = "Shift created successfully",
+          Success = true
+        });
       }
 
       return ErrorResp.SomethingWrong("Something went wrong");
@@ -123,22 +130,35 @@ public class ShiftController : ControllerBase
     {
       return ErrorResp.SomethingWrong(e.Message);
     }
-
   }
 
   [HttpPost("generate")]
-  public async Task<IActionResult> GenerateShifts(GenerateShift generateShift)
+  public async Task<IActionResult> GenerateShifts(GenerateShift req)
   {
     _logger.LogInformation("GenerateShifts");
     try
     {
-      var workingTimes = _studioRepo.GetStudioWorkingTime(generateShift.StudioId);
+      var workingTimes = _studioRepo.GetStudioWorkingTime(req.StudioId);
+      if (workingTimes.Count() == 0)
+      {
+        return ErrorResp.BadRequest("Studio has no working time");
+      }
 
       var shifts = new List<Shift>();
+      var today = DateTime.Today;
+      var tomorrow = today.AddDays(1);
+      var weekNumber = DateHelper.GetWeekNumber(tomorrow);
+
+      var redisWeekKey = $"shift-week:{req.StudioId}:{weekNumber}";
+
+      var checkWeekGenerated = await _cacheService.Get<bool>(redisWeekKey);
+      if (checkWeekGenerated == true)
+      {
+        return ErrorResp.BadRequest("Shifts for this week already generated");
+      }
+
       foreach (var workingTime in workingTimes)
       {
-        var today = DateTime.Today;
-        var tomorrow = today.AddDays(1);
         var daysUntilClose = (int)workingTime.DayOfWeek - (int)tomorrow.DayOfWeek;
         if (daysUntilClose < 0)
         {
@@ -151,13 +171,13 @@ public class ShiftController : ControllerBase
 
         while (shiftStart < closeAtDate)
         {
-          var shiftEnd = shiftStart + generateShift.ShiftDuration;
+          var shiftEnd = shiftStart + req.ShiftDuration;
           shifts.Add(new Shift
           {
             Id = Guid.NewGuid(),
             Start = shiftStart,
             End = shiftEnd,
-            StudioId = generateShift.StudioId
+            StudioId = req.StudioId
           });
           shiftStart = shiftEnd;
         }
@@ -167,8 +187,14 @@ public class ShiftController : ControllerBase
 
       if (result > 0)
       {
+        //   var weekNumber = DateHelper.GetWeekNumber();
+        await _cacheService.Set(redisWeekKey, true, TimeSpan.FromDays(7));
         await _cacheService.ClearWithPattern("shifts");
-        return Ok(result);
+        return Ok(new BaseResp
+        {
+          Message = "Shifts generated successfully",
+          Success = true
+        });
       }
 
       return ErrorResp.SomethingWrong("Something went wrong");
@@ -180,7 +206,41 @@ public class ShiftController : ControllerBase
 
   }
 
+  [HttpPut("{id}")]
+  public async Task<IActionResult> Update(Guid id, UpdateShift req)
+  {
+    _logger.LogInformation("Update");
+    try
+    {
+      var shift = await _shiftRepo.GetByIdAsync(id);
+      if (shift == null)
+      {
+        return ErrorResp.NotFound("Shift not found");
+      }
 
+      shift.Start = req.Start;
+      shift.End = req.End;
+
+      var result = await _shiftRepo.UpdateAsync(id, shift);
+
+      if (result > 0)
+      {
+        await _cacheService.Remove($"shift:{id}");
+        await _cacheService.ClearWithPattern("shifts");
+        return Ok(new BaseResp
+        {
+          Message = "Shift updated successfully",
+          Success = true
+        });
+      }
+
+      return ErrorResp.SomethingWrong("Something went wrong");
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
 
   [HttpDelete("{id}")]
   public async Task<IActionResult> Delete(Guid id)
