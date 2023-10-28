@@ -77,5 +77,11 @@ namespace art_tattoo_be.src.Infrastructure.Repository
         TotalCount = totalCount
       };
     }
+
+    public int UpddateStudioService(StudioService studioService)
+    {
+      _dbContext.Update(studioService);
+      return _dbContext.SaveChanges();
+    }
   }
 }

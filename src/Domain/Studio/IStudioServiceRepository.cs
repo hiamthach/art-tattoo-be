@@ -14,5 +14,6 @@ namespace art_tattoo_be.src.Domain.Studio
         int CreateStudioService(StudioService studioService);
         int DeleteStudioService(Guid id);
         StudioServiceList GetStudioServicePages(GetStudioServiceQuery req);
+        int UpddateStudioService(StudioService studioService);
     }
 }

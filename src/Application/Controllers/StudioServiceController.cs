@@ -15,6 +15,7 @@ using art_tattoo_be.src.Infrastructure.Repository;
 using AutoMapper;
 using Azure;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Client;
 
 namespace art_tattoo_be.src.Application.Controllers
 {
@@ -58,8 +59,8 @@ namespace art_tattoo_be.src.Application.Controllers
             {
                 return ErrorResp.SomethingWrong(e.Message);
             }
-            
-            
+
+
         }
         [HttpGet("{id}")]
         public IActionResult GetById([FromRoute] Guid id)
@@ -140,6 +141,37 @@ namespace art_tattoo_be.src.Application.Controllers
             catch (Exception e)
             {
                 _logger.LogError(e, "Error delete Studio Service");
+                return ErrorResp.SomethingWrong(e.Message);
+            }
+        }
+        [HttpPut("{id}")]
+        public IActionResult UpdateStudioService([FromBody] UpdateStudioServiceReq req, [FromRoute] Guid id)
+        {
+            _logger.LogInformation("Update Studio Service @id", id);
+            try
+            {
+                var studioService = _stuserRepo.GetById(id);
+                if (studioService == null)
+                {
+                    return ErrorResp.NotFound("Studio Service not found");
+                }
+                var studioServiceMapped = _mapper.Map(req, studioService);
+                var result = _stuserRepo.UpddateStudioService(studioServiceMapped);
+                if (result > 0)
+                {
+                    return Ok(new BaseResp
+                    {
+                        Message = "Update Studio Service successfully",
+                        Success = true
+                    });
+                }
+                else
+                {
+                    return ErrorResp.BadRequest("Update Studio Service failed");
+                }
+            }
+            catch (Exception e)
+            {
                 return ErrorResp.SomethingWrong(e.Message);
             }
         }
