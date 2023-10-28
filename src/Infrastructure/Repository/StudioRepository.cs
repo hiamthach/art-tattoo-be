@@ -274,9 +274,13 @@ public class StudioRepository : IStudioRepository
     var studioUser = _dbContext.StudioUsers.Include(u => u.User).FirstOrDefault(s => s.Id == id) ?? throw new Exception("Studio user not found");
     studioUser.IsDisabled = req.IsDisabled;
 
-    if (req != null && req.RoleId != null)
+    if (req != null && req.RoleId != null && studioUser.User.RoleId > RoleConst.SYSTEM_STAFF_ID)
     {
       studioUser.User.RoleId = req.RoleId.Value;
+    }
+    else
+    {
+      throw new Exception("Not permission to update role");
     }
 
     _dbContext.StudioUsers.Update(studioUser);
