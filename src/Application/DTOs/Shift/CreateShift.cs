@@ -6,3 +6,9 @@ public class CreateShift
   public DateTime End { get; set; }
   public Guid StudioId { get; set; }
 }
+
+public class GenerateShift
+{
+  public TimeSpan ShiftDuration { get; set; }
+  public Guid StudioId { get; set; }
+}

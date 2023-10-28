@@ -200,6 +200,11 @@ public class StudioRepository : IStudioRepository
     };
   }
 
+  public IEnumerable<StudioWorkingTime> GetStudioWorkingTime(Guid studioId)
+  {
+    return _dbContext.StudioWorkingTimes.Where(w => w.StudioId == studioId).ToList();
+  }
+
   public bool IsExist(Guid id)
   {
     return _dbContext.Studios.Any(stu => stu.Id == id);

@@ -53,4 +53,11 @@ public class ShiftRepository : IShiftRepository
 
     return _dbContext.SaveChangesAsync();
   }
+
+  public Task<int> CreateAsync(IEnumerable<Shift> shifts)
+  {
+    _dbContext.Shifts.AddRange(shifts);
+
+    return _dbContext.SaveChangesAsync();
+  }
 }

@@ -570,6 +570,8 @@ public class StudioController : ControllerBase
         }
       }
 
+
+
       var result = _studioRepo.UpdateStudioUser(id, req);
 
       if (result > 0)
