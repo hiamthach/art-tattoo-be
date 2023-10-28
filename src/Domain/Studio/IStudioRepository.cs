@@ -1,7 +1,8 @@
+namespace art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Application.DTOs.Studio;
 using art_tattoo_be.Application.Shared.Enum;
+using art_tattoo_be.Domain.Media;
 
-namespace art_tattoo_be.Domain.Studio;
 
 public interface IStudioRepository
 {
@@ -18,7 +19,7 @@ public interface IStudioRepository
   StudioList GetStudioPages(GetStudioQuery req);
   Task<int> CreateAsync(Studio studio);
   Task<int> CreateStudioUserAsync(StudioUser studioUser, int roleId);
-  int Update(Studio studio);
+  int Update(Studio studio, IEnumerable<Media> mediaList);
   int UpdateStudioStatus(Guid id, StudioStatusEnum status);
   int UpdateStudioUser(Guid id, UpdateStudioUserReq req);
   int DeleteStudio(Guid id);
