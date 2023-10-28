@@ -35,6 +35,7 @@ public class Studio
   public List<Invoice> Invoices { get; set; } = new();
   public List<Media> ListMedia { get; set; } = new();
   public List<Blog> Blogs { get; set; } = new();
+  public List<Shift> Shifts { get; set; } = new();
 }
 
 public class StudioList

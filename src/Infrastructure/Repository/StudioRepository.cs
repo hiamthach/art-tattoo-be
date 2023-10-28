@@ -200,6 +200,11 @@ public class StudioRepository : IStudioRepository
     };
   }
 
+  public IEnumerable<StudioWorkingTime> GetStudioWorkingTime(Guid studioId)
+  {
+    return _dbContext.StudioWorkingTimes.Where(w => w.StudioId == studioId).ToList();
+  }
+
   public bool IsExist(Guid id)
   {
     return _dbContext.Studios.Any(stu => stu.Id == id);
@@ -266,12 +271,16 @@ public class StudioRepository : IStudioRepository
 
   public int UpdateStudioUser(Guid id, UpdateStudioUserReq req)
   {
-    var studioUser = _dbContext.StudioUsers.Find(id) ?? throw new Exception("Studio user not found");
+    var studioUser = _dbContext.StudioUsers.Include(u => u.User).FirstOrDefault(s => s.Id == id) ?? throw new Exception("Studio user not found");
     studioUser.IsDisabled = req.IsDisabled;
 
-    if (req.RoleId != null)
+    if (req != null && req.RoleId != null && studioUser.User.RoleId > RoleConst.SYSTEM_STAFF_ID)
     {
       studioUser.User.RoleId = req.RoleId.Value;
+    }
+    else
+    {
+      throw new Exception("Not permission to update role");
     }
 
     _dbContext.StudioUsers.Update(studioUser);
