@@ -2,6 +2,7 @@ namespace art_tattoo_be.Application.DTOs.Appointment;
 
 using art_tattoo_be.Application.DTOs.Media;
 using art_tattoo_be.Application.DTOs.Pagination;
+using art_tattoo_be.Application.DTOs.Shift;
 using art_tattoo_be.Application.DTOs.Studio;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Domain.Booking;
@@ -17,6 +18,7 @@ public class AppointmentDto
   public AppointmentStatusEnum Status { get; set; }
   public List<MediaDto> ListMedia { get; set; } = new();
   public StudioUserDto? Artist { get; set; }
+  public ShiftDto Shift { get; set; } = null!;
 }
 
 public class AppointmentResp : PaginationResp
@@ -30,6 +32,7 @@ public class AppointmentProfile : Profile
   {
     CreateMap<Appointment, AppointmentDto>()
       .ForMember(dest => dest.ListMedia, opt => opt.MapFrom(src => src.ListMedia))
+      .ForMember(dest => dest.Shift, opt => opt.MapFrom(src => src.Shift))
       .ForMember(dest => dest.Artist, opt => opt.MapFrom(src => src.Artist));
   }
 }

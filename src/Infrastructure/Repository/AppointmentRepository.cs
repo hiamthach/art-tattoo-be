@@ -20,13 +20,14 @@ public class AppointmentRepository : IAppointmentRepository
     var q = _dbContext.Appointments
       .Include(app => app.Shift)
       .Where(app => query.StudioId == null || app.Shift.StudioId == query.StudioId)
-      .Where(app => app.UserId == query.UserId);
+      .Where(app => query.UserId == null || app.UserId == query.UserId);
 
     int totalCount = q.Count();
 
     var appointments = q
       .Skip(query.PageSize * query.Page)
       .Take(query.PageSize)
+      .OrderByDescending(app => app.CreatedAt)
       .ToList();
 
     return new AppointmentList
@@ -38,7 +39,7 @@ public class AppointmentRepository : IAppointmentRepository
 
   public Appointment? GetByIdAsync(Guid id)
   {
-    return _dbContext.Appointments.Include(a => a.Artist.User).FirstOrDefault(a => a.Id == id);
+    return _dbContext.Appointments.Include(app => app.Shift).Include(a => a.Artist.User).FirstOrDefault(a => a.Id == id);
   }
 
   public async Task<int> CreateAsync(Appointment appointment)
