@@ -12,6 +12,16 @@ public class Shift
   public DateTime UpdatedAt { get; set; }
 
   public Studio Studio { get; set; } = null!;
-  public List<StudioUser> Artists { get; set; } = null!;
+  public List<ShiftUser> ShiftUsers { get; set; } = null!;
   public List<Appointment> Appointments { get; set; } = null!;
+}
+
+public class ShiftUser
+{
+  public Guid StuUserId { get; set; }
+  public Guid ShiftId { get; set; }
+  public bool IsBooked { get; set; }
+
+  public StudioUser StudioUser { get; set; } = null!;
+  public Shift Shift { get; set; } = null!;
 }

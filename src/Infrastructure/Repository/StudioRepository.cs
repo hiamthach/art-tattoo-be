@@ -165,6 +165,12 @@ public class StudioRepository : IStudioRepository
     .FirstOrDefault(stu => stu.Id == id);
   }
 
+  public Guid GetStudioUserIdByUserId(Guid userId)
+  {
+    var studioUser = _dbContext.StudioUsers.FirstOrDefault(s => s.UserId == userId);
+    return studioUser != null ? studioUser.Id : Guid.Empty;
+  }
+
   public StudioUserList GetStudioUsers(GetStudioUserQuery req)
   {
     string searchKeyword = req.SearchKeyword ?? "";
