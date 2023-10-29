@@ -251,10 +251,12 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.ToTable("appointments");
       entity.HasMany(e => e.ListMedia).WithMany(e => e.AppointmentMedia);
       entity.HasKey(e => e.Id);
+      entity.HasOne(e => e.Studio).WithMany(e => e.Appointments).HasForeignKey(e => e.StudioId).IsRequired().OnDelete(DeleteBehavior.Restrict); ;
       entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).IsRequired().OnDelete(DeleteBehavior.Restrict);
       entity.HasOne(e => e.Shift).WithMany(e => e.Appointments).HasForeignKey(e => e.ShiftId).IsRequired().OnDelete(DeleteBehavior.Restrict);
       entity.HasOne(e => e.Artist).WithMany(e => e.Appointments).HasForeignKey(e => e.DoneBy).OnDelete(DeleteBehavior.Restrict);
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
+      entity.Property(e => e.StudioId).IsRequired();
       entity.Property(e => e.UserId).IsRequired();
       entity.Property(e => e.ShiftId).IsRequired();
       entity.Property(e => e.DoneBy).IsRequired(false);

@@ -372,6 +372,9 @@ namespace art_tattoo_be.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasDefaultValue("Pending");
 
+                    b.Property<Guid>("StudioId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnUpdate()
                         .HasColumnType("datetime2")
@@ -385,6 +388,8 @@ namespace art_tattoo_be.Migrations
                     b.HasIndex("DoneBy");
 
                     b.HasIndex("ShiftId");
+
+                    b.HasIndex("StudioId");
 
                     b.HasIndex("UserId");
 
@@ -1056,7 +1061,7 @@ namespace art_tattoo_be.Migrations
                             Email = "arttattoolover@gmail.com",
                             FullName = "Admin Art Tattoo Lover",
                             LastLoginAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Password = "$2a$11$0R4/Q5jYvnACfMVCv8Yh7eoWZtlJT89yDXZpsYhblO54xRd.whjb.",
+                            Password = "$2a$11$RGw/9uI2qf.mYrES5S38Ye.MdIhrJUA6CGzaziSgbDZXcjTS3fKgC",
                             RoleId = 1,
                             Status = "Inactive",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
@@ -1231,6 +1236,12 @@ namespace art_tattoo_be.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("art_tattoo_be.Domain.Studio.Studio", "Studio")
+                        .WithMany("Appointments")
+                        .HasForeignKey("StudioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("art_tattoo_be.Domain.User.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -1240,6 +1251,8 @@ namespace art_tattoo_be.Migrations
                     b.Navigation("Artist");
 
                     b.Navigation("Shift");
+
+                    b.Navigation("Studio");
 
                     b.Navigation("User");
                 });
@@ -1406,6 +1419,8 @@ namespace art_tattoo_be.Migrations
 
             modelBuilder.Entity("art_tattoo_be.Domain.Studio.Studio", b =>
                 {
+                    b.Navigation("Appointments");
+
                     b.Navigation("Blogs");
 
                     b.Navigation("Invoices");
