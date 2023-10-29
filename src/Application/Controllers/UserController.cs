@@ -144,6 +144,7 @@ public class UserController : ControllerBase
 
       if (result > 0)
       {
+        await _cacheService.ClearWithPattern("studio-users");
         await _cacheService.ClearWithPattern("users");
         await _cacheService.Remove($"user:{id}");
         if (isForceLogout)
