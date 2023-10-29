@@ -1,3 +1,5 @@
+namespace art_tattoo_be.Application.Controllers;
+
 using art_tattoo_be.Application.DTOs.Shift;
 using art_tattoo_be.Application.Middlewares;
 using art_tattoo_be.Application.Shared;
@@ -9,12 +11,8 @@ using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Infrastructure.Cache;
 using art_tattoo_be.Infrastructure.Database;
 using art_tattoo_be.Infrastructure.Repository;
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Org.BouncyCastle.Asn1.Cms;
-using Org.BouncyCastle.Ocsp;
-
-namespace art_tattoo_be.Application.Controllers;
+using AutoMapper;
 
 [ApiController]
 [Route("api/shift")]
@@ -47,16 +45,11 @@ public class ShiftController : ControllerBase
 
     try
     {
-      var redisKey = $"shifts:{query.Start.Ticks}:{query.End.Ticks}";
+      var redisKey = $"shifts:{query.Start.Ticks}:{query.End.Ticks}:stu_{query.StudioId}";
 
       if (query.ArtistId != null)
       {
-        redisKey += $":a_{query.ArtistId}";
-      }
-
-      if (query.StudioId != null)
-      {
-        redisKey += $":stu_{query.StudioId}";
+        redisKey += $":art_{query.ArtistId}";
       }
 
       var cachedShifts = await _cacheService.Get<List<ShiftDto>>(redisKey);
@@ -339,6 +332,57 @@ public class ShiftController : ControllerBase
     {
       return ErrorResp.SomethingWrong(e.Message);
     }
+  }
 
+  [Protected]
+  [Permission(PermissionSlugConst.VIEW_STUDIO_ARTIST_SCHEDULE)]
+  [HttpPut("register/{id}")]
+  public async Task<IActionResult> RegisterShift(Guid id)
+  {
+    _logger.LogInformation("RegisterShift");
+    if (HttpContext.Items["payload"] is not Payload payload || HttpContext.Items["permission"] is not string permission)
+    {
+      return ErrorResp.Forbidden("You don't have permission to access this studio");
+    }
+
+    var studioId = _studioRepo.GetStudioIdByUserId(payload.UserId);
+    var studioUserId = _studioRepo.GetStudioUserIdByUserId(payload.UserId);
+    if (studioId == Guid.Empty)
+    {
+      return ErrorResp.Forbidden("You don't have permission to access this studio");
+    }
+
+    try
+    {
+      var shift = await _shiftRepo.GetByIdAsync(id);
+      if (shift == null)
+      {
+        return ErrorResp.NotFound("Shift not found");
+      }
+
+      if (shift.StudioId != studioId)
+      {
+        return ErrorResp.Forbidden("You don't have permission to access this studio");
+      }
+
+      var result = await _shiftRepo.RegisterUserAsync(id, studioUserId);
+
+      if (result > 0)
+      {
+        await _cacheService.Remove($"shift:{id}");
+        await _cacheService.ClearWithPattern("shifts");
+        return Ok(new BaseResp
+        {
+          Message = "Shift registered successfully",
+          Success = true
+        });
+      }
+
+      return ErrorResp.SomethingWrong("Something went wrong");
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
   }
 }

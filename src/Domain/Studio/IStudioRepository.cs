@@ -13,6 +13,7 @@ public interface IStudioRepository
   Task<Studio?> GetAsync(Guid id);
   StudioUser? GetStudioUser(Guid id);
   Guid GetStudioIdByUserId(Guid userId);
+  Guid GetStudioUserIdByUserId(Guid userId);
   IEnumerable<StudioWorkingTime> GetStudioWorkingTime(Guid studioId);
   IEnumerable<Studio> GetStudios();
   IEnumerable<StudioUser> GetStudioArtist(Guid studioId);
