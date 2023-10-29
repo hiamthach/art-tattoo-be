@@ -4,6 +4,6 @@ public class ShiftQuery
 {
   public DateTime Start { get; set; }
   public DateTime End { get; set; }
+  public Guid StudioId { get; set; }
   public Guid? ArtistId { get; set; }
-  public Guid? StudioId { get; set; }
 }

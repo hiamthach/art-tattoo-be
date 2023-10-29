@@ -16,19 +16,24 @@ public class ShiftRepository : IShiftRepository
 
   public IEnumerable<Shift> GetAllAsync(ShiftQuery query)
   {
-
-    return _dbContext.Shifts
-      .Include(s => s.Artists)
+    var q = _dbContext.Shifts
+      // .Include(s => s.ShiftUsers)
       .Where(s => s.Start >= query.Start && s.End <= query.End)
-      .Where(s => query.ArtistId == null || s.Artists.Any(a => a.Id == query.ArtistId))
-      .Where(s => query.StudioId == null || s.StudioId == query.StudioId)
+      .Where(s => s.StudioId == query.StudioId);
+
+    if (query.ArtistId != null)
+    {
+      q = q.Where(s => s.ShiftUsers.Any(su => su.StuUserId == query.ArtistId && su.IsBooked == false));
+    }
+
+    return q
       .OrderBy(s => s.Start)
       .ToList();
   }
 
   public Task<Shift?> GetByIdAsync(Guid id)
   {
-    return _dbContext.Shifts.Include(s => s.Artists).FirstOrDefaultAsync(s => s.Id == id);
+    return _dbContext.Shifts.Include(s => s.ShiftUsers).FirstOrDefaultAsync(s => s.Id == id);
   }
 
 
@@ -60,5 +65,28 @@ public class ShiftRepository : IShiftRepository
     _dbContext.Shifts.AddRange(shifts);
 
     return _dbContext.SaveChangesAsync();
+  }
+
+  public Task<int> RegisterUserAsync(Guid shiftId, Guid stuUserId)
+  {
+    var shift = _dbContext.Shifts.Find(shiftId) ?? throw new Exception("Shift not found");
+    var stuUser = _dbContext.StudioUsers.Find(stuUserId) ?? throw new Exception("Studio user not found");
+
+    shift.ShiftUsers.Add(new ShiftUser
+    {
+      ShiftId = shiftId,
+      StuUserId = stuUserId,
+      IsBooked = false,
+    });
+
+    return _dbContext.SaveChangesAsync();
+  }
+
+  public IEnumerable<Shift> GetShiftsByArtistId(Guid artistId)
+  {
+    return _dbContext.Shifts
+      .Include(s => s.ShiftUsers)
+      .Where(s => s.ShiftUsers.Any(su => su.StuUserId == artistId))
+      .ToList();
   }
 }
