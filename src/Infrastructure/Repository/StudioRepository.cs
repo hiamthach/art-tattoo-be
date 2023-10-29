@@ -1,4 +1,3 @@
-namespace art_tattoo_be.Infrastructure.Repository;
 using art_tattoo_be.Application.DTOs.Studio;
 using art_tattoo_be.Application.Shared.Constant;
 using art_tattoo_be.Application.Shared.Enum;
@@ -6,6 +5,8 @@ using art_tattoo_be.Domain.Media;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
+
+namespace art_tattoo_be.Infrastructure.Repository;
 
 public class StudioRepository : IStudioRepository
 {

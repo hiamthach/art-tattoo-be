@@ -89,16 +89,4 @@ public class ShiftRepository : IShiftRepository
       .Where(s => s.ShiftUsers.Any(su => su.StuUserId == artistId))
       .ToList();
   }
-
-  public Task<ShiftUser?> GetShiftUserAsync(Guid shiftId, Guid artistId)
-  {
-    return _dbContext.ShiftUsers.FirstOrDefaultAsync(su => su.ShiftId == shiftId && su.StuUserId == artistId);
-  }
-
-  public Task<int> UpdateShiftUserAsync(ShiftUser shiftUser)
-  {
-    _dbContext.Update(shiftUser);
-
-    return _dbContext.SaveChangesAsync();
-  }
 }

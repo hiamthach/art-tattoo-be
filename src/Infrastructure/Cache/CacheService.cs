@@ -35,12 +35,6 @@ public class CacheService : ICacheService
     return _database.StringSetAsync($"{_redisKey}:{key}", JsonSerializer.Serialize(value), expiration);
   }
 
-  public async Task<bool> Update<T>(string key, T value)
-  {
-    TimeSpan? ttl = await _database.KeyTimeToLiveAsync($"{_redisKey}:{key}");
-    return await _database.StringSetAsync($"{_redisKey}:{key}", JsonSerializer.Serialize(value), ttl);
-  }
-
   public Task Remove(string key)
   {
     return _database.KeyDeleteAsync($"{_redisKey}:{key}");
