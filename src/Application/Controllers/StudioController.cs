@@ -37,6 +37,39 @@ public class StudioController : ControllerBase
     _mapper = mapper;
   }
 
+  [HttpGet("status")]
+  public async Task<IActionResult> GetStudioStatus()
+  {
+    _logger.LogInformation("GetStudioStatus");
+
+    try
+    {
+      var redisKey = "studio-status";
+      var cached = await _cacheService.Get<Dictionary<int, string>>(redisKey);
+      if (cached != null)
+      {
+        return Ok(cached);
+      }
+
+      var statuses = Enum.GetValues<StudioStatusEnum>();
+
+      var statusDict = new Dictionary<int, string>();
+
+      foreach (var status in statuses)
+      {
+        statusDict.Add((int)status, status.ToString());
+      }
+
+      await _cacheService.Set(redisKey, statusDict, TimeSpan.FromDays(1));
+
+      return Ok(statusDict);
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
+
   [HttpPost()]
   public async Task<IActionResult> GetStudios([FromBody] GetStudioQuery req)
   {
