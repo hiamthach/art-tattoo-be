@@ -1,3 +1,4 @@
+namespace art_tattoo_be.Infrastructure.Repository;
 using art_tattoo_be.Application.DTOs.Studio;
 using art_tattoo_be.Application.Shared.Constant;
 using art_tattoo_be.Application.Shared.Enum;
@@ -5,8 +6,6 @@ using art_tattoo_be.Domain.Media;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
-
-namespace art_tattoo_be.Infrastructure.Repository;
 
 public class StudioRepository : IStudioRepository
 {
@@ -165,6 +164,12 @@ public class StudioRepository : IStudioRepository
     .FirstOrDefault(stu => stu.Id == id);
   }
 
+  public Guid GetStudioUserIdByUserId(Guid userId)
+  {
+    var studioUser = _dbContext.StudioUsers.FirstOrDefault(s => s.UserId == userId);
+    return studioUser != null ? studioUser.Id : Guid.Empty;
+  }
+
   public StudioUserList GetStudioUsers(GetStudioUserQuery req)
   {
     string searchKeyword = req.SearchKeyword ?? "";
@@ -198,6 +203,11 @@ public class StudioRepository : IStudioRepository
       Users = studioUsers,
       TotalCount = totalCount
     };
+  }
+
+  public IEnumerable<StudioWorkingTime> GetStudioWorkingTime(Guid studioId)
+  {
+    return _dbContext.StudioWorkingTimes.Where(w => w.StudioId == studioId).ToList();
   }
 
   public bool IsExist(Guid id)
@@ -266,12 +276,16 @@ public class StudioRepository : IStudioRepository
 
   public int UpdateStudioUser(Guid id, UpdateStudioUserReq req)
   {
-    var studioUser = _dbContext.StudioUsers.Find(id) ?? throw new Exception("Studio user not found");
+    var studioUser = _dbContext.StudioUsers.Include(u => u.User).FirstOrDefault(s => s.Id == id) ?? throw new Exception("Studio user not found");
     studioUser.IsDisabled = req.IsDisabled;
 
-    if (req.RoleId != null)
+    if (req != null && req.RoleId != null && studioUser.User.RoleId > RoleConst.SYSTEM_STAFF_ID)
     {
       studioUser.User.RoleId = req.RoleId.Value;
+    }
+    else
+    {
+      throw new Exception("Not permission to update role");
     }
 
     _dbContext.StudioUsers.Update(studioUser);

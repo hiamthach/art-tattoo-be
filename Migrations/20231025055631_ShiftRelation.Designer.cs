@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using art_tattoo_be.Infrastructure.Database;
 
@@ -11,9 +12,11 @@ using art_tattoo_be.Infrastructure.Database;
 namespace art_tattoo_be.Migrations
 {
     [DbContext(typeof(ArtTattooDbContext))]
-    partial class ArtTattooDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231025055631_ShiftRelation")]
+    partial class ShiftRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -295,6 +298,21 @@ namespace art_tattoo_be.Migrations
                     b.ToTable("PermissionRole");
                 });
 
+            modelBuilder.Entity("ShiftStudioUser", b =>
+                {
+                    b.Property<Guid>("ArtistsId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ShiftsId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("ArtistsId", "ShiftsId");
+
+                    b.HasIndex("ShiftsId");
+
+                    b.ToTable("ShiftStudioUser");
+                });
+
             modelBuilder.Entity("art_tattoo_be.Domain.Blog.Blog", b =>
                 {
                     b.Property<Guid>("Id")
@@ -372,6 +390,9 @@ namespace art_tattoo_be.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasDefaultValue("Pending");
 
+                    b.Property<Guid>("StudioId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnUpdate()
                         .HasColumnType("datetime2")
@@ -385,6 +406,8 @@ namespace art_tattoo_be.Migrations
                     b.HasIndex("DoneBy");
 
                     b.HasIndex("ShiftId");
+
+                    b.HasIndex("StudioId");
 
                     b.HasIndex("UserId");
 
@@ -418,27 +441,7 @@ namespace art_tattoo_be.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StudioId");
-
                     b.ToTable("Shifts", (string)null);
-                });
-
-            modelBuilder.Entity("art_tattoo_be.Domain.Booking.ShiftUser", b =>
-                {
-                    b.Property<Guid>("StuUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ShiftId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsBooked")
-                        .HasColumnType("bit");
-
-                    b.HasKey("StuUserId", "ShiftId");
-
-                    b.HasIndex("ShiftId");
-
-                    b.ToTable("shift_users", (string)null);
                 });
 
             modelBuilder.Entity("art_tattoo_be.Domain.Category.Category", b =>
@@ -1056,7 +1059,7 @@ namespace art_tattoo_be.Migrations
                             Email = "arttattoolover@gmail.com",
                             FullName = "Admin Art Tattoo Lover",
                             LastLoginAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Password = "$2a$11$0R4/Q5jYvnACfMVCv8Yh7eoWZtlJT89yDXZpsYhblO54xRd.whjb.",
+                            Password = "$2a$11$cdrUz7Sfd9u32V9MjKqWt.UskkTK8K.A7hiD9xvU8PVEcujT38vny",
                             RoleId = 1,
                             Status = "Inactive",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
@@ -1201,6 +1204,21 @@ namespace art_tattoo_be.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ShiftStudioUser", b =>
+                {
+                    b.HasOne("art_tattoo_be.Domain.Studio.StudioUser", null)
+                        .WithMany()
+                        .HasForeignKey("ArtistsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("art_tattoo_be.Domain.Booking.Shift", null)
+                        .WithMany()
+                        .HasForeignKey("ShiftsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("art_tattoo_be.Domain.Blog.Blog", b =>
                 {
                     b.HasOne("art_tattoo_be.Domain.User.User", "User")
@@ -1231,6 +1249,12 @@ namespace art_tattoo_be.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("art_tattoo_be.Domain.Studio.Studio", "Studio")
+                        .WithMany("Appointments")
+                        .HasForeignKey("StudioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("art_tattoo_be.Domain.User.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -1241,37 +1265,9 @@ namespace art_tattoo_be.Migrations
 
                     b.Navigation("Shift");
 
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("art_tattoo_be.Domain.Booking.Shift", b =>
-                {
-                    b.HasOne("art_tattoo_be.Domain.Studio.Studio", "Studio")
-                        .WithMany("Shifts")
-                        .HasForeignKey("StudioId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("Studio");
-                });
 
-            modelBuilder.Entity("art_tattoo_be.Domain.Booking.ShiftUser", b =>
-                {
-                    b.HasOne("art_tattoo_be.Domain.Booking.Shift", "Shift")
-                        .WithMany("ShiftUsers")
-                        .HasForeignKey("ShiftId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("art_tattoo_be.Domain.Studio.StudioUser", "StudioUser")
-                        .WithMany("Shifts")
-                        .HasForeignKey("StuUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Shift");
-
-                    b.Navigation("StudioUser");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("art_tattoo_be.Domain.Invoice.Invoice", b =>
@@ -1390,8 +1386,6 @@ namespace art_tattoo_be.Migrations
             modelBuilder.Entity("art_tattoo_be.Domain.Booking.Shift", b =>
                 {
                     b.Navigation("Appointments");
-
-                    b.Navigation("ShiftUsers");
                 });
 
             modelBuilder.Entity("art_tattoo_be.Domain.Category.Category", b =>
@@ -1406,13 +1400,13 @@ namespace art_tattoo_be.Migrations
 
             modelBuilder.Entity("art_tattoo_be.Domain.Studio.Studio", b =>
                 {
+                    b.Navigation("Appointments");
+
                     b.Navigation("Blogs");
 
                     b.Navigation("Invoices");
 
                     b.Navigation("Services");
-
-                    b.Navigation("Shifts");
 
                     b.Navigation("StudioUsers");
 
@@ -1424,8 +1418,6 @@ namespace art_tattoo_be.Migrations
             modelBuilder.Entity("art_tattoo_be.Domain.Studio.StudioUser", b =>
                 {
                     b.Navigation("Appointments");
-
-                    b.Navigation("Shifts");
                 });
 
             modelBuilder.Entity("art_tattoo_be.Domain.User.User", b =>

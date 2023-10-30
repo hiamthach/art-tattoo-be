@@ -559,7 +559,8 @@ public class StudioController : ControllerBase
 
     try
     {
-      if (HttpContext.Items["permission"] is string permission && permission == PermissionSlugConst.MANAGE_OWNED_STUDIO && HttpContext.Items["payload"] is Payload payload)
+      var payload = HttpContext.Items["payload"] as Payload;
+      if (HttpContext.Items["permission"] is string permission && permission == PermissionSlugConst.MANAGE_OWNED_STUDIO && payload != null)
       {
         var studioId = _studioRepo.GetStudioIdByUserId(payload.UserId);
         var isFromStudio = _studioRepo.IsStudioUserExist(payload.UserId, studioId);
@@ -576,6 +577,7 @@ public class StudioController : ControllerBase
       {
         // clear cache
         await _cacheService.ClearWithPattern("studio-users");
+        await _cacheService.Remove($"studio-user:{id}");
         return Ok(new BaseResp
         {
           Message = "Update studio user successfully",
@@ -611,7 +613,7 @@ public class StudioController : ControllerBase
       {
         var isFromStudio = _studioRepo.IsStudioUserExist(payload.UserId, studioUser.StudioId);
 
-        if (!isFromStudio || studioUser.User.RoleId == RoleConst.STUDIO_MANAGER_ID)
+        if (!isFromStudio)
         {
           return ErrorResp.Forbidden("You don't have permission to access this studio");
         }
