@@ -37,6 +37,39 @@ public class StudioController : ControllerBase
     _mapper = mapper;
   }
 
+  [HttpGet("status")]
+  public async Task<IActionResult> GetStudioStatus()
+  {
+    _logger.LogInformation("GetStudioStatus");
+
+    try
+    {
+      var redisKey = "studio-status";
+      var cached = await _cacheService.Get<Dictionary<int, string>>(redisKey);
+      if (cached != null)
+      {
+        return Ok(cached);
+      }
+
+      var statuses = Enum.GetValues<StudioStatusEnum>();
+
+      var statusDict = new Dictionary<int, string>();
+
+      foreach (var status in statuses)
+      {
+        statusDict.Add((int)status, status.ToString());
+      }
+
+      await _cacheService.Set(redisKey, statusDict, TimeSpan.FromDays(1));
+
+      return Ok(statusDict);
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
+
   [HttpPost()]
   public async Task<IActionResult> GetStudios([FromBody] GetStudioQuery req)
   {
@@ -559,25 +592,50 @@ public class StudioController : ControllerBase
 
     try
     {
-      var payload = HttpContext.Items["payload"] as Payload;
-      if (HttpContext.Items["permission"] is string permission && permission == PermissionSlugConst.MANAGE_OWNED_STUDIO && payload != null)
+      if (HttpContext.Items["payload"] is not Payload payload)
       {
-        var studioId = _studioRepo.GetStudioIdByUserId(payload.UserId);
-        var isFromStudio = _studioRepo.IsStudioUserExist(payload.UserId, studioId);
+        return ErrorResp.Unauthorized("Unauthorized");
+      }
 
-        if (!isFromStudio)
+      if (HttpContext.Items["permission"] is string permission && permission == PermissionSlugConst.MANAGE_OWNED_STUDIO)
+      {
+        var selfStudioUser = _studioRepo.GetStudioUserByUserId(payload.UserId);
+
+        if (selfStudioUser == null)
         {
-          return ErrorResp.Forbidden("You don't have permission to access this studio");
+          return ErrorResp.NotFound("Studio User Not found");
+        }
+
+        if (selfStudioUser.Id == id)
+        {
+          return ErrorResp.Forbidden("You don't have permission to update yourself");
+        }
+
+        if (payload.RoleId > req.RoleId)
+        {
+          return ErrorResp.Forbidden("You don't have permission to update this user");
         }
       }
 
-      var result = _studioRepo.UpdateStudioUser(id, req);
+      if (req.RoleId == null && req.IsDisabled == null)
+      {
+        return ErrorResp.BadRequest("Invalid request");
+      }
+
+      var result = _studioRepo.UpdateStudioUser(id, new UpdateStudioUserData
+      {
+        IsDisabled = req.IsDisabled ?? null,
+        RoleId = req.RoleId ?? null,
+        SelfRoleId = payload.RoleId
+      });
 
       if (result > 0)
       {
         // clear cache
         await _cacheService.ClearWithPattern("studio-users");
+        await _cacheService.ClearWithPattern("users");
         await _cacheService.Remove($"studio-user:{id}");
+        await _cacheService.ForceLogout(payload.UserId);
         return Ok(new BaseResp
         {
           Message = "Update studio user successfully",

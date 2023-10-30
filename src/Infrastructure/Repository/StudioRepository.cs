@@ -164,6 +164,13 @@ public class StudioRepository : IStudioRepository
     .FirstOrDefault(stu => stu.Id == id);
   }
 
+  public StudioUser? GetStudioUserByUserId(Guid userId)
+  {
+    return _dbContext.StudioUsers
+    .Include(stu => stu.User)
+    .FirstOrDefault(stu => stu.UserId == userId);
+  }
+
   public Guid GetStudioUserIdByUserId(Guid userId)
   {
     var studioUser = _dbContext.StudioUsers.FirstOrDefault(s => s.UserId == userId);
@@ -274,18 +281,26 @@ public class StudioRepository : IStudioRepository
     return _dbContext.SaveChanges();
   }
 
-  public int UpdateStudioUser(Guid id, UpdateStudioUserReq req)
+  public int UpdateStudioUser(Guid id, UpdateStudioUserData req)
   {
     var studioUser = _dbContext.StudioUsers.Include(u => u.User).FirstOrDefault(s => s.Id == id) ?? throw new Exception("Studio user not found");
-    studioUser.IsDisabled = req.IsDisabled;
+    studioUser.IsDisabled = req.IsDisabled ?? studioUser.IsDisabled;
 
-    if (req != null && req.RoleId != null && studioUser.User.RoleId > RoleConst.SYSTEM_STAFF_ID)
+    if (studioUser.User.RoleId < req.SelfRoleId)
     {
-      studioUser.User.RoleId = req.RoleId.Value;
+      throw new Exception("Not permission to update this user");
     }
-    else
+
+    if (req != null && req.RoleId != null)
     {
-      throw new Exception("Not permission to update role");
+      if (studioUser.User.RoleId > RoleConst.SYSTEM_STAFF_ID)
+      {
+        studioUser.User.RoleId = req.RoleId.Value;
+      }
+      else
+      {
+        throw new Exception("Not permission to update this role");
+      }
     }
 
     _dbContext.StudioUsers.Update(studioUser);
