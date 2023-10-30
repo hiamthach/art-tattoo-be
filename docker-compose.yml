@@ -30,7 +30,7 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DatabaseConnection=Server=sqlserver;Database=tattoodb;User=sa;Password=ArtTattoo@@;MultipleActiveResultSets=true;TrustServerCertificate=true;
       - ConnectionStrings__RedisConnection=cache:6379,password=ArtTattooRedis,abortConnect=false
-      - APP_VERSION=0.1.1
+      - APP_VERSION=1.0.0
       - JWT_SECRET=ArtTattooSecret@@
       - SMTP_EMAIL=arttattoolover@gmail.com
       - SMTP_PASSWORD=zoxeglocinfzmnei
