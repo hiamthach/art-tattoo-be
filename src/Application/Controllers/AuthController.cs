@@ -71,6 +71,7 @@ public class AuthController : ControllerBase
           UserId = payload.UserId,
           RoleId = payload.RoleId,
           SessionId = payload.SessionId,
+          Status = payload.Status,
           Permissions = permissions,
           StudioId = studio
         });
@@ -129,7 +130,7 @@ public class AuthController : ControllerBase
 
       Guid sessionId = Guid.NewGuid();
 
-      var accessTk = GenerateAccessTk(user.Id, sessionId, user.RoleId);
+      var accessTk = GenerateAccessTk(user.Id, sessionId, user.RoleId, user.Status);
       var refreshTk = GenerateRefreshTk();
 
       // create a redis refreshToken key
@@ -304,7 +305,7 @@ public class AuthController : ControllerBase
         return ErrorResp.NotFound("User not found");
       }
 
-      var accessTk = GenerateAccessTk(user.Id, ssId, user.RoleId);
+      var accessTk = GenerateAccessTk(user.Id, ssId, user.RoleId, user.Status);
 
       return Ok(new TokenResp
       {
@@ -448,9 +449,9 @@ public class AuthController : ControllerBase
     }
   }
 
-  private string GenerateAccessTk(Guid userId, Guid sessionId, int roleId)
+  private string GenerateAccessTk(Guid userId, Guid sessionId, int roleId, UserStatusEnum status)
   {
-    return _jwtService.GenerateToken(userId, sessionId, roleId, JwtConst.ACCESS_TOKEN_EXP);
+    return _jwtService.GenerateToken(userId, sessionId, roleId, status, JwtConst.ACCESS_TOKEN_EXP);
   }
 
   private string GenerateRefreshTk()

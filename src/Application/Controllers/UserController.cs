@@ -3,6 +3,7 @@ namespace art_tattoo_be.Application.Controllers;
 using art_tattoo_be.Application.DTOs.User;
 using art_tattoo_be.Application.Middlewares;
 using art_tattoo_be.Application.Shared;
+using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Application.Shared.Handler;
 using art_tattoo_be.Core.Crypto;
 using art_tattoo_be.Core.Jwt;
@@ -29,6 +30,39 @@ public class UserController : ControllerBase
     _userRepo = new UserRepository(dbContext);
     _mapper = mapper;
     _cacheService = cacheService;
+  }
+
+  [HttpGet("status")]
+  public async Task<IActionResult> GetUserStatus()
+  {
+    _logger.LogInformation("GetUserStatus");
+
+    try
+    {
+      var redisKey = "user-status";
+      var cached = await _cacheService.Get<Dictionary<int, string>>(redisKey);
+      if (cached != null)
+      {
+        return Ok(cached);
+      }
+
+      var statuses = Enum.GetValues<UserStatusEnum>();
+
+      var statusDict = new Dictionary<int, string>();
+
+      foreach (var status in statuses)
+      {
+        statusDict.Add((int)status, status.ToString());
+      }
+
+      await _cacheService.Set(redisKey, statusDict, TimeSpan.FromDays(1));
+
+      return Ok(statusDict);
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
   }
 
   [Protected]

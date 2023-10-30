@@ -12,6 +12,7 @@ public interface IStudioRepository
   bool IsStudioUserExist(Guid userId, Guid studioId);
   Task<Studio?> GetAsync(Guid id);
   StudioUser? GetStudioUser(Guid id);
+  StudioUser? GetStudioUserByUserId(Guid userId);
   Guid GetStudioIdByUserId(Guid userId);
   Guid GetStudioUserIdByUserId(Guid userId);
   IEnumerable<StudioWorkingTime> GetStudioWorkingTime(Guid studioId);
@@ -23,7 +24,7 @@ public interface IStudioRepository
   Task<int> CreateStudioUserAsync(StudioUser studioUser, int roleId);
   int Update(Studio studio, IEnumerable<Media> mediaList);
   int UpdateStudioStatus(Guid id, StudioStatusEnum status);
-  int UpdateStudioUser(Guid id, UpdateStudioUserReq req);
+  int UpdateStudioUser(Guid id, UpdateStudioUserData req);
   int DeleteStudio(Guid id);
   int DeleteStudioUser(Guid id);
 }
