@@ -41,7 +41,7 @@ public class AppointmentController : ControllerBase
     _mapper = mapper;
     _cacheService = cacheService;
   }
-  // client api
+
   [HttpGet("status")]
   public async Task<IActionResult> GetAppointmentStatus()
   {
