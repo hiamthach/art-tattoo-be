@@ -11,6 +11,7 @@ using art_tattoo_be.Domain.RoleBase;
 using art_tattoo_be.Infrastructure.Repository;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
+using art_tattoo_be.Core.PubNub;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -93,10 +94,18 @@ builder.Services.AddDbContext<ArtTattooDbContext>(options =>
 Console.WriteLine($"Redis connection string: {builder.Configuration.GetConnectionString("RedisConnection")}");
 builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("RedisConnection")));
 
+// Mail Service
 var smtpUsername = Environment.GetEnvironmentVariable("SMTP_EMAIL") ?? "default_username";
 var smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? "default_password";
 builder.Services.AddSingleton<IMailService>(new MailService("smtp.gmail.com", 587, smtpUsername, smtpPassword));
+// Google Cloud Storage Service
 builder.Services.AddSingleton<IGCSService, GCSService>();
+
+// pubnub service
+var pubnubPublicKey = Environment.GetEnvironmentVariable("PUBNUB_PUBLIC_KEY") ?? "public_key";
+var pubnubSubscribeKey = Environment.GetEnvironmentVariable("PUBNUB_SUBSCRIBE_KEY") ?? "subscribe_key";
+var pubnubUserId = Environment.GetEnvironmentVariable("PUBNUB_USER_ID") ?? "user_id";
+builder.Services.AddSingleton<IPubNubService>(new PubNubService(pubnubUserId, pubnubPublicKey, pubnubSubscribeKey));
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
