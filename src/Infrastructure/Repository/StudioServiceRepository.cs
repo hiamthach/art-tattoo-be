@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using art_tattoo_be.Domain.Category;
+using art_tattoo_be.Domain.Media;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Infrastructure.Database;
 using art_tattoo_be.src.Application.DTOs.StudioService;
@@ -22,7 +23,6 @@ namespace art_tattoo_be.src.Infrastructure.Repository
 
     public int CreateStudioService(StudioService studioService)
     {
-      studioService.Id = Guid.NewGuid();
       _dbContext.StudioServices.Add(studioService);
       return _dbContext.SaveChanges();
     }
@@ -41,9 +41,10 @@ namespace art_tattoo_be.src.Infrastructure.Repository
 
     public StudioService GetById(Guid id)
     {
-      var studioService = _dbContext.StudioServices.Find(id) ?? throw new Exception("Studio Service not found");
-      studioService.Category = _dbContext.Categories.Find(studioService.CategoryId) ?? throw new Exception("Category not found");
-      return studioService;
+      return _dbContext.StudioServices
+      .Include(stuser => stuser.Category)
+      .Include(stuser => stuser.ListMedia)
+      .FirstOrDefault(stuser => stuser.Id == id) ?? throw new Exception("Studio Service not found");
     }
 
     public StudioServiceList GetStudioServicePages(GetStudioServiceQuery req)
@@ -55,6 +56,7 @@ namespace art_tattoo_be.src.Infrastructure.Repository
 
       var studioService = query
       .Include(stuser => stuser.Category)
+      .Include(stuser => stuser.ListMedia)
       .Select(stuser => new StudioService
       {
         Id = stuser.Id,
@@ -65,7 +67,8 @@ namespace art_tattoo_be.src.Infrastructure.Repository
         MinPrice = stuser.MinPrice,
         MaxPrice = stuser.MaxPrice,
         Discount = stuser.Discount,
-        Category = stuser.Category
+        Category = stuser.Category,
+        ListMedia = stuser.ListMedia
       })
       .OrderByDescending(stuser => stuser.Name)
       .Skip(req.Page * req.PageSize)
@@ -78,9 +81,21 @@ namespace art_tattoo_be.src.Infrastructure.Repository
       };
     }
 
-    public int UpddateStudioService(StudioService studioService)
+    public int UpddateStudioService(StudioService studioService, IEnumerable<Media> mediaList)
     {
-      _dbContext.Update(studioService);
+      var removeMedia = studioService.ListMedia.Where(m => !mediaList.Select(m => m.Id).Contains(m.Id)).ToList();
+      var newMedia = mediaList.Where(m => !studioService.ListMedia.Select(m => m.Id).Contains(m.Id)).ToList();
+
+      if (removeMedia.Count > 0)
+      {
+        _dbContext.Medias.RemoveRange(removeMedia);
+        studioService.ListMedia.RemoveAll(m => removeMedia.Select(m => m.Id).Contains(m.Id));
+      }
+
+      _dbContext.Medias.AddRange(newMedia);
+      studioService.ListMedia.AddRange(newMedia);
+
+      _dbContext.StudioServices.Update(studioService);
       return _dbContext.SaveChanges();
     }
   }

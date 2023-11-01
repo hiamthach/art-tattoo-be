@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using art_tattoo_be.Application.Shared;
 using art_tattoo_be.Application.Shared.Handler;
 using art_tattoo_be.Domain.Category;
+using art_tattoo_be.Domain.Media;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Infrastructure.Database;
 using art_tattoo_be.Infrastructure.Repository;
@@ -92,8 +93,9 @@ namespace art_tattoo_be.src.Application.Controllers
                 var studio = await _stuRepo.GetAsync(body.StudioId);
                 if (studio is not null && _cateRepo.GetById(body.CategoryId) is not null)
                 {
-                    var result = _stuserRepo.CreateStudioService(new StudioService
+                    var studioService = new StudioService
                     {
+                        Id = Guid.NewGuid(),
                         StudioId = body.StudioId,
                         CategoryId = body.CategoryId,
                         Name = body.Name,
@@ -101,7 +103,19 @@ namespace art_tattoo_be.src.Application.Controllers
                         MinPrice = body.MaxPrice,
                         MaxPrice = body.MaxPrice,
                         Discount = body.Discount,
-                    });
+                    };
+
+                    studioService.ListMedia = body.ListMedia.Select(m =>
+                    {
+                        return new Media
+                        {
+                            Id = Guid.NewGuid(),
+                            Url = m.Url,
+                            Type = m.Type
+                        };
+                    }).ToList();
+
+                    var result = _stuserRepo.CreateStudioService(studioService);
 
                     if (result > 0)
                     {
@@ -156,7 +170,29 @@ namespace art_tattoo_be.src.Application.Controllers
                     return ErrorResp.NotFound("Studio Service not found");
                 }
                 var studioServiceMapped = _mapper.Map(req, studioService);
-                var result = _stuserRepo.UpddateStudioService(studioServiceMapped);
+                var mediaList = new List<Media>();
+                mediaList.AddRange(studioServiceMapped.ListMedia);
+                if (req.ListNewMedia != null)
+                {
+                    var newMedia = req.ListNewMedia.Select(m =>
+                    {
+                        return new Media
+                        {
+                            Id = Guid.NewGuid(),
+                            Url = m.Url,
+                            Type = m.Type
+                        };
+                    }).ToList();
+                    mediaList.AddRange(newMedia);
+                }
+                if (req.ListRemoveMedia != null)
+                {
+                    var removeMedia = studioServiceMapped.ListMedia.Where(m => req.ListRemoveMedia.Contains(m.Id.ToString())).ToList();
+                    mediaList.RemoveAll(m => removeMedia.Select(m => m.Id).Contains(m.Id));
+                }
+
+                var result = _stuserRepo.UpddateStudioService(studioServiceMapped, mediaList);
+
                 if (result > 0)
                 {
                     return Ok(new BaseResp

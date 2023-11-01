@@ -2,6 +2,7 @@ namespace art_tattoo_be.src.Application.DTOs.StudioService;
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using art_tattoo_be.Application.DTOs.Media;
 
 public class CreateStuioServiceReq
 {
@@ -16,4 +17,5 @@ public class CreateStuioServiceReq
   [Range(1, double.MaxValue, ErrorMessage = "Max Price must larger than 0")]
   public double MaxPrice { get; set; }
   public double Discount { get; set; }
+  public List<MediaCreate> ListMedia { get; set; } = null!;
 }

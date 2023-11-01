@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using art_tattoo_be.Application.DTOs.Category;
+using art_tattoo_be.Application.DTOs.Media;
 using art_tattoo_be.Domain.Category;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.src.Application.DTOs.StudioService;
@@ -22,6 +23,7 @@ namespace art_tattoo_be.src.Application.DTOs.StudioService
         public double MaxPrice { get; set; }
         public double Discount { get; set; }
         public CategoryDto CatogoryDto { get; set; } = new();
+        public List<MediaDto> ListMediaDto { get; set; } = new();
     }
 }
 public class StudioServiceProfile : Profile
@@ -29,7 +31,8 @@ public class StudioServiceProfile : Profile
     public StudioServiceProfile()
     {
         CreateMap<StudioService, StudioServiceDto>()
-            .ForMember(dest => dest.CatogoryDto, opt => opt.MapFrom(src => src.Category));
+            .ForMember(dest => dest.CatogoryDto, opt => opt.MapFrom(src => src.Category))
+            .ForMember(dest =>  dest.ListMediaDto, opt => opt.MapFrom(src => src.ListMedia));
         CreateMap<UpdateStudioServiceReq, StudioService>()
             .ForMember(dest => dest.Category, opt => opt.Ignore())
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
