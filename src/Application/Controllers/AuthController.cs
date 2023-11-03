@@ -454,7 +454,7 @@ public class AuthController : ControllerBase
     return _jwtService.GenerateToken(userId, sessionId, roleId, status, JwtConst.ACCESS_TOKEN_EXP);
   }
 
-  private string GenerateRefreshTk()
+  private static string GenerateRefreshTk()
   {
     var randomNumber = new byte[64];
     using var rng = RandomNumberGenerator.Create();
@@ -462,7 +462,7 @@ public class AuthController : ControllerBase
     return Convert.ToBase64String(randomNumber);
   }
 
-  private string GenerateResetPasswordCode()
+  private static string GenerateResetPasswordCode()
   {
     // Generate a random number 6 digits
     const string chars = "0123456789";
