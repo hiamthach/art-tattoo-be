@@ -17,7 +17,7 @@ public class ShiftRepository : IShiftRepository
   public IEnumerable<Shift> GetAllAsync(ShiftQuery query)
   {
     var q = _dbContext.Shifts
-      // .Include(s => s.ShiftUsers)
+      .Include(s => s.ShiftUsers).ThenInclude(su => su.StudioUser).ThenInclude(su => su.User)
       .Where(s => s.Start >= query.Start && s.End <= query.End)
       .Where(s => s.StudioId == query.StudioId);
 
@@ -33,7 +33,9 @@ public class ShiftRepository : IShiftRepository
 
   public Task<Shift?> GetByIdAsync(Guid id)
   {
-    return _dbContext.Shifts.Include(s => s.ShiftUsers).FirstOrDefaultAsync(s => s.Id == id);
+    return _dbContext.Shifts
+      .Include(s => s.ShiftUsers).ThenInclude(su => su.StudioUser).ThenInclude(su => su.User)
+      .FirstOrDefaultAsync(s => s.Id == id);
   }
 
 

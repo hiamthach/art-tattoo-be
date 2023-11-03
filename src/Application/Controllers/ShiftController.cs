@@ -104,6 +104,58 @@ public class ShiftController : ControllerBase
   }
 
   [Protected]
+  [Permission(PermissionSlugConst.VIEW_STUDIO_ARTIST_SCHEDULE)]
+  [HttpGet("artist")]
+  public async Task<IActionResult> GetArtistShifts([FromQuery] ShiftQueryDate query)
+  {
+    _logger.LogInformation("GetArtistShifts");
+    if (HttpContext.Items["payload"] is not Payload payload || HttpContext.Items["permission"] is not string permission)
+    {
+      return ErrorResp.Forbidden("You don't have permission to access this studio");
+    }
+
+    var studioId = _studioRepo.GetStudioIdByUserId(payload.UserId);
+    var studioUserId = _studioRepo.GetStudioUserIdByUserId(payload.UserId);
+    if (studioId == Guid.Empty)
+    {
+      return ErrorResp.Forbidden("You don't have permission to access this studio");
+    }
+
+    try
+    {
+      var redisKey = $"shifts:{query.Start.Ticks}:{query.End.Ticks}:stu_{studioId}";
+
+      redisKey += $":art_{studioUserId}";
+
+      var q = new ShiftQuery()
+      {
+        Start = query.Start,
+        End = query.End,
+        StudioId = studioId,
+        ArtistId = studioUserId
+      };
+
+      var cachedShifts = await _cacheService.Get<List<ShiftDto>>(redisKey);
+      if (cachedShifts != null)
+      {
+        return Ok(cachedShifts);
+      }
+
+      var result = _shiftRepo.GetAllAsync(q);
+
+      var mappedResult = _mapper.Map<List<ShiftDto>>(result);
+
+      await _cacheService.Set(redisKey, mappedResult);
+      return Ok(mappedResult);
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
+
+
+  [Protected]
   [Permission(PermissionSlugConst.MANAGE_STUDIO_ARTIST_SCHEDULE)]
   [HttpPost]
   public async Task<IActionResult> Create(CreateShift createShift)
