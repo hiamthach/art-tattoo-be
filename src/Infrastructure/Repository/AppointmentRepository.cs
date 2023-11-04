@@ -20,14 +20,17 @@ public class AppointmentRepository : IAppointmentRepository
     var q = _dbContext.Appointments
       .Include(app => app.Shift)
       .Where(app => query.StudioId == null || app.Shift.StudioId == query.StudioId)
-      .Where(app => query.UserId == null || app.UserId == query.UserId);
+      .Where(app => query.UserId == null || app.UserId == query.UserId)
+      .Where(app => query.Status == null || app.Status == query.Status)
+      .Where(app => query.StartDate == null || app.Shift.Start >= query.StartDate)
+      .Where(app => query.EndDate == null || app.Shift.End <= query.EndDate);
 
     int totalCount = q.Count();
 
     var appointments = q
       .Skip(query.PageSize * query.Page)
       .Take(query.PageSize)
-      .OrderByDescending(app => app.CreatedAt)
+      .OrderBy(app => app.Shift.Start)
       .ToList();
 
     return new AppointmentList

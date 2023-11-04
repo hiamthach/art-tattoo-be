@@ -95,6 +95,21 @@ public class AppointmentController : ControllerBase
         redisKey += $":{query.StudioId}";
       }
 
+      if (query.Status != null)
+      {
+        redisKey += $"?status={query.Status}";
+      }
+
+      if (query.StartDate != null)
+      {
+        redisKey += $"?startDate={query.StartDate?.Ticks}";
+      }
+
+      if (query.EndDate != null)
+      {
+        redisKey += $"?endDate={query.EndDate?.Ticks}";
+      }
+
       var cached = await _cacheService.Get<AppointmentResp>(redisKey);
       if (cached != null)
       {
@@ -105,8 +120,11 @@ public class AppointmentController : ControllerBase
       {
         Page = query.Page,
         PageSize = query.PageSize,
+        Status = query.Status,
         StudioId = query.StudioId == Guid.Empty ? null : query.StudioId,
         UserId = payload.UserId,
+        StartDate = query.StartDate,
+        EndDate = query.EndDate,
       };
 
       var appointments = _appointmentRepo.GetAllAsync(appointmentQuery);
