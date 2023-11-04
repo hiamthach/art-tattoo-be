@@ -22,5 +22,8 @@ public class GetAppointmentsQuery : PaginationReq
 
 public class GetStudioAppointmentsQuery : PaginationReq
 {
-
+  public AppointmentStatusEnum? Status { get; set; }
+  public DateTime? StartDate { get; set; }
+  public DateTime? EndDate { get; set; }
+  public Guid? UserId { get; set; }
 }

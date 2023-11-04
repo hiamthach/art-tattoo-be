@@ -19,6 +19,8 @@ public class AppointmentRepository : IAppointmentRepository
   {
     var q = _dbContext.Appointments
       .Include(app => app.Shift)
+      .Include(app => app.User)
+      .Include(app => app.Artist).ThenInclude(a => a.User)
       .Where(app => query.StudioId == null || app.Shift.StudioId == query.StudioId)
       .Where(app => query.UserId == null || app.UserId == query.UserId)
       .Where(app => query.Status == null || app.Status == query.Status)
