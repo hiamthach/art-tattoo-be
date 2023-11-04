@@ -245,6 +245,8 @@ public class AppointmentController : ControllerBase
           await _cacheService.Update($"bookCount:{payload.UserId}", bookCount + 1);
         }
 
+        await _cacheService.ClearWithPattern($"appointments");
+
         return Ok(new BaseResp
         {
           Message = "Appointment booked successfully",
@@ -308,7 +310,7 @@ public class AppointmentController : ControllerBase
 
         if (result > 0)
         {
-          await _cacheService.ClearWithPattern($"appointments:{payload.UserId}");
+          await _cacheService.ClearWithPattern($"appointments");
           await _cacheService.Remove($"appointment:{id}");
           return Ok(new BaseResp
           {
@@ -373,7 +375,7 @@ public class AppointmentController : ControllerBase
 
         if (result > 0)
         {
-          await _cacheService.ClearWithPattern($"appointments:{payload.UserId}");
+          await _cacheService.ClearWithPattern($"appointments");
           await _cacheService.Remove($"appointment:{id}");
           return Ok(new BaseResp
           {
