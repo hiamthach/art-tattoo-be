@@ -230,12 +230,6 @@ public class AppointmentController : ControllerBase
 
       if (result > 0)
       {
-        if (shiftUser != null)
-        {
-          shiftUser.IsBooked = true;
-          await _shiftRepo.UpdateShiftUserAsync(shiftUser);
-        }
-
         if (bookCount == 0)
         {
           await _cacheService.Set($"bookCount:{payload.UserId}", 1, TimeSpan.FromHours(12));
@@ -549,6 +543,17 @@ public class AppointmentController : ControllerBase
         appointment.Notes = body.Notes ?? appointment.Notes;
         appointment.DoneBy = body.ArtistId ?? appointment.DoneBy;
         appointment.Status = body.Status ?? appointment.Status;
+
+        // Confirmation or Reschedule appointment
+        if (body.Status != AppointmentStatusEnum.Pending && appointment.DoneBy != null)
+        {
+          var shiftUser = appointment.Shift.ShiftUsers.FirstOrDefault(su => su.StuUserId == appointment.DoneBy);
+          if (shiftUser != null)
+          {
+            shiftUser.IsBooked = true;
+            await _shiftRepo.UpdateShiftUserAsync(shiftUser);
+          }
+        }
 
         var result = await _appointmentRepo.UpdateAsync(appointment);
 

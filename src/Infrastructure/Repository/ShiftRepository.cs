@@ -46,8 +46,37 @@ public class ShiftRepository : IShiftRepository
     return await _dbContext.SaveChangesAsync();
   }
 
-  public async Task<int> UpdateAsync(Guid id, Shift shift)
+  public async Task<int> UpdateAsync(Guid id, Shift shift, UpdateShift req)
   {
+    req.AssignArtists?.ForEach(a =>
+      {
+        var shiftUser = shift.ShiftUsers.FirstOrDefault(su => su.StuUserId == a);
+
+        if (shiftUser == null)
+        {
+          shift.ShiftUsers.Add(new ShiftUser
+          {
+            ShiftId = id,
+            StuUserId = a,
+            IsBooked = false,
+          });
+        }
+        else
+        {
+          shiftUser.IsBooked = false;
+        }
+      });
+
+    req.UnassignArtists?.ForEach(a =>
+    {
+      var shiftUser = shift.ShiftUsers.FirstOrDefault(su => su.StuUserId == a);
+
+      if (shiftUser != null)
+      {
+        shift.ShiftUsers.Remove(shiftUser);
+      }
+    });
+
     _dbContext.Update(shift);
 
     return await _dbContext.SaveChangesAsync();

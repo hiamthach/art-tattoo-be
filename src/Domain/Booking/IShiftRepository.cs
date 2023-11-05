@@ -11,7 +11,7 @@ public interface IShiftRepository
   Task<Shift?> GetByIdAsync(Guid id);
   Task<int> CreateAsync(Shift shift);
   Task<int> CreateAsync(IEnumerable<Shift> shifts);
-  Task<int> UpdateAsync(Guid id, Shift shift);
+  Task<int> UpdateAsync(Guid id, Shift shift, UpdateShift req);
   Task<int> RegisterUserAsync(Guid shiftId, Guid stuUserId);
   Task<int> DeleteAsync(Guid id);
 }

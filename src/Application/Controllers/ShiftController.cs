@@ -315,10 +315,15 @@ public class ShiftController : ControllerBase
         return ErrorResp.Forbidden("You don't have permission to access this studio");
       }
 
+      if (DateTime.Compare(req.End, req.Start) <= 0)
+      {
+        return ErrorResp.BadRequest("End date must be greater than start date");
+      }
+
       shift.Start = req.Start;
       shift.End = req.End;
 
-      var result = await _shiftRepo.UpdateAsync(id, shift);
+      var result = await _shiftRepo.UpdateAsync(id, shift, req);
 
       if (result > 0)
       {
