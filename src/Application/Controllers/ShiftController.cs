@@ -35,7 +35,7 @@ public class ShiftController : ControllerBase
   }
 
   [HttpGet]
-  public async Task<IActionResult> GetShifts([FromQuery] ShiftQuery query)
+  public async Task<IActionResult> GetShifts([FromQuery] ShiftQueryReq query)
   {
     _logger.LogInformation("GetShifts");
     if (DateTime.Compare(query.End, query.Start) <= 0)
@@ -58,7 +58,76 @@ public class ShiftController : ControllerBase
         return Ok(cachedShifts);
       }
 
-      var result = _shiftRepo.GetAllAsync(query);
+      var q = new ShiftQuery()
+      {
+        Start = query.Start,
+        End = query.End,
+        StudioId = query.StudioId,
+        ArtistId = query.ArtistId,
+        IsStudio = false
+      };
+
+      var result = _shiftRepo.GetAllAsync(q);
+
+      var mappedResult = _mapper.Map<List<ShiftDto>>(result);
+
+      await _cacheService.Set(redisKey, mappedResult);
+      return Ok(mappedResult);
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
+
+  [Protected]
+  [HttpGet("studio")]
+  [Permission(PermissionSlugConst.MANAGE_STUDIO_ARTIST_SCHEDULE, PermissionSlugConst.VIEW_STUDIO_ARTIST_SCHEDULE)]
+  public async Task<IActionResult> GetStudioShifts([FromQuery] ShiftQueryReq query)
+  {
+    _logger.LogInformation("GetShifts");
+    if (DateTime.Compare(query.End, query.Start) <= 0)
+    {
+      return ErrorResp.BadRequest("End date must be greater than start date");
+    }
+
+    if (HttpContext.Items["payload"] is not Payload payload || HttpContext.Items["permission"] is not string permission)
+    {
+      return ErrorResp.Forbidden("You don't have permission to access this studio");
+    }
+
+    var studioId = _studioRepo.GetStudioIdByUserId(payload.UserId);
+
+    if (studioId == Guid.Empty)
+    {
+      return ErrorResp.Forbidden("You don't have permission to access this studio");
+    }
+
+    try
+    {
+      var redisKey = $"shifts:stu_{studioId}:{query.Start.Ticks}:{query.End.Ticks}:stu_{query.StudioId}";
+
+      if (query.ArtistId != null)
+      {
+        redisKey += $":art_{query.ArtistId}";
+      }
+
+      var cachedShifts = await _cacheService.Get<List<ShiftDto>>(redisKey);
+      if (cachedShifts != null)
+      {
+        return Ok(cachedShifts);
+      }
+
+      var q = new ShiftQuery()
+      {
+        Start = query.Start,
+        End = query.End,
+        StudioId = query.StudioId,
+        ArtistId = query.ArtistId,
+        IsStudio = true
+      };
+
+      var result = _shiftRepo.GetAllAsync(q);
 
       var mappedResult = _mapper.Map<List<ShiftDto>>(result);
 
