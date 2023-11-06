@@ -638,6 +638,7 @@ public class AppointmentController : ControllerBase
         if (result > 0)
         {
           await _cacheService.ClearWithPattern($"appointments");
+          await _cacheService.ClearWithPattern($"shifts");
           await _cacheService.Remove($"appointment:{id}");
           if (_mailService != null)
           {
