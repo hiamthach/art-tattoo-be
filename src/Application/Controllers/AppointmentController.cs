@@ -640,10 +640,6 @@ public class AppointmentController : ControllerBase
           await _cacheService.ClearWithPattern($"appointments");
           await _cacheService.ClearWithPattern($"shifts");
           await _cacheService.Remove($"appointment:{id}");
-          if (_mailService != null)
-          {
-            await _mailService.SendEmailAsync(appointment.User.Email, "Lịch hẹn thay đổi", $"Lịch hẹn của bạn ở {appointment.Shift.Studio.Name} vừa cập nhật. Vui lòng kiểm tra lại lịch hẹn của bạn.");
-          }
           return Ok(new BaseResp
           {
             Message = "Appointment updated successfully",
