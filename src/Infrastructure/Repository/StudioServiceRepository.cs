@@ -51,7 +51,8 @@ namespace art_tattoo_be.src.Infrastructure.Repository
     {
       string searchKeyword = req.SearchKeyword ?? "";
       var query = _dbContext.StudioServices
-      .Where(stuser => stuser.Name.Contains(searchKeyword));
+      .Where(stuser => stuser.Name.Contains(searchKeyword))
+      .Where(stuser => stuser.StudioId == req.StudioId);
       int totalCount = query.Count();
 
       var studioService = query

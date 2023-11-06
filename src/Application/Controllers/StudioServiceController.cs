@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using art_tattoo_be.Application.DTOs.Studio;
 using art_tattoo_be.Application.Shared;
 using art_tattoo_be.Application.Shared.Handler;
 using art_tattoo_be.Domain.Category;
 using art_tattoo_be.Domain.Media;
 using art_tattoo_be.Domain.Studio;
+using art_tattoo_be.Infrastructure.Cache;
 using art_tattoo_be.Infrastructure.Database;
 using art_tattoo_be.Infrastructure.Repository;
 using art_tattoo_be.src.Application.DTOs.StudioService;
@@ -30,21 +32,33 @@ namespace art_tattoo_be.src.Application.Controllers
         private readonly IMapper _mapper;
         private readonly ICategoryRepository _cateRepo;
         private readonly IStudioRepository _stuRepo;
+        private readonly ICacheService _cacheService;
 
-        public StudioServiceController(ILogger<StudioServiceController> logger, ArtTattooDbContext dbContext, IMapper mapper)
+        public StudioServiceController(ILogger<StudioServiceController> logger, ArtTattooDbContext dbContext, IMapper mapper, ICacheService cacheService)
         {
             _logger = logger;
             _stuserRepo = new StudioServiceRepository(dbContext);
             _mapper = mapper;
             _cateRepo = new CategoryRepository(dbContext);
             _stuRepo = new StudioRepository(dbContext);
+            _cacheService = cacheService;
         }
         [HttpPost()]
-        public IActionResult GetAll([FromBody] GetStudioServiceQuery req)
+        public async Task<IActionResult> GetAll([FromBody] GetStudioServiceQuery req)
         {
             _logger.LogInformation("Get All Studio Service");
             try
             {
+                var redisKey = $"studioServices{req.StudioId}:{req.Page}:{req.PageSize}";
+                if (req.SearchKeyword != null)
+                {
+                    redisKey += $"?search={req.SearchKeyword}";
+                }
+                var studioServiceCache = await _cacheService.Get<StudioServiceResp>(redisKey);
+                if (studioServiceCache != null)
+                {
+                    return Ok(studioServiceCache);
+                }
                 StudioServiceResp resp = new()
                 {
                     Page = req.Page,
@@ -52,8 +66,13 @@ namespace art_tattoo_be.src.Application.Controllers
                 };
 
                 var studioServices = _stuserRepo.GetStudioServicePages(req);
+
                 resp.Total = studioServices.TotalCount;
+
                 resp.Data = _mapper.Map<List<StudioServiceDto>>(studioServices.StudioServices);
+
+                await _cacheService.Set(redisKey, resp);
+
                 return Ok(resp);
             }
             catch (Exception e)
@@ -64,19 +83,29 @@ namespace art_tattoo_be.src.Application.Controllers
 
         }
         [HttpGet("{id}")]
-        public IActionResult GetById([FromRoute] Guid id)
+        public async Task<IActionResult> GetById([FromRoute] Guid id)
         {
             try
             {
+                var redisKey = $"studioService:{id}";
+                var studioServiceCahe = await _cacheService.Get<StudioServiceDto>(redisKey);
+
+                if (studioServiceCahe != null)
+                {
+                    return Ok(studioServiceCahe);
+                }
+
                 _logger.LogInformation("Get Studio Service by @id: ", id);
-                var StudioServiceDto = _mapper.Map<StudioServiceDto>(_stuserRepo.GetById(id));
-                if (StudioServiceDto == null)
+                var studioServiceDto = _mapper.Map<StudioServiceDto>(_stuserRepo.GetById(id));
+                if (studioServiceDto == null)
                 {
                     return ErrorResp.NotFound("Studio Service not found");
                 }
                 else
                 {
-                    return Ok(StudioServiceDto);
+                    await _cacheService.Set(redisKey, studioServiceDto);
+
+                    return Ok(studioServiceDto);
                 }
             }
             catch (Exception e)
@@ -137,7 +166,7 @@ namespace art_tattoo_be.src.Application.Controllers
             }
         }
         [HttpDelete("{id}")]
-        public IActionResult DeleteStudioService([FromRoute] Guid id)
+        public async Task<IActionResult> DeleteStudioService([FromRoute] Guid id)
         {
             _logger.LogInformation("Delete Studio Service Id: @id", id);
             try
@@ -145,6 +174,10 @@ namespace art_tattoo_be.src.Application.Controllers
                 var result = _stuserRepo.DeleteStudioService(id);
                 if (result > 0)
                 {
+                    var redisKey = $"studioService:{id}";
+                    await _cacheService.Remove(redisKey);
+                    await _cacheService.ClearWithPattern("studioServices");
+
                     return Ok(new BaseResp { Message = "Delete Succesfully", Success = true });
                 }
                 else
@@ -159,7 +192,7 @@ namespace art_tattoo_be.src.Application.Controllers
             }
         }
         [HttpPut("{id}")]
-        public IActionResult UpdateStudioService([FromBody] UpdateStudioServiceReq req, [FromRoute] Guid id)
+        public async Task<IActionResult> UpdateStudioService([FromBody] UpdateStudioServiceReq req, [FromRoute] Guid id)
         {
             _logger.LogInformation("Update Studio Service @id", id);
             try
@@ -195,6 +228,10 @@ namespace art_tattoo_be.src.Application.Controllers
 
                 if (result > 0)
                 {
+                    var redisKey = $"studioService:{id}";
+                    await _cacheService.Remove(redisKey);
+                    await _cacheService.ClearWithPattern("studioServices");
+
                     return Ok(new BaseResp
                     {
                         Message = "Update Studio Service successfully",

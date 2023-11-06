@@ -8,6 +8,7 @@ namespace art_tattoo_be.src.Application.DTOs.StudioService
 {
     public class GetStudioServiceQuery : PaginationReq
     {
+        public Guid StudioId { get; set; }
         public string? SearchKeyword { get; set; } = null!;
     }
 }
