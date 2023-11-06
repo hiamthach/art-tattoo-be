@@ -21,9 +21,20 @@ public class ShiftRepository : IShiftRepository
       .Where(s => s.Start >= query.Start && s.End <= query.End)
       .Where(s => s.StudioId == query.StudioId);
 
-    if (query.ArtistId != null)
+    if (!query.IsStudio && query.ArtistId == null)
     {
-      q = q.Where(s => s.ShiftUsers.Any(su => su.StuUserId == query.ArtistId && su.IsBooked == false));
+      q = q.Where(s => s.ShiftUsers.Any(su => su.StuUserId != Guid.Empty && su.IsBooked == false));
+    }
+    else if (query.ArtistId != null)
+    {
+      if (query.IsStudio)
+      {
+        q = q.Where(s => s.ShiftUsers.Any(su => su.StuUserId == query.ArtistId));
+      }
+      else
+      {
+        q = q.Where(s => s.ShiftUsers.Any(su => su.StuUserId == query.ArtistId && su.IsBooked == false));
+      }
     }
 
     return q
@@ -46,8 +57,37 @@ public class ShiftRepository : IShiftRepository
     return await _dbContext.SaveChangesAsync();
   }
 
-  public async Task<int> UpdateAsync(Guid id, Shift shift)
+  public async Task<int> UpdateAsync(Guid id, Shift shift, UpdateShift req)
   {
+    req.AssignArtists?.ForEach(a =>
+      {
+        var shiftUser = shift.ShiftUsers.FirstOrDefault(su => su.StuUserId == a);
+
+        if (shiftUser == null)
+        {
+          shift.ShiftUsers.Add(new ShiftUser
+          {
+            ShiftId = id,
+            StuUserId = a,
+            IsBooked = false,
+          });
+        }
+        else
+        {
+          shiftUser.IsBooked = false;
+        }
+      });
+
+    req.UnassignArtists?.ForEach(a =>
+    {
+      var shiftUser = shift.ShiftUsers.FirstOrDefault(su => su.StuUserId == a);
+
+      if (shiftUser != null)
+      {
+        shift.ShiftUsers.Remove(shiftUser);
+      }
+    });
+
     _dbContext.Update(shift);
 
     return await _dbContext.SaveChangesAsync();

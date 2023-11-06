@@ -15,6 +15,8 @@ using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Application.Shared.Constant;
 using art_tattoo_be.Domain.RoleBase;
 using art_tattoo_be.Domain.Studio;
+using art_tattoo_be.Application.DTOs.Shift;
+using art_tattoo_be.Core.Mail;
 
 [ApiController]
 [Route("api/appointment")]
@@ -26,11 +28,14 @@ public class AppointmentController : ControllerBase
   private readonly IStudioRepository _studioRepo;
   private readonly IMapper _mapper;
   private readonly ICacheService _cacheService;
+  private readonly IMailService _mailService;
+
 
   public AppointmentController(
     ILogger<AppointmentController> logger,
     ArtTattooDbContext dbContext,
     IMapper mapper,
+    IMailService mailService,
     ICacheService cacheService
   )
   {
@@ -40,6 +45,7 @@ public class AppointmentController : ControllerBase
     _studioRepo = new StudioRepository(dbContext);
     _mapper = mapper;
     _cacheService = cacheService;
+    _mailService = mailService;
   }
 
   [HttpGet("status")]
@@ -248,12 +254,6 @@ public class AppointmentController : ControllerBase
 
       if (result > 0)
       {
-        if (shiftUser != null)
-        {
-          shiftUser.IsBooked = true;
-          await _shiftRepo.UpdateShiftUserAsync(shiftUser);
-        }
-
         if (bookCount == 0)
         {
           await _cacheService.Set($"bookCount:{payload.UserId}", 1, TimeSpan.FromHours(12));
@@ -437,6 +437,16 @@ public class AppointmentController : ControllerBase
     {
       var redisKey = $"appointments:studio_{studioId}:{query.Page}:{query.PageSize}";
 
+      if (query.StartDate != null)
+      {
+        redisKey += $":{query.StartDate?.Ticks}";
+      }
+
+      if (query.EndDate != null)
+      {
+        redisKey += $":{query.EndDate?.Ticks}";
+      }
+
       var cached = await _cacheService.Get<AppointmentResp>(redisKey);
       if (cached != null)
       {
@@ -448,7 +458,9 @@ public class AppointmentController : ControllerBase
         Page = query.Page,
         PageSize = query.PageSize,
         StudioId = studioId,
-        UserId = null
+        UserId = null,
+        StartDate = query.StartDate,
+        EndDate = query.EndDate,
       };
 
       var appointments = _appointmentRepo.GetAllAsync(appointmentQuery);
@@ -568,12 +580,69 @@ public class AppointmentController : ControllerBase
         appointment.DoneBy = body.ArtistId ?? appointment.DoneBy;
         appointment.Status = body.Status ?? appointment.Status;
 
+        // Confirmation or Reschedule appointment
+        if (body.Status != AppointmentStatusEnum.Pending && appointment.DoneBy != null)
+        {
+          if (appointment.Shift.ShiftUsers != null)
+          {
+            var shiftUser = appointment.Shift.ShiftUsers.FirstOrDefault(su => su.StuUserId == appointment.DoneBy);
+            if (shiftUser != null)
+            {
+              shiftUser.IsBooked = true;
+              await _shiftRepo.UpdateShiftUserAsync(shiftUser);
+            }
+          }
+
+          if (body.Duration != null)
+          {
+            var startTime = appointment.Shift.Start;
+            var endTime = startTime.AddHours(body.Duration.Value.TotalHours);
+
+            var shiftsOfUser = _shiftRepo.GetAllAsync(new ShiftQuery
+            {
+              ArtistId = appointment.DoneBy,
+              Start = startTime,
+              End = endTime,
+              IsStudio = true,
+              StudioId = appointment.Shift.StudioId,
+            });
+
+            if (shiftsOfUser != null)
+            {
+              if (shiftsOfUser.Any(s => s.ShiftUsers.Any(su => su.IsBooked)))
+              {
+                return ErrorResp.BadRequest("Artist is not available at this time");
+              }
+              else
+              {
+                for (int i = 0; i < shiftsOfUser.Count(); i++)
+                {
+                  var shiftUser = shiftsOfUser.ElementAt(i).ShiftUsers.FirstOrDefault(su => su.StuUserId == appointment.DoneBy);
+                  if (shiftUser != null)
+                  {
+                    shiftUser.IsBooked = true;
+                    await _shiftRepo.UpdateShiftUserAsync(shiftUser);
+                  }
+                }
+              }
+            }
+            else
+            {
+              return ErrorResp.BadRequest("Artist is not available at this time");
+            }
+          }
+        }
+
         var result = await _appointmentRepo.UpdateAsync(appointment);
 
         if (result > 0)
         {
           await _cacheService.ClearWithPattern($"appointments");
           await _cacheService.Remove($"appointment:{id}");
+          if (_mailService != null)
+          {
+            await _mailService.SendEmailAsync(appointment.User.Email, "Lịch hẹn thay đổi", $"Lịch hẹn của bạn ở {appointment.Shift.Studio.Name} vừa cập nhật. Vui lòng kiểm tra lại lịch hẹn của bạn.");
+          }
           return Ok(new BaseResp
           {
             Message = "Appointment updated successfully",
