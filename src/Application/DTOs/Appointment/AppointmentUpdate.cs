@@ -8,4 +8,5 @@ public class AppointmentUpdate
   public String? Notes { get; set; }
   public Guid? ArtistId { get; set; }
   public AppointmentStatusEnum? Status { get; set; }
+  public TimeSpan? Duration { get; set; }
 }
