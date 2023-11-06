@@ -25,7 +25,6 @@ public class StudioController : ControllerBase
   private readonly ICacheService _cacheService;
   private readonly IStudioRepository _studioRepo;
   private readonly IUserRepository _userRepo;
-
   private readonly IMapper _mapper;
 
   public StudioController(ILogger<StudioController> logger, ArtTattooDbContext dbContext, ICacheService cacheService, IMapper mapper)
