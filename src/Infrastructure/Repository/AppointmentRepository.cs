@@ -1,10 +1,10 @@
+namespace art_tattoo_be.Infrastructure.Repository;
+
 using art_tattoo_be.Application.DTOs.Appointment;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Domain.Booking;
 using art_tattoo_be.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
-
-namespace art_tattoo_be.Infrastructure.Repository;
 
 public class AppointmentRepository : IAppointmentRepository
 {
@@ -49,6 +49,7 @@ public class AppointmentRepository : IAppointmentRepository
   {
     return _dbContext.Appointments
       .Include(app => app.Shift).ThenInclude(s => s.ShiftUsers)
+      .Include(app => app.Shift.Studio)
       .Include(app => app.User)
       .Include(app => app.Artist).ThenInclude(a => a.User)
       .FirstOrDefault(a => a.Id == id);
@@ -62,7 +63,6 @@ public class AppointmentRepository : IAppointmentRepository
 
   public Task<int> UpdateAsync(Appointment appointment)
   {
-
     _dbContext.Update(appointment);
     return _dbContext.SaveChangesAsync();
   }
