@@ -8,6 +8,8 @@ public class CreateStudioReq
 {
   public string Name { get; set; } = null!;
 
+  public string? Slogan { get; set; }
+  public string? Introduction { get; set; }
   public string? Detail { get; set; }
   public string? Logo { get; set; }
   [Required]

@@ -35,6 +35,12 @@ public class CacheService : ICacheService
     return _database.StringSetAsync($"{_redisKey}:{key}", JsonSerializer.Serialize(value), expiration);
   }
 
+  public async Task<bool> Update<T>(string key, T value)
+  {
+    TimeSpan? ttl = await _database.KeyTimeToLiveAsync($"{_redisKey}:{key}");
+    return await _database.StringSetAsync($"{_redisKey}:{key}", JsonSerializer.Serialize(value), ttl);
+  }
+
   public Task Remove(string key)
   {
     return _database.KeyDeleteAsync($"{_redisKey}:{key}");
@@ -54,7 +60,7 @@ public class CacheService : ICacheService
   {
     var endpoints = _database.Multiplexer.GetEndPoints();
     var server = _database.Multiplexer.GetServer(endpoints.First());
-    var keys = server.Keys(pattern: $"{_redisKey}:{pattern}:*").ToArray();
+    var keys = server.Keys(pattern: $"{_redisKey}:{pattern}*").ToArray();
     return _database.KeyDeleteAsync(keys);
   }
 

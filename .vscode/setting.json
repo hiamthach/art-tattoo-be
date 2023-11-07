@@ -16,6 +16,8 @@
     "signalr",
     "Upto",
     "usernotfound",
-    "Xunit"
+    "Xunit",
+    "pubnub",
+    "PUBNUB"
   ]
 }

@@ -31,8 +31,14 @@ public class Studio
   public List<StudioWorkingTime> WorkingTimes { get; set; } = new();
   public List<StudioUser> StudioUsers { get; set; } = new();
   public List<Testimonial> Testimonials { get; set; } = new();
-  public List<Appointment> Appointments { get; set; } = new();
   public List<Invoice> Invoices { get; set; } = new();
   public List<Media> ListMedia { get; set; } = new();
   public List<Blog> Blogs { get; set; } = new();
+  public List<Shift> Shifts { get; set; } = new();
+}
+
+public class StudioList
+{
+  public IEnumerable<Studio> Studios { get; set; } = new List<Studio>();
+  public int TotalCount { get; set; }
 }

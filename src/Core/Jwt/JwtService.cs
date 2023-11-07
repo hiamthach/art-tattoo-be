@@ -1,5 +1,6 @@
 namespace art_tattoo_be.Core.Jwt;
 
+using art_tattoo_be.Application.Shared.Enum;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -8,7 +9,7 @@ using System.Text;
 
 public interface IJwtService
 {
-  string GenerateToken(Guid userId, Guid sessionId, int roleId, int exp);
+  string GenerateToken(Guid userId, Guid sessionId, int roleId, UserStatusEnum status, int exp);
   Payload? ValidateToken(string token);
 }
 
@@ -23,7 +24,7 @@ public class JwtService : IJwtService
     _handler = new JwtSecurityTokenHandler();
   }
 
-  public string GenerateToken(Guid userId, Guid sessionId, int roleId, int exp)
+  public string GenerateToken(Guid userId, Guid sessionId, int roleId, UserStatusEnum status, int exp)
   {
     var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET") ?? "ArtTattooSecret@@");
     var tokenDescriptor = new SecurityTokenDescriptor
@@ -32,6 +33,7 @@ public class JwtService : IJwtService
       {
         new("sessionId", sessionId.ToString()),
         new("roleId", roleId.ToString()),
+        new("status", status.ToString())
       }),
       Issuer = userId.ToString(),
       Expires = DateTime.UtcNow.AddSeconds(exp),
@@ -62,7 +64,8 @@ public class JwtService : IJwtService
     {
       UserId = Guid.Parse(result.Issuer),
       RoleId = int.Parse(result.Claims.First(x => x.Type == "roleId").Value),
-      SessionId = Guid.Parse(result.Claims.First(x => x.Type == "sessionId").Value)
+      SessionId = Guid.Parse(result.Claims.First(x => x.Type == "sessionId").Value),
+      Status = Enum.Parse<UserStatusEnum>(result.Claims.First(x => x.Type == "status").Value)
     };
 
     return payload;

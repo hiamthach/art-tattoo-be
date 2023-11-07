@@ -20,3 +20,8 @@ public class StudioService
   public Category Category { get; set; } = null!;
   public List<Media> ListMedia { get; set; } = new();
 }
+public class StudioServiceList
+{
+  public IEnumerable<StudioService> StudioServices { get; set; } = new List<StudioService>();
+  public int TotalCount { get; set; }
+}

@@ -3,11 +3,11 @@ namespace art_tattoo_be.Application.Controllers;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using art_tattoo_be.Application.DTOs.RoleBase;
-using art_tattoo_be.Infrastructure.Repository;
 using art_tattoo_be.Domain.RoleBase;
-using art_tattoo_be.Infrastructure.Database;
 using art_tattoo_be.Application.Shared;
 using art_tattoo_be.Application.Shared.Handler;
+using art_tattoo_be.Application.Middlewares;
+using art_tattoo_be.Infrastructure.Cache;
 
 [Produces("application/json")]
 [ApiController]
@@ -16,24 +16,40 @@ public class RoleBaseController : ControllerBase
 {
   private readonly ILogger<RoleBaseController> _logger;
   private readonly IRoleBaseRepository _roleBaseRepo;
+  private readonly ICacheService _cacheService;
   private readonly IMapper _mapper;
 
-  public RoleBaseController(ILogger<RoleBaseController> logger, ArtTattooDbContext dbContext, IMapper mapper)
+  public RoleBaseController(ILogger<RoleBaseController> logger, IMapper mapper, IRoleBaseRepository roleBaseRepository, ICacheService cacheService)
   {
     _logger = logger;
-    _roleBaseRepo = new RoleBaseRepository(dbContext);
+    _roleBaseRepo = roleBaseRepository;
     _mapper = mapper;
+    _cacheService = cacheService;
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_PERMISSION)]
   [HttpGet("permission")]
-  public IActionResult GetPermission()
+  public async Task<IActionResult> GetPermission()
   {
     _logger.LogInformation("GetPermission");
     try
     {
+      var redisKey = "permissions";
+
+      var permissionsCache = await _cacheService.Get<List<PermissionDto>>(redisKey);
+      if (permissionsCache != null)
+      {
+        return Ok(permissionsCache);
+      }
+
       var permissions = _roleBaseRepo.GetPermissions();
 
-      return Ok(_mapper.Map<List<PermissionDto>>(permissions));
+      var permissionsMapped = _mapper.Map<List<PermissionDto>>(permissions);
+
+      await _cacheService.Set(redisKey, permissionsMapped, TimeSpan.FromDays(1));
+
+      return Ok(permissionsMapped);
     }
     catch (Exception e)
     {
@@ -42,8 +58,10 @@ public class RoleBaseController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_PERMISSION)]
   [HttpPost("permission")]
-  public IActionResult CreatePermission([FromBody] CreatePermissionReq req)
+  public async Task<IActionResult> CreatePermission([FromBody] CreatePermissionReq req)
   {
     _logger.LogInformation("CreatePermission: {@req}", req);
     try
@@ -56,6 +74,9 @@ public class RoleBaseController : ControllerBase
       };
       var result = _roleBaseRepo.CreatePermission(p);
 
+      var redisKey = "permissions";
+
+      await _cacheService.Remove(redisKey);
       if (result > 0)
       {
         return Ok(new CreatePermissionResp
@@ -75,8 +96,10 @@ public class RoleBaseController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_PERMISSION)]
   [HttpPut("permission/{slug}")]
-  public IActionResult UpdatePermission([FromRoute] string slug, [FromBody] UpdatePermissionReq req)
+  public async Task<IActionResult> UpdatePermission([FromRoute] string slug, [FromBody] UpdatePermissionReq req)
   {
     _logger.LogInformation("UpdatePermission");
 
@@ -104,11 +127,15 @@ public class RoleBaseController : ControllerBase
 
       var result = _roleBaseRepo.UpdatePermission(p);
 
+      var redisKey = "permissions";
+
+      await _cacheService.Remove(redisKey);
       if (result > 0)
       {
         return Ok(new BaseResp
         {
-          Message = "Update permission successfully!"
+          Message = "Update permission successfully!",
+          Success = true
         });
       }
       else
@@ -122,8 +149,10 @@ public class RoleBaseController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_PERMISSION)]
   [HttpDelete("permission/{slug}")]
-  public IActionResult DeletePermission([FromRoute] string slug)
+  public async Task<IActionResult> DeletePermission([FromRoute] string slug)
   {
     _logger.LogInformation("DeletePermission");
 
@@ -131,11 +160,16 @@ public class RoleBaseController : ControllerBase
     {
       var result = _roleBaseRepo.DeletePermission(slug);
 
+      var redisKey = "permissions";
+
+      await _cacheService.Remove(redisKey);
+
       if (result > 0)
       {
         return Ok(new BaseResp
         {
-          Message = "Delete permission successfully!"
+          Message = "Delete permission successfully!",
+          Success = true
         });
       }
       else
@@ -149,16 +183,30 @@ public class RoleBaseController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_ROLE)]
   [HttpGet("role")]
-  public IActionResult GetRole()
+  public async Task<IActionResult> GetRole()
   {
     _logger.LogInformation("GetRole");
 
     try
     {
+      var redisKey = "roles";
+
+      var rolesCache = await _cacheService.Get<List<RoleDto>>(redisKey);
+      if (rolesCache != null)
+      {
+        return Ok(rolesCache);
+      }
+
       var roles = _roleBaseRepo.GetRoles();
 
-      return Ok(_mapper.Map<List<RoleDto>>(roles));
+      var rolesMapped = _mapper.Map<List<RoleDto>>(roles);
+
+      await _cacheService.Set(redisKey, rolesMapped, TimeSpan.FromDays(1));
+
+      return Ok(rolesMapped);
     }
     catch (Exception e)
     {
@@ -166,8 +214,10 @@ public class RoleBaseController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_ROLE)]
   [HttpPost("role")]
-  public IActionResult CreateRole([FromBody] CreateRoleReq req)
+  public async Task<IActionResult> CreateRole([FromBody] CreateRoleReq req)
   {
     _logger.LogInformation("CreateRole");
 
@@ -178,11 +228,16 @@ public class RoleBaseController : ControllerBase
         Name = req.Name,
       });
 
+      var redisKey = "roles";
+
+      await _cacheService.ClearWithPattern(redisKey);
+
       if (result > 0)
       {
-        return Ok(new CreateRoleResp
+        return Ok(new BaseResp
         {
-          Message = "Create role successfully!"
+          Message = "Create role successfully!",
+          Success = true
         });
       }
       else
@@ -196,15 +251,26 @@ public class RoleBaseController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_ROLE)]
   [HttpGet("role/{id}")]
-  public IActionResult GetRoleById([FromRoute] int id)
+  public async Task<IActionResult> GetRoleById([FromRoute] int id)
   {
     _logger.LogInformation("GetRoleById");
 
     try
     {
-      var role = _roleBaseRepo.GetRoleById(id);
+      var redisKey = $"roles:{id}";
+      var roleCache = await _cacheService.Get<RoleDto>(redisKey);
+      if (roleCache != null)
+      {
+        return Ok(roleCache);
+      }
 
+      var role = _roleBaseRepo.GetRoleById(id);
+      var roleMapped = _mapper.Map<RoleDto>(role);
+
+      await _cacheService.Set(redisKey, roleMapped, TimeSpan.FromDays(1));
       if (role == null)
       {
         return NotFound(new BaseResp
@@ -213,7 +279,7 @@ public class RoleBaseController : ControllerBase
         });
       }
 
-      return Ok(role);
+      return Ok(roleMapped);
     }
     catch (Exception e)
     {
@@ -221,8 +287,10 @@ public class RoleBaseController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_ROLE)]
   [HttpPut("role/{id}")]
-  public IActionResult UpdateRole([FromRoute] int id, [FromBody] UpdateRoleReq req)
+  public async Task<IActionResult> UpdateRole([FromRoute] int id, [FromBody] UpdateRoleReq req)
   {
     _logger.LogInformation("UpdateRole");
 
@@ -241,11 +309,16 @@ public class RoleBaseController : ControllerBase
       // update the field if not null
       var result = _roleBaseRepo.UpdateRolePermission(id, req.PermissionIds);
 
+      var redisKey = "roles";
+
+      await _cacheService.ClearWithPattern(redisKey);
+
       if (result > 0)
       {
         return Ok(new BaseResp
         {
-          Message = "Update role successfully!"
+          Message = "Update role successfully!",
+          Success = true
         });
       }
       else
@@ -259,23 +332,46 @@ public class RoleBaseController : ControllerBase
     }
   }
 
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_ROLE)]
   [HttpDelete("role/{id}")]
-  public IActionResult DeleteRole([FromRoute] int id)
+  public async Task<IActionResult> DeleteRole([FromRoute] int id)
   {
     _logger.LogInformation("DeleteRole");
 
     var result = _roleBaseRepo.DeleteRole(id);
 
+    var redisKey = "roles";
+
+    await _cacheService.ClearWithPattern(redisKey);
+
     if (result > 0)
     {
       return Ok(new BaseResp
       {
-        Message = "Delete role successfully!"
+        Message = "Delete role successfully!",
+        Success = true
       });
     }
     else
     {
       return ErrorResp.SomethingWrong("Delete role failed!");
     }
+  }
+
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_OWNED_STUDIO, PermissionSlugConst.MANAGE_STUDIO)]
+  [HttpGet("role-base/test")]
+  public IActionResult Test()
+  {
+    _logger.LogInformation("Test");
+
+    var permissions = HttpContext.Items["permission"];
+
+    return Ok(new
+    {
+      Permission = permissions,
+      Message = "Success"
+    });
   }
 }

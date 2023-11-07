@@ -17,6 +17,7 @@ public class User
   public string? Phone { get; set; }
   public string? Address { get; set; }
   public string? Avatar { get; set; }
+  public DateTime? Birthday { get; set; }
   public int RoleId { get; set; } = 1;
   public UserStatusEnum Status { get; set; }
   public DateTime CreatedAt { get; set; }
@@ -24,9 +25,15 @@ public class User
   public DateTime LastLoginAt { get; set; }
 
   public Role Role { get; set; } = null!;
-  public StudioUser StudioUser { get; set; } = null!;
+  public List<StudioUser> StudioUsers { get; set; } = null!;
   public List<Testimonial> Testimonials { get; set; } = new();
   public List<Invoice> Invoices { get; set; } = new();
   public List<Media> ListMedia { get; set; } = new();
   public List<Blog> Blogs { get; set; } = new();
+}
+
+public class UserList
+{
+  public IEnumerable<User> Users { get; set; } = new List<User>();
+  public int TotalCount { get; set; }
 }

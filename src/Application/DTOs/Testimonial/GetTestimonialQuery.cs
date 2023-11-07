@@ -8,6 +8,6 @@ namespace art_tattoo_be.src.Application.DTOs.Testimonial
 {
     public class GetTestimonialQuery : PaginationReq
     {
-        public Guid StudiId { get; set; }
+        public Guid StudioId { get; set; }
     }
 }
