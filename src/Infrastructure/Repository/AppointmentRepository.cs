@@ -23,9 +23,10 @@ public class AppointmentRepository : IAppointmentRepository
       .Include(app => app.Artist).ThenInclude(a => a.User)
       .Where(app => query.StudioId == null || app.Shift.StudioId == query.StudioId)
       .Where(app => query.UserId == null || app.UserId == query.UserId)
-      .Where(app => query.Status == null || app.Status == query.Status)
+      .Where(app => query.StatusList == null || query.StatusList.Contains(app.Status))
       .Where(app => query.StartDate == null || app.Shift.Start >= query.StartDate)
-      .Where(app => query.EndDate == null || app.Shift.End <= query.EndDate);
+      .Where(app => query.EndDate == null || app.Shift.End <= query.EndDate)
+      .Where(app => query.SearchKeyword == null || app.User.FullName.Contains(query.SearchKeyword) || app.User.Email.Contains(query.SearchKeyword) || (app.User.Phone != null && app.User.Phone.Contains(query.SearchKeyword)) || app.Artist.User.FullName.Contains(query.SearchKeyword) || app.Artist.User.Email.Contains(query.SearchKeyword) || (app.Artist.User.Phone != null && app.Artist.User.Phone.Contains(query.SearchKeyword)));
 
     int totalCount = q.Count();
 
@@ -44,7 +45,11 @@ public class AppointmentRepository : IAppointmentRepository
 
   public Appointment? GetByIdAsync(Guid id)
   {
-    return _dbContext.Appointments.Include(app => app.Shift).Include(a => a.Artist.User).FirstOrDefault(a => a.Id == id);
+    return _dbContext.Appointments
+      .Include(app => app.Shift).ThenInclude(s => s.ShiftUsers)
+      .Include(app => app.User)
+      .Include(app => app.Artist).ThenInclude(a => a.User)
+      .FirstOrDefault(a => a.Id == id);
   }
 
   public async Task<int> CreateAsync(Appointment appointment)
