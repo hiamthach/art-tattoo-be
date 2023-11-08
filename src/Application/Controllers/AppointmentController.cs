@@ -398,6 +398,38 @@ public class AppointmentController : ControllerBase
             shiftUser.IsBooked = false;
             await _shiftRepo.UpdateShiftUserAsync(shiftUser);
           }
+
+          if (appointment.Duration != null)
+          {
+            var startTime = appointment.Shift.Start;
+            var endTime = startTime.AddHours(appointment.Duration.Value.TotalHours);
+
+            var shiftsOfUser = _shiftRepo.GetAllAsync(new ShiftQuery
+            {
+              ArtistId = appointment.DoneBy,
+              Start = startTime,
+              End = endTime,
+              IsStudio = true,
+              StudioId = appointment.Shift.StudioId,
+            });
+
+            if (shiftsOfUser != null)
+            {
+              for (int i = 0; i < shiftsOfUser.Count(); i++)
+              {
+                var su = shiftsOfUser.ElementAt(i).ShiftUsers.FirstOrDefault(su => su.StuUserId == appointment.DoneBy);
+                if (su != null)
+                {
+                  su.IsBooked = false;
+                  await _shiftRepo.UpdateShiftUserAsync(su);
+                }
+              }
+            }
+            else
+            {
+              return ErrorResp.BadRequest("Artist is not available at this time");
+            }
+          }
         }
 
         var result = await _appointmentRepo.UpdateStatusAsync(id, AppointmentStatusEnum.Canceled);
@@ -405,6 +437,7 @@ public class AppointmentController : ControllerBase
         if (result > 0)
         {
           await _cacheService.ClearWithPattern($"appointments");
+          await _cacheService.ClearWithPattern($"shifts");
           await _cacheService.Remove($"appointment:{id}");
           return Ok(new BaseResp
           {
@@ -603,6 +636,7 @@ public class AppointmentController : ControllerBase
         appointment.Notes = body.Notes ?? appointment.Notes;
         appointment.DoneBy = body.ArtistId ?? appointment.DoneBy;
         appointment.Status = body.Status ?? appointment.Status;
+        appointment.Duration = body.Duration ?? appointment.Duration;
 
         // Confirmation or Reschedule appointment
         if (body.Status != AppointmentStatusEnum.Pending && appointment.DoneBy != null)
@@ -666,6 +700,39 @@ public class AppointmentController : ControllerBase
             {
               shiftUser.IsBooked = false;
               await _shiftRepo.UpdateShiftUserAsync(shiftUser);
+            }
+
+            if (appointment.Duration != null)
+            {
+              var startTime = appointment.Shift.Start;
+              var endTime = startTime.AddHours(appointment.Duration.Value.TotalHours);
+
+              var shiftsOfUser = _shiftRepo.GetAllAsync(new ShiftQuery
+              {
+                ArtistId = appointment.DoneBy,
+                Start = startTime,
+                End = endTime,
+                IsStudio = true,
+                StudioId = appointment.Shift.StudioId,
+              });
+
+              if (shiftsOfUser != null)
+              {
+                for (int i = 0; i < shiftsOfUser.Count(); i++)
+                {
+                  var su = shiftsOfUser.ElementAt(i).ShiftUsers.FirstOrDefault(su => su.StuUserId == appointment.DoneBy);
+                  if (shiftUser != null)
+                  {
+                    shiftUser.IsBooked = false;
+                    await _shiftRepo.UpdateShiftUserAsync(shiftUser);
+                  }
+                }
+
+              }
+              else
+              {
+                return ErrorResp.BadRequest("Artist is not available at this time");
+              }
             }
           }
         }
