@@ -148,7 +148,9 @@ namespace art_tattoo_be.src.Application.Controllers
 
                     if (result > 0)
                     {
-                        return Ok(new BaseResp { Message = "Create successfully", Success = true });
+                        await _cacheService.ClearWithPattern("studioServices");
+
+                        return Ok(new BaseResp { Message = "Created successfully", Success = true });
                     }
                     else
                     {
@@ -157,7 +159,7 @@ namespace art_tattoo_be.src.Application.Controllers
                 }
                 else
                 {
-                    return ErrorResp.NotFound("Could not find Studio or Category");
+                    return ErrorResp.NotFound("Studio or Category not found");
                 }
             }
             catch (Exception e)
@@ -178,7 +180,7 @@ namespace art_tattoo_be.src.Application.Controllers
                     await _cacheService.Remove(redisKey);
                     await _cacheService.ClearWithPattern("studioServices");
 
-                    return Ok(new BaseResp { Message = "Delete Succesfully", Success = true });
+                    return Ok(new BaseResp { Message = "Delete Successfully", Success = true });
                 }
                 else
                 {

@@ -8,12 +8,12 @@ namespace art_tattoo_be.src.Application.DTOs.Testimonial
 {
     public class CreateTestimonialReq
     {
-        Guid StudioId { get; set; }
-        string Title { get; set; } = null!;
-        string Content { get; set; } = null!;
+        public Guid StudioId { get; set; }
+        public string Title { get; set; } = null!;
+        public string Content { get; set; } = null!;
         [Required]
         [Range(0, double.MaxValue, ErrorMessage = "Rating must larger than 0")]
-        double Rating { get; set; }
-        Guid CreatedBy { get; set; }
+        public double Rating { get; set; }
+        public Guid CreatedBy { get; set; }
     }
 }

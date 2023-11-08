@@ -40,7 +40,6 @@ namespace art_tattoo_be.src.Infrastructure.Repository
     {
       return _dbContext.Testimonials
       .Include(tes => tes.User)
-      .Include(tes => tes.StudioId)
       .FirstOrDefault(tes => tes.Id == id) ?? throw new Exception("Testimonial not found");
     }
 
@@ -76,7 +75,9 @@ namespace art_tattoo_be.src.Infrastructure.Repository
 
     public int UpdateTestimonial(Testimonial testimonial)
     {
+      testimonial.UpdatedAt = DateTime.Now;
       _dbContext.Testimonials.Update(testimonial);
+      var test = testimonial.UpdatedAt;
       return _dbContext.SaveChanges();
     }
   }
