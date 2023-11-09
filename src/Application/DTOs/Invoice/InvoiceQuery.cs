@@ -9,3 +9,8 @@ public class InvoiceQuery : PaginationReq
   public Guid? StudioId { get; set; }
   public Guid? UserId { get; set; }
 }
+
+public class GetUserInvoiceQuery : PaginationReq
+{
+  public string? SearchKeyword { get; set; }
+}

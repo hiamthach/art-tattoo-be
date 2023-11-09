@@ -1023,8 +1023,8 @@ namespace art_tattoo_be.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("FullName")
                         .IsRequired()
@@ -1075,7 +1075,7 @@ namespace art_tattoo_be.Migrations
                             Email = "arttattoolover@gmail.com",
                             FullName = "Admin Art Tattoo Lover",
                             LastLoginAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Password = "$2a$11$.OtBLDtL1WKWQZ7sKkrUlOkUj0I5nLNacOqxBPkhCmiMa51zDcb3q",
+                            Password = "$2a$11$GTEKkpt9CDxMydnm2g.zvOLmTnQFIeuD19md2kT.ZX9hlZkUnQDL.",
                             RoleId = 1,
                             Status = "Inactive",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
@@ -1094,9 +1094,9 @@ namespace art_tattoo_be.Migrations
                         },
                         new
                         {
-                            Id = new Guid("00000000-0000-0000-0000-000000000666"),
+                            Id = new Guid("00000000-0000-0000-0000-000000000888"),
                             CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "",
+                            Email = "guestguest123@guestguest123.com",
                             FullName = "Guest",
                             LastLoginAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Password = "",

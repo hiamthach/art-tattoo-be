@@ -19,7 +19,7 @@ public class InvoiceRepository : IInvoiceRepository
     var q = _dbContext.Invoices
       .Include(i => i.User)
       .Include(i => i.Studio)
-      .Include(i => i.Appointment)
+      .Include(i => i.Appointment).ThenInclude(a => a.Shift)
       .Where(app =>
         (query.SearchKeyword == null || app.User.FullName.Contains(query.SearchKeyword) || app.User.Email.Contains(query.SearchKeyword) || (app.User.Phone != null && app.User.Phone.Contains(query.SearchKeyword))) &&
         (query.StudioId == null || app.StudioId == query.StudioId) &&
@@ -46,8 +46,7 @@ public class InvoiceRepository : IInvoiceRepository
     return _dbContext.Invoices
       .Include(i => i.User)
       .Include(i => i.Studio)
-      .Include(i => i.Appointment)
-      .Include(i => i.Appointment.Shift)
+      .Include(i => i.Appointment).ThenInclude(a => a.Shift)
       .FirstOrDefault(i => i.Id == id);
   }
 

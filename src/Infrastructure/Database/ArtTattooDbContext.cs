@@ -105,7 +105,7 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.HasMany(e => e.ListMedia).WithMany(e => e.UserMedia);
       entity.HasIndex(e => e.Email).IsUnique();
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
-      entity.Property(e => e.Email).IsRequired().HasMaxLength(30);
+      entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
       entity.Property(e => e.Password).IsRequired().HasMaxLength(100);
       entity.Property(e => e.FullName).UseCollation(COLLATION).IsRequired().HasMaxLength(30);
       entity.Property(e => e.Phone).IsRequired(false).HasMaxLength(15);
@@ -142,7 +142,7 @@ public class ArtTattooDbContext : IdentityDbContext
         new User
         {
           Id = Guid.Parse(UserConst.USER_GUEST),
-          Email = "",
+          Email = "guestguest123@guestguest123.com",
           Password = "",
           FullName = "Guest",
           RoleId = RoleConst.GetRoleId(RoleConst.MEMBER),
