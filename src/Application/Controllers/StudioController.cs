@@ -267,6 +267,9 @@ public class StudioController : ControllerBase
         return ErrorResp.NotFound("Studio Not found");
       }
 
+      req.Latitude ??= studio.Latitude;
+      req.Longitude ??= studio.Longitude;
+
       var studioMapped = _mapper.Map(req, studio);
 
       if (req.WorkingTimes != null)
