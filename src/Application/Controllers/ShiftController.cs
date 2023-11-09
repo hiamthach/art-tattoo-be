@@ -291,33 +291,49 @@ public class ShiftController : ControllerBase
     try
     {
       var workingTimes = _studioRepo.GetStudioWorkingTime(studioId);
-      if (workingTimes.Count() == 0)
+      if (!workingTimes.Any())
       {
         return ErrorResp.BadRequest("Studio has no working time");
       }
 
       var shifts = new List<Shift>();
       var today = DateTime.Today;
-      var tomorrow = today.AddDays(1);
-      var weekNumber = DateHelper.GetWeekNumber(tomorrow);
 
-      var redisWeekKey = $"shift-week:{studioId}:{weekNumber}";
+      var redisKey = $"shift-generate:stu_{studioId}";
 
-      var checkWeekGenerated = await _cacheService.Get<bool>(redisWeekKey);
-      if (checkWeekGenerated == true)
+      var cachedEnd = await _cacheService.Get<DateTime>(redisKey);
+
+      if (cachedEnd != default(DateTime))
       {
-        return ErrorResp.BadRequest("Shifts for this week already generated");
+        today = cachedEnd;
       }
 
-      foreach (var workingTime in workingTimes)
+      // check the request end date is greater than today and less than 14 days
+      if (DateTime.Compare(req.End, today) <= 0)
       {
-        var daysUntilClose = (int)workingTime.DayOfWeek - (int)tomorrow.DayOfWeek;
-        if (daysUntilClose < 0)
+        return ErrorResp.BadRequest("End date must be greater than today");
+      }
+
+      if (DateTime.Compare(req.End, today.AddDays(14)) > 0)
+      {
+        return ErrorResp.BadRequest("End date must be less than 14 days");
+      }
+
+      // generate shifts from tomorrow to end date
+      var tomorrow = today.AddDays(1);
+      while (tomorrow <= req.End)
+      {
+        // dayOfWeek: 0 - 6
+        int dayOfWeek = (int)tomorrow.DayOfWeek;
+        var workingTime = workingTimes.FirstOrDefault(w => w.DayOfWeek == dayOfWeek);
+        if (workingTime == null)
         {
-          daysUntilClose += 7;
+          tomorrow = tomorrow.AddDays(1);
+          continue;
         }
-        var openAtDate = tomorrow.AddDays(daysUntilClose).Date + workingTime.OpenAt;
-        var closeAtDate = tomorrow.AddDays(daysUntilClose).Date + workingTime.CloseAt;
+
+        var openAtDate = tomorrow.Date + workingTime.OpenAt;
+        var closeAtDate = tomorrow.Date + workingTime.CloseAt;
 
         var shiftStart = openAtDate;
 
@@ -333,6 +349,9 @@ public class ShiftController : ControllerBase
           });
           shiftStart = shiftEnd;
         }
+
+        tomorrow = tomorrow.AddDays(1);
+        continue;
       }
 
       var result = await _shiftRepo.CreateAsync(shifts);
@@ -340,7 +359,8 @@ public class ShiftController : ControllerBase
       if (result > 0)
       {
         //   var weekNumber = DateHelper.GetWeekNumber();
-        await _cacheService.Set(redisWeekKey, true, TimeSpan.FromDays(7));
+        // await _cacheService.Set(redisWeekKey, true, TimeSpan.FromDays(7));
+        await _cacheService.Set(redisKey, req.End, TimeSpan.FromDays(14));
         await _cacheService.ClearWithPattern("shifts");
         return Ok(new BaseResp
         {
