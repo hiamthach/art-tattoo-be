@@ -9,4 +9,5 @@ public class CreateShift
 public class GenerateShift
 {
   public TimeSpan ShiftDuration { get; set; }
+  public DateTime End { get; set; }
 }

@@ -407,14 +407,14 @@ public class StudioController : ControllerBase
   }
 
   [Protected]
-  [Permission(PermissionSlugConst.MANAGE_STUDIO, PermissionSlugConst.MANAGE_OWNED_STUDIO)]
+  [Permission(PermissionSlugConst.MANAGE_STUDIO, PermissionSlugConst.MANAGE_OWNED_STUDIO, PermissionSlugConst.VIEW_STUDIO_ARTISTS)]
   [HttpGet("user")]
   public async Task<IActionResult> GetStudioUsers([FromQuery] GetStudioUserQuery query)
   {
     _logger.LogInformation("Get Studio Users @req", query.StudioId);
     try
     {
-      if (HttpContext.Items["permission"] is string permission && permission == PermissionSlugConst.MANAGE_OWNED_STUDIO && HttpContext.Items["payload"] is Payload payload)
+      if (HttpContext.Items["permission"] is string permission && (permission == PermissionSlugConst.MANAGE_OWNED_STUDIO || permission == PermissionSlugConst.VIEW_STUDIO_ARTISTS) && HttpContext.Items["payload"] is Payload payload)
       {
         var isFromStudio = _studioRepo.IsStudioUserExist(payload.UserId, query.StudioId);
 
@@ -465,14 +465,14 @@ public class StudioController : ControllerBase
   }
 
   [Protected]
-  [Permission(PermissionSlugConst.MANAGE_STUDIO, PermissionSlugConst.MANAGE_OWNED_STUDIO)]
+  [Permission(PermissionSlugConst.MANAGE_STUDIO, PermissionSlugConst.MANAGE_OWNED_STUDIO, PermissionSlugConst.VIEW_STUDIO_ARTISTS)]
   [HttpGet("user/{id}")]
   public async Task<IActionResult> GetStudioUserById([FromRoute] Guid id)
   {
     _logger.LogInformation("Get Studio User @req", id);
     try
     {
-      if (HttpContext.Items["permission"] is string permission && permission == PermissionSlugConst.MANAGE_OWNED_STUDIO && HttpContext.Items["payload"] is Payload payload)
+      if (HttpContext.Items["permission"] is string permission && (permission == PermissionSlugConst.MANAGE_OWNED_STUDIO || permission == PermissionSlugConst.VIEW_STUDIO_ARTISTS) && HttpContext.Items["payload"] is Payload payload)
       {
         var studioId = _studioRepo.GetStudioIdByUserId(payload.UserId);
         var isFromStudio = _studioRepo.IsStudioUserExist(payload.UserId, studioId);

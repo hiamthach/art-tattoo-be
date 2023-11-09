@@ -126,7 +126,7 @@ public class StudioServiceController : ControllerBase
   }
 
   [Protected]
-  [Permission(PermissionSlugConst.MANAGE_STUDIO_SERVICES)]
+  [Permission(PermissionSlugConst.MANAGE_STUDIO_SERVICES, PermissionSlugConst.VIEW_STUDIO_SERVICES)]
   [HttpGet("owned")]
   public async Task<IActionResult> GetAllOwnServices([FromQuery] GetStudioServiceQuery query)
   {
@@ -176,7 +176,7 @@ public class StudioServiceController : ControllerBase
   }
 
   [Protected]
-  [Permission(PermissionSlugConst.MANAGE_STUDIO_SERVICES)]
+  [Permission(PermissionSlugConst.MANAGE_STUDIO_SERVICES, PermissionSlugConst.VIEW_STUDIO_SERVICES)]
   [HttpGet("owned/{id}")]
   public async Task<IActionResult> GetOwnServiceById([FromRoute] Guid id)
   {
@@ -242,7 +242,7 @@ public class StudioServiceController : ControllerBase
         CategoryId = body.CategoryId,
         Name = body.Name,
         Description = body.Description,
-        MinPrice = body.MaxPrice,
+        MinPrice = body.MinPrice,
         MaxPrice = body.MaxPrice,
         Discount = body.Discount,
         ExpectDuration = body.ExpectDuration,
@@ -372,9 +372,18 @@ public class StudioServiceController : ControllerBase
         }
       }
 
-      var studioServiceMapped = _mapper.Map(req, studioService);
+      studioService.CategoryId = req.CategoryId ?? studioService.CategoryId;
+      studioService.Name = req.Name ?? studioService.Name;
+      studioService.Description = req.Description ?? studioService.Description;
+      studioService.MinPrice = req.MinPrice != null ? req.MinPrice.Value : studioService.MinPrice;
+      studioService.MaxPrice = req.MaxPrice != null ? req.MaxPrice.Value : studioService.MaxPrice;
+      studioService.Discount = req.Discount != null ? req.Discount.Value : studioService.Discount;
+      studioService.ExpectDuration = req.ExpectDuration ?? studioService.ExpectDuration;
+      studioService.Thumbnail = req.Thumbnail ?? studioService.Thumbnail;
+      studioService.IsDisabled = req.IsDisabled != null ? req.IsDisabled.Value : studioService.IsDisabled;
+
       var mediaList = new List<Media>();
-      mediaList.AddRange(studioServiceMapped.ListMedia);
+      mediaList.AddRange(studioService.ListMedia);
       if (req.ListNewMedia != null)
       {
         var newMedia = req.ListNewMedia.Select(m =>
@@ -390,11 +399,11 @@ public class StudioServiceController : ControllerBase
       }
       if (req.ListRemoveMedia != null)
       {
-        var removeMedia = studioServiceMapped.ListMedia.Where(m => req.ListRemoveMedia.Contains(m.Id.ToString())).ToList();
+        var removeMedia = studioService.ListMedia.Where(m => req.ListRemoveMedia.Contains(m.Id.ToString())).ToList();
         mediaList.RemoveAll(m => removeMedia.Select(m => m.Id).Contains(m.Id));
       }
 
-      var result = _stuServiceRepo.UpdateStudioService(studioServiceMapped, mediaList);
+      var result = _stuServiceRepo.UpdateStudioService(studioService, mediaList);
 
       if (result > 0)
       {
