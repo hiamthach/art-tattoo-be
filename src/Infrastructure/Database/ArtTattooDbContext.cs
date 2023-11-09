@@ -138,6 +138,16 @@ public class ArtTattooDbContext : IdentityDbContext
           RoleId = RoleConst.GetRoleId(RoleConst.MEMBER),
         }
       );
+      entity.HasData(
+        new User
+        {
+          Id = Guid.Parse(UserConst.USER_GUEST),
+          Email = "",
+          Password = "",
+          FullName = "Guest",
+          RoleId = RoleConst.GetRoleId(RoleConst.MEMBER),
+        }
+      );
     });
 
     builder.Entity<Category>(entity =>
