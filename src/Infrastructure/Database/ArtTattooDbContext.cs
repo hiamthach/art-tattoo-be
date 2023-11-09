@@ -159,7 +159,7 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Detail).IsRequired(false);
       entity.Property(e => e.Introduction).IsRequired(false);
       entity.Property(e => e.Slogan).IsRequired(false).HasMaxLength(50);
-      entity.Property(e => e.Logo).IsRequired(false).HasMaxLength(255);
+      entity.Property(e => e.Logo).IsRequired(false).HasMaxLength(1000);
       entity.Property(e => e.Website).IsRequired(false).HasMaxLength(255);
       entity.Property(e => e.Phone).IsRequired().HasMaxLength(15);
       entity.Property(e => e.Email).IsRequired().HasMaxLength(30);
@@ -192,6 +192,9 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.MinPrice).IsRequired();
       entity.Property(e => e.MaxPrice).IsRequired();
       entity.Property(e => e.Discount).IsRequired();
+      entity.Property(e => e.IsDisabled).IsRequired();
+      entity.Property(e => e.Thumbnail).IsRequired().HasMaxLength(1000);
+      entity.Property(e => e.ExpectDuration).IsRequired(false);
       entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
       entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
     });
@@ -254,11 +257,14 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).IsRequired().OnDelete(DeleteBehavior.Restrict);
       entity.HasOne(e => e.Shift).WithMany(e => e.Appointments).HasForeignKey(e => e.ShiftId).IsRequired().OnDelete(DeleteBehavior.Restrict);
       entity.HasOne(e => e.Artist).WithMany(e => e.Appointments).HasForeignKey(e => e.DoneBy).OnDelete(DeleteBehavior.Restrict);
+      entity.HasOne(e => e.Service).WithMany(e => e.Appointments).HasForeignKey(e => e.ServiceId).OnDelete(DeleteBehavior.Restrict);
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.UserId).IsRequired();
       entity.Property(e => e.ShiftId).IsRequired();
+      entity.Property(e => e.ServiceId).IsRequired(false);
       entity.Property(e => e.DoneBy).IsRequired(false);
       entity.Property(e => e.Notes).IsRequired(false).HasMaxLength(500);
+      entity.Property(e => e.Duration).IsRequired(false);
       entity.Property(e => e.Status).IsRequired().HasDefaultValue(AppointmentStatusEnum.Pending).HasConversion(
         v => v.ToString(),
         v => (AppointmentStatusEnum)Enum.Parse(typeof(AppointmentStatusEnum), v));

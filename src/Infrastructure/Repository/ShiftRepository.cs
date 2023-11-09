@@ -139,7 +139,7 @@ public class ShiftRepository : IShiftRepository
 
   public Task<int> UpdateShiftUserAsync(ShiftUser shiftUser)
   {
-    _dbContext.Update(shiftUser);
+    _dbContext.ShiftUsers.Update(shiftUser);
 
     return _dbContext.SaveChangesAsync();
   }

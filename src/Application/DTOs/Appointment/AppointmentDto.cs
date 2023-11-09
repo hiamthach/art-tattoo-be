@@ -7,6 +7,7 @@ using art_tattoo_be.Application.DTOs.Studio;
 using art_tattoo_be.Application.DTOs.User;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Domain.Booking;
+using art_tattoo_be.src.Application.DTOs.StudioService;
 using AutoMapper;
 
 public class AppointmentDto
@@ -21,6 +22,7 @@ public class AppointmentDto
   public StudioUserDto? Artist { get; set; }
   public UserDto User { get; set; } = null!;
   public ShiftDto Shift { get; set; } = null!;
+  public StudioServiceDto? Service { get; set; }
 }
 
 public class AppointmentResp : PaginationResp
@@ -36,6 +38,7 @@ public class AppointmentProfile : Profile
       .ForMember(dest => dest.ListMedia, opt => opt.MapFrom(src => src.ListMedia))
       .ForMember(dest => dest.Shift, opt => opt.MapFrom(src => src.Shift))
       .ForMember(dest => dest.Artist, opt => opt.MapFrom(src => src.Artist))
-      .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User));
+      .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User))
+      .ForMember(dest => dest.Service, opt => opt.MapFrom(src => src.Service));
   }
 }

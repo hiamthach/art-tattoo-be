@@ -1,10 +1,10 @@
+namespace art_tattoo_be.Infrastructure.Repository;
+
 using art_tattoo_be.Application.DTOs.Appointment;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Domain.Booking;
 using art_tattoo_be.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
-
-namespace art_tattoo_be.Infrastructure.Repository;
 
 public class AppointmentRepository : IAppointmentRepository
 {
@@ -18,33 +18,44 @@ public class AppointmentRepository : IAppointmentRepository
   public AppointmentList GetAllAsync(AppointmentQuery query)
   {
     var q = _dbContext.Appointments
-      .Include(app => app.Shift)
-      .Include(app => app.User)
-      .Include(app => app.Artist).ThenInclude(a => a.User)
-      .Where(app => query.StudioId == null || app.Shift.StudioId == query.StudioId)
-      .Where(app => query.UserId == null || app.UserId == query.UserId)
-      .Where(app => query.Status == null || app.Status == query.Status)
-      .Where(app => query.StartDate == null || app.Shift.Start >= query.StartDate)
-      .Where(app => query.EndDate == null || app.Shift.End <= query.EndDate);
+    .Include(app => app.Shift)
+    .Include(app => app.User)
+    .Include(app => app.Artist).ThenInclude(a => a.User)
+    .Include(app => app.Service)
+    .Where(app =>
+        (query.StudioId == null || app.Shift.StudioId == query.StudioId) &&
+        (query.UserId == null || app.UserId == query.UserId) &&
+        (query.StatusList == null || query.StatusList.Contains(app.Status)) &&
+        (query.StartDate == null || app.Shift.Start >= query.StartDate) &&
+        (query.EndDate == null || app.Shift.End <= query.EndDate) &&
+        (query.SearchKeyword == null || app.User.FullName.Contains(query.SearchKeyword) || app.User.Email.Contains(query.SearchKeyword) || (app.User.Phone != null && app.User.Phone.Contains(query.SearchKeyword))) &&
+        (query.ServiceId == null || app.ServiceId == query.ServiceId)
+    );
 
     int totalCount = q.Count();
 
-    var appointments = q
-      .Skip(query.PageSize * query.Page)
-      .Take(query.PageSize)
-      .OrderBy(app => app.Shift.Start)
-      .ToList();
+    var pagedResults = q
+        .OrderBy(app => app.Shift.Start)
+        .Skip(query.PageSize * query.Page)
+        .Take(query.PageSize)
+        .ToList();
 
     return new AppointmentList
     {
       TotalCount = totalCount,
-      Appointments = appointments
+      Appointments = pagedResults
     };
   }
 
   public Appointment? GetByIdAsync(Guid id)
   {
-    return _dbContext.Appointments.Include(app => app.Shift).Include(a => a.Artist.User).FirstOrDefault(a => a.Id == id);
+    return _dbContext.Appointments
+      .Include(app => app.Shift).ThenInclude(s => s.ShiftUsers)
+      .Include(app => app.Shift.Studio)
+      .Include(app => app.User)
+      .Include(app => app.Artist).ThenInclude(a => a.User)
+      .Include(app => app.Service)
+      .FirstOrDefault(a => a.Id == id);
   }
 
   public async Task<int> CreateAsync(Appointment appointment)
@@ -55,7 +66,6 @@ public class AppointmentRepository : IAppointmentRepository
 
   public Task<int> UpdateAsync(Appointment appointment)
   {
-
     _dbContext.Update(appointment);
     return _dbContext.SaveChangesAsync();
   }

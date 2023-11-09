@@ -1,22 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using art_tattoo_be.Application.DTOs.Media;
-using art_tattoo_be.Domain.Media;
+namespace art_tattoo_be.src.Application.DTOs.StudioService;
 
-namespace art_tattoo_be.src.Application.DTOs.StudioService
+using art_tattoo_be.Application.DTOs.Media;
+
+public class UpdateStudioServiceReq
 {
-    public class UpdateStudioServiceReq
-    {
-        public Guid StudioId { get; set; }
-        public int CategoryId { get; set; }
-        public string Name { get; set; } = null!;
-        public string Description { get; set; } = null!;
-        public double MinPrice { get; set; }
-        public double MaxPrice { get; set; }
-        public double Discount { get; set; }
-        public IEnumerable<string>? ListRemoveMedia { get; set; }
-        public IEnumerable<MediaCreate>? ListNewMedia { get; set; }
-    }
+  public int? CategoryId { get; set; }
+  public string? Name { get; set; } = null!;
+  public string? Description { get; set; } = null!;
+  public double? MinPrice { get; set; }
+  public double? MaxPrice { get; set; }
+  public double? Discount { get; set; }
+  public bool? IsDisabled { get; set; }
+  public string? Thumbnail { get; set; } = null!;
+  public TimeSpan? ExpectDuration { get; set; }
+  public IEnumerable<string>? ListRemoveMedia { get; set; }
+  public IEnumerable<MediaCreate>? ListNewMedia { get; set; }
 }
