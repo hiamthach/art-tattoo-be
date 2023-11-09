@@ -3,7 +3,6 @@ namespace art_tattoo_be.Application.Controllers;
 using art_tattoo_be.Application.DTOs.Studio;
 using art_tattoo_be.Application.Middlewares;
 using art_tattoo_be.Application.Shared;
-using art_tattoo_be.Application.Shared.Constant;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Application.Shared.Handler;
 using art_tattoo_be.Core.Jwt;
@@ -25,7 +24,6 @@ public class StudioController : ControllerBase
   private readonly ICacheService _cacheService;
   private readonly IStudioRepository _studioRepo;
   private readonly IUserRepository _userRepo;
-
   private readonly IMapper _mapper;
 
   public StudioController(ILogger<StudioController> logger, ArtTattooDbContext dbContext, ICacheService cacheService, IMapper mapper)

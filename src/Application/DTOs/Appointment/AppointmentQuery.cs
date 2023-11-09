@@ -7,23 +7,29 @@ public class AppointmentQuery : PaginationReq
 {
   public Guid? StudioId { get; set; }
   public Guid? UserId { get; set; }
-  public AppointmentStatusEnum? Status { get; set; }
+  public List<AppointmentStatusEnum>? StatusList { get; set; }
   public DateTime? StartDate { get; set; }
   public DateTime? EndDate { get; set; }
+  public string? SearchKeyword { get; set; }
+  public Guid? ServiceId { get; set; }
 }
 
 public class GetAppointmentsQuery : PaginationReq
 {
   public Guid? StudioId { get; set; }
-  public AppointmentStatusEnum? Status { get; set; }
+  public List<AppointmentStatusEnum>? StatusList { get; set; }
   public DateTime? StartDate { get; set; }
   public DateTime? EndDate { get; set; }
+  public string? SearchKeyword { get; set; }
+  public Guid? ServiceId { get; set; }
 }
 
 public class GetStudioAppointmentsQuery : PaginationReq
 {
-  public AppointmentStatusEnum? Status { get; set; }
+  public List<AppointmentStatusEnum>? StatusList { get; set; }
   public DateTime? StartDate { get; set; }
   public DateTime? EndDate { get; set; }
   public Guid? UserId { get; set; }
+  public string? SearchKeyword { get; set; }
+  public Guid? ServiceId { get; set; }
 }
