@@ -34,7 +34,7 @@ namespace art_tattoo_be.src.Infrastructure.Repository
       return _dbContext.StudioServices.ToList();
     }
 
-    public StudioService GetById(Guid id)
+    public StudioService? GetById(Guid id)
     {
       return _dbContext.StudioServices
       .Include(stuSer => stuSer.Category)

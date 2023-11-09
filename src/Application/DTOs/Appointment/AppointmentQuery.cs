@@ -10,7 +10,8 @@ public class AppointmentQuery : PaginationReq
   public List<AppointmentStatusEnum>? StatusList { get; set; }
   public DateTime? StartDate { get; set; }
   public DateTime? EndDate { get; set; }
-  public String? SearchKeyword { get; set; }
+  public string? SearchKeyword { get; set; }
+  public Guid? ServiceId { get; set; }
 }
 
 public class GetAppointmentsQuery : PaginationReq
@@ -19,7 +20,8 @@ public class GetAppointmentsQuery : PaginationReq
   public List<AppointmentStatusEnum>? StatusList { get; set; }
   public DateTime? StartDate { get; set; }
   public DateTime? EndDate { get; set; }
-  public String? SearchKeyword { get; set; }
+  public string? SearchKeyword { get; set; }
+  public Guid? ServiceId { get; set; }
 }
 
 public class GetStudioAppointmentsQuery : PaginationReq
@@ -28,5 +30,6 @@ public class GetStudioAppointmentsQuery : PaginationReq
   public DateTime? StartDate { get; set; }
   public DateTime? EndDate { get; set; }
   public Guid? UserId { get; set; }
-  public String? SearchKeyword { get; set; }
+  public string? SearchKeyword { get; set; }
+  public Guid? ServiceId { get; set; }
 }

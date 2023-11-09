@@ -21,13 +21,15 @@ public class AppointmentRepository : IAppointmentRepository
     .Include(app => app.Shift)
     .Include(app => app.User)
     .Include(app => app.Artist).ThenInclude(a => a.User)
+    .Include(app => app.Service)
     .Where(app =>
         (query.StudioId == null || app.Shift.StudioId == query.StudioId) &&
         (query.UserId == null || app.UserId == query.UserId) &&
         (query.StatusList == null || query.StatusList.Contains(app.Status)) &&
         (query.StartDate == null || app.Shift.Start >= query.StartDate) &&
         (query.EndDate == null || app.Shift.End <= query.EndDate) &&
-        (query.SearchKeyword == null || app.User.FullName.Contains(query.SearchKeyword) || app.User.Email.Contains(query.SearchKeyword) || (app.User.Phone != null && app.User.Phone.Contains(query.SearchKeyword)))
+        (query.SearchKeyword == null || app.User.FullName.Contains(query.SearchKeyword) || app.User.Email.Contains(query.SearchKeyword) || (app.User.Phone != null && app.User.Phone.Contains(query.SearchKeyword))) &&
+        (query.ServiceId == null || app.ServiceId == query.ServiceId)
     );
 
     int totalCount = q.Count();
@@ -52,6 +54,7 @@ public class AppointmentRepository : IAppointmentRepository
       .Include(app => app.Shift.Studio)
       .Include(app => app.User)
       .Include(app => app.Artist).ThenInclude(a => a.User)
+      .Include(app => app.Service)
       .FirstOrDefault(a => a.Id == id);
   }
 

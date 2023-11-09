@@ -17,6 +17,8 @@ using art_tattoo_be.Domain.RoleBase;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Application.DTOs.Shift;
 using art_tattoo_be.Core.Mail;
+using art_tattoo_be.src.Domain.Studio;
+using art_tattoo_be.src.Infrastructure.Repository;
 
 [ApiController]
 [Route("api/appointment")]
@@ -26,6 +28,7 @@ public class AppointmentController : ControllerBase
   private readonly IAppointmentRepository _appointmentRepo;
   private readonly IShiftRepository _shiftRepo;
   private readonly IStudioRepository _studioRepo;
+  private readonly IStudioServiceRepository _studioServiceRepo;
   private readonly IMapper _mapper;
   private readonly ICacheService _cacheService;
   private readonly IMailService _mailService;
@@ -43,6 +46,7 @@ public class AppointmentController : ControllerBase
     _appointmentRepo = new AppointmentRepository(dbContext);
     _shiftRepo = new ShiftRepository(dbContext);
     _studioRepo = new StudioRepository(dbContext);
+    _studioServiceRepo = new StudioServiceRepository(dbContext);
     _mapper = mapper;
     _cacheService = cacheService;
     _mailService = mailService;
@@ -222,9 +226,28 @@ public class AppointmentController : ControllerBase
         return ErrorResp.BadRequest($"You can only book {BookConst.MaxBookCount} appointments per 12 hours");
       }
       ShiftUser? shiftUser = null;
+      // if (body.ArtistId != null)
+      // {
+      //   var su = await _shiftRepo.GetShiftUserAsync(body.ShiftId, (Guid)body.ArtistId);
+
+      //   if (su == null)
+      //   {
+      //     return ErrorResp.NotFound("Shift not found");
+      //   }
+      //   else
+      //   {
+      //     shiftUser = su;
+      //   }
+      // }
+
+      var shift = await _shiftRepo.GetByIdAsync(body.ShiftId);
+      if (shift == null)
+      {
+        return ErrorResp.NotFound("Shift not found");
+      }
       if (body.ArtistId != null)
       {
-        var su = await _shiftRepo.GetShiftUserAsync(body.ShiftId, (Guid)body.ArtistId);
+        var su = shift.ShiftUsers.FirstOrDefault(su => su.ShiftId == shift.Id && su.StuUserId == body.ArtistId);
 
         if (su == null)
         {
@@ -241,6 +264,21 @@ public class AppointmentController : ControllerBase
         return ErrorResp.BadRequest("You have already booked appointment at this time");
       }
 
+      if (body.ServiceId != null)
+      {
+        var studioService = _studioServiceRepo.GetById((Guid)body.ServiceId);
+
+        if (studioService == null || studioService.IsDisabled)
+        {
+          return ErrorResp.NotFound("Service not found");
+        }
+
+        if (studioService.StudioId != shift.StudioId)
+        {
+          return ErrorResp.BadRequest("Service not found in the studio");
+        }
+      }
+
       var appointment = new Appointment
       {
         Id = Guid.NewGuid(),
@@ -248,6 +286,7 @@ public class AppointmentController : ControllerBase
         Notes = body.Notes,
         DoneBy = body.ArtistId,
         UserId = payload.UserId,
+        ServiceId = body.ServiceId,
         Status = AppointmentStatusEnum.Pending,
       };
 
@@ -320,10 +359,26 @@ public class AppointmentController : ControllerBase
 
       if (appointment.Status == AppointmentStatusEnum.Pending || appointment.Status == AppointmentStatusEnum.Confirmed || appointment.Status == AppointmentStatusEnum.Reschedule)
       {
+        if (body.ServiceId != null && body.ServiceId != appointment.ServiceId)
+        {
+          var studioService = _studioServiceRepo.GetById((Guid)body.ServiceId);
+
+          if (studioService == null || studioService.IsDisabled)
+          {
+            return ErrorResp.NotFound("Service not found");
+          }
+
+          if (studioService.StudioId != appointment.Shift.StudioId)
+          {
+            return ErrorResp.BadRequest("Service not found in the studio");
+          }
+        }
+
         appointment.ShiftId = body.ShiftId;
         appointment.Notes = body.Notes ?? appointment.Notes;
         appointment.DoneBy = body.ArtistId ?? appointment.DoneBy;
         appointment.Status = AppointmentStatusEnum.Reschedule;
+        appointment.ServiceId = body.ServiceId ?? appointment.ServiceId;
 
         var result = await _appointmentRepo.UpdateAsync(appointment);
 
@@ -518,6 +573,7 @@ public class AppointmentController : ControllerBase
         EndDate = query.EndDate,
         StatusList = query.StatusList,
         SearchKeyword = query.SearchKeyword,
+        ServiceId = query.ServiceId,
       };
 
       var appointments = _appointmentRepo.GetAllAsync(appointmentQuery);
@@ -632,11 +688,28 @@ public class AppointmentController : ControllerBase
 
       if (appointment.Status == AppointmentStatusEnum.Pending || appointment.Status == AppointmentStatusEnum.Confirmed || appointment.Status == AppointmentStatusEnum.Reschedule)
       {
+        if (body.ServiceId != null)
+        {
+          var studioService = _studioServiceRepo.GetById((Guid)body.ServiceId);
+
+          if (studioService == null || studioService.IsDisabled)
+          {
+            return ErrorResp.NotFound("Service not found");
+          }
+
+          if (studioService.StudioId != studioId)
+          {
+            return ErrorResp.BadRequest("Service not found in the studio");
+          }
+        }
+
+
         appointment.ShiftId = body.ShiftId ?? appointment.ShiftId;
         appointment.Notes = body.Notes ?? appointment.Notes;
         appointment.DoneBy = body.ArtistId ?? appointment.DoneBy;
         appointment.Status = body.Status ?? appointment.Status;
         appointment.Duration = body.Duration ?? appointment.Duration;
+        appointment.ServiceId = body.ServiceId ?? appointment.ServiceId;
 
         // Confirmation or Reschedule appointment
         if (body.Status != AppointmentStatusEnum.Pending && appointment.DoneBy != null)
