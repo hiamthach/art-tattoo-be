@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using art_tattoo_be.Domain.Category;
 using art_tattoo_be.Domain.Media;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Infrastructure.Database;
@@ -42,36 +37,42 @@ namespace art_tattoo_be.src.Infrastructure.Repository
     public StudioService GetById(Guid id)
     {
       return _dbContext.StudioServices
-      .Include(stuser => stuser.Category)
-      .Include(stuser => stuser.ListMedia)
-      .FirstOrDefault(stuser => stuser.Id == id) ?? throw new Exception("Studio Service not found");
+      .Include(stuSer => stuSer.Category)
+      .Include(stuSer => stuSer.ListMedia)
+      .FirstOrDefault(stuSer => stuSer.Id == id) ?? throw new Exception("Studio Service not found");
     }
 
-    public StudioServiceList GetStudioServicePages(GetStudioServiceQuery req)
+    public StudioServiceList GetStudioServicePages(GetStudioServiceReq req)
     {
       string searchKeyword = req.SearchKeyword ?? "";
       var query = _dbContext.StudioServices
-      .Where(stuser => stuser.Name.Contains(searchKeyword))
-      .Where(stuser => stuser.StudioId == req.StudioId);
+      .Where(stuSer => stuSer.Name.Contains(searchKeyword))
+      .Where(stuSer => stuSer.StudioId == req.StudioId)
+      .Where(stuSer => req.IsStudio || !stuSer.IsDisabled);
+
       int totalCount = query.Count();
 
       var studioService = query
-      .Include(stuser => stuser.Category)
-      .Include(stuser => stuser.ListMedia)
-      .Select(stuser => new StudioService
+      .Include(stuSer => stuSer.Category)
+      .Include(stuSer => stuSer.ListMedia)
+      .Select(stuSer => new StudioService
       {
-        Id = stuser.Id,
-        StudioId = stuser.StudioId,
-        CategoryId = stuser.CategoryId,
-        Name = stuser.Name,
-        Description = stuser.Description,
-        MinPrice = stuser.MinPrice,
-        MaxPrice = stuser.MaxPrice,
-        Discount = stuser.Discount,
-        Category = stuser.Category,
-        ListMedia = stuser.ListMedia
+        Id = stuSer.Id,
+        StudioId = stuSer.StudioId,
+        CategoryId = stuSer.CategoryId,
+        Name = stuSer.Name,
+        Description = stuSer.Description,
+        MinPrice = stuSer.MinPrice,
+        MaxPrice = stuSer.MaxPrice,
+        Discount = stuSer.Discount,
+        Category = stuSer.Category,
+        ExpectDuration = stuSer.ExpectDuration,
+        Thumbnail = stuSer.Thumbnail,
+        IsDisabled = stuSer.IsDisabled,
+        ListMedia = stuSer.ListMedia
       })
-      .OrderByDescending(stuser => stuser.Name)
+
+      .OrderByDescending(stuSer => stuSer.Name)
       .Skip(req.Page * req.PageSize)
       .Take(req.PageSize)
       .ToList();
@@ -82,7 +83,7 @@ namespace art_tattoo_be.src.Infrastructure.Repository
       };
     }
 
-    public int UpddateStudioService(StudioService studioService, IEnumerable<Media> mediaList)
+    public int UpdateStudioService(StudioService studioService, IEnumerable<Media> mediaList)
     {
       var removeMedia = studioService.ListMedia.Where(m => !mediaList.Select(m => m.Id).Contains(m.Id)).ToList();
       var newMedia = mediaList.Where(m => !studioService.ListMedia.Select(m => m.Id).Contains(m.Id)).ToList();

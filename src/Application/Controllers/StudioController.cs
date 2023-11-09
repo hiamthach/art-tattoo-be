@@ -3,7 +3,6 @@ namespace art_tattoo_be.Application.Controllers;
 using art_tattoo_be.Application.DTOs.Studio;
 using art_tattoo_be.Application.Middlewares;
 using art_tattoo_be.Application.Shared;
-using art_tattoo_be.Application.Shared.Constant;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Application.Shared.Handler;
 using art_tattoo_be.Core.Jwt;
