@@ -109,6 +109,48 @@ public class UserController : ControllerBase
   }
 
   [Protected]
+  [HttpGet("search")]
+  public async Task<IActionResult> SearchUsers([FromQuery] GetUserQuery req)
+  {
+    _logger.LogInformation("Search Users");
+
+    try
+    {
+      var redisKey = $"users:search:{req.Page}:{req.PageSize}";
+
+      if (req.SearchKeyword != null)
+      {
+        redisKey += $"?search={req.SearchKeyword}";
+      }
+
+      var usersCache = await _cacheService.Get<UserResp>(redisKey);
+      if (usersCache != null)
+      {
+        return Ok(usersCache);
+      }
+
+      var users = _userRepo.SearchUsers(req);
+
+      var usersDto = _mapper.Map<List<UserDto>>(users.Users);
+
+      var usersResp = new UserResp
+      {
+        Data = usersDto,
+        Page = req.Page,
+        PageSize = req.PageSize,
+        Total = users.TotalCount
+      };
+
+      await _cacheService.Set(redisKey, usersResp);
+      return Ok(usersResp);
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
+
+  [Protected]
   [Permission(PermissionSlugConst.MANAGE_USERS)]
   [HttpPost]
   public async Task<IActionResult> CreateUser([FromBody] CreateUserReq req)

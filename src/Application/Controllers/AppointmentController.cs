@@ -557,6 +557,12 @@ public class AppointmentController : ControllerBase
         redisKey += $"?search={query.SearchKeyword}";
       }
 
+      if (query.ServiceList != null)
+      {
+        var serviceString = query.ServiceList.Aggregate("", (current, service) => current + $"{service},");
+        redisKey += $"?service={serviceString}";
+      }
+
       var cached = await _cacheService.Get<AppointmentResp>(redisKey);
       if (cached != null)
       {
@@ -573,7 +579,7 @@ public class AppointmentController : ControllerBase
         EndDate = query.EndDate,
         StatusList = query.StatusList,
         SearchKeyword = query.SearchKeyword,
-        ServiceId = query.ServiceId,
+        ServiceList = query.ServiceList,
       };
 
       var appointments = _appointmentRepo.GetAllAsync(appointmentQuery);

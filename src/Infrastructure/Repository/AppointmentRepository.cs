@@ -29,7 +29,7 @@ public class AppointmentRepository : IAppointmentRepository
         (query.StartDate == null || app.Shift.Start >= query.StartDate) &&
         (query.EndDate == null || app.Shift.End <= query.EndDate) &&
         (query.SearchKeyword == null || app.User.FullName.Contains(query.SearchKeyword) || app.User.Email.Contains(query.SearchKeyword) || (app.User.Phone != null && app.User.Phone.Contains(query.SearchKeyword))) &&
-        (query.ServiceId == null || app.ServiceId == query.ServiceId)
+        (query.ServiceList == null || (app.ServiceId != null && query.ServiceList.Contains(app.ServiceId.ToString())))
     );
 
     int totalCount = q.Count();

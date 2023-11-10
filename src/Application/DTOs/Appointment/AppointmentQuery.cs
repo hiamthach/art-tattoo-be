@@ -11,7 +11,7 @@ public class AppointmentQuery : PaginationReq
   public DateTime? StartDate { get; set; }
   public DateTime? EndDate { get; set; }
   public string? SearchKeyword { get; set; }
-  public Guid? ServiceId { get; set; }
+  public List<string>? ServiceList { get; set; }
 }
 
 public class GetAppointmentsQuery : PaginationReq
@@ -21,7 +21,7 @@ public class GetAppointmentsQuery : PaginationReq
   public DateTime? StartDate { get; set; }
   public DateTime? EndDate { get; set; }
   public string? SearchKeyword { get; set; }
-  public Guid? ServiceId { get; set; }
+  public List<string>? ServiceList { get; set; }
 }
 
 public class GetStudioAppointmentsQuery : PaginationReq
@@ -31,5 +31,5 @@ public class GetStudioAppointmentsQuery : PaginationReq
   public DateTime? EndDate { get; set; }
   public Guid? UserId { get; set; }
   public string? SearchKeyword { get; set; }
-  public Guid? ServiceId { get; set; }
+  public List<string>? ServiceList { get; set; }
 }
