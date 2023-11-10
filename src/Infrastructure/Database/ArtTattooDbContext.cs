@@ -288,6 +288,7 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.HasKey(e => e.Id);
       entity.HasOne(e => e.Studio).WithMany(e => e.Invoices).HasForeignKey(e => e.StudioId).IsRequired();
       entity.HasOne(e => e.User).WithMany(e => e.Invoices).HasForeignKey(e => e.UserId).IsRequired();
+      entity.HasOne(e => e.Service).WithMany(e => e.Invoices).HasForeignKey(e => e.ServiceId).IsRequired(false);
       entity.HasOne(e => e.Appointment).WithMany(e => e.ListInvoice).HasForeignKey(e => e.AppointmentId).IsRequired(false);
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.StudioId).IsRequired();

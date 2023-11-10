@@ -3,7 +3,7 @@ namespace art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Domain.Booking;
 using art_tattoo_be.Domain.Category;
 using art_tattoo_be.Domain.Media;
-using Org.BouncyCastle.Asn1.Cms;
+using art_tattoo_be.Domain.Invoice;
 
 public class StudioService
 {
@@ -25,6 +25,7 @@ public class StudioService
   public Category Category { get; set; } = null!;
   public List<Media> ListMedia { get; set; } = new();
   public List<Appointment> Appointments { get; set; } = new();
+  public List<Invoice> Invoices { get; set; } = new();
 }
 public class StudioServiceList
 {

@@ -12,6 +12,7 @@ public class CreateInvoiceReq
   public PayMethodEnum PayMethod { get; set; }
   public string? Notes { get; set; }
   public Guid? AppointmentId { get; set; }
+  public Guid? ServiceId { get; set; }
   public Guid? UserId { get; set; }
   public bool IsGuest { get; set; }
 }

@@ -6,3 +6,4 @@ public class GetUserQuery : PaginationReq
 {
   public string? SearchKeyword { get; set; } = null!;
 }
+

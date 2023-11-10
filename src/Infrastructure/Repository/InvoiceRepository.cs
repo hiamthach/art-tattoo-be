@@ -20,10 +20,12 @@ public class InvoiceRepository : IInvoiceRepository
       .Include(i => i.User)
       .Include(i => i.Studio)
       .Include(i => i.Appointment).ThenInclude(a => a.Shift)
+      .Include(i => i.Service)
       .Where(app =>
         (query.SearchKeyword == null || app.User.FullName.Contains(query.SearchKeyword) || app.User.Email.Contains(query.SearchKeyword) || (app.User.Phone != null && app.User.Phone.Contains(query.SearchKeyword))) &&
         (query.StudioId == null || app.StudioId == query.StudioId) &&
-        (query.UserId == null || app.UserId == query.UserId)
+        (query.UserId == null || app.UserId == query.UserId) &&
+        (query.ServiceList == null || app.ServiceId != null && query.ServiceList.Contains(app.ServiceId.ToString()))
       );
 
     var totalCount = q.Count();
@@ -47,6 +49,7 @@ public class InvoiceRepository : IInvoiceRepository
       .Include(i => i.User)
       .Include(i => i.Studio)
       .Include(i => i.Appointment).ThenInclude(a => a.Shift)
+      .Include(i => i.Service)
       .FirstOrDefault(i => i.Id == id);
   }
 

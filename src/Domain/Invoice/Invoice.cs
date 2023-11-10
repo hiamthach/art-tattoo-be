@@ -10,6 +10,7 @@ public class Invoice
   public Guid Id { get; set; }
   public Guid StudioId { get; set; }
   public Guid UserId { get; set; }
+  public Guid? ServiceId { get; set; }
   public double Total { get; set; }
   public PayMethodEnum PayMethod { get; set; }
   public string? Notes { get; set; }
@@ -19,6 +20,7 @@ public class Invoice
 
   public virtual Studio Studio { get; set; } = null!;
   public virtual User User { get; set; } = null!;
+  public virtual StudioService Service { get; set; } = null!;
   public virtual Appointment Appointment { get; set; } = null!;
 }
 

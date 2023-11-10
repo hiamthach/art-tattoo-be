@@ -14,6 +14,8 @@ using art_tattoo_be.Domain.User;
 using art_tattoo_be.Infrastructure.Cache;
 using art_tattoo_be.Infrastructure.Database;
 using art_tattoo_be.Infrastructure.Repository;
+using art_tattoo_be.src.Domain.Studio;
+using art_tattoo_be.src.Infrastructure.Repository;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,6 +30,7 @@ public class InvoiceController : ControllerBase
   private readonly IStudioRepository _studioRepo;
   private readonly IAppointmentRepository _appointmentRepo;
   private readonly IUserRepository _userRepo;
+  private readonly IStudioServiceRepository _studioServiceRepo;
 
   public InvoiceController(ILogger<InvoiceController> logger, IMapper mapper, ICacheService cacheService, ArtTattooDbContext dbContext)
   {
@@ -38,6 +41,7 @@ public class InvoiceController : ControllerBase
     _studioRepo = new StudioRepository(dbContext);
     _appointmentRepo = new AppointmentRepository(dbContext);
     _userRepo = new UserRepository(dbContext);
+    _studioServiceRepo = new StudioServiceRepository(dbContext);
   }
 
   [HttpGet("pay-method")]
@@ -93,6 +97,11 @@ public class InvoiceController : ControllerBase
         redisKey += $"?search={query.SearchKeyword}";
       }
 
+      if (query.ServiceList != null)
+      {
+        redisKey += $"?services={string.Join(",", query.ServiceList)}";
+      }
+
       var cached = await _cacheService.Get<InvoiceResp>(redisKey);
       if (cached != null)
       {
@@ -104,7 +113,8 @@ public class InvoiceController : ControllerBase
         UserId = payload.UserId,
         Page = query.Page,
         PageSize = query.PageSize,
-        SearchKeyword = query.SearchKeyword
+        SearchKeyword = query.SearchKeyword,
+        ServiceList = query.ServiceList
       };
 
       var invoices = _invoiceRepository.GetAllAsync(q);
@@ -150,6 +160,11 @@ public class InvoiceController : ControllerBase
         redisKey += $"?search={query.SearchKeyword}";
       }
 
+      if (query.ServiceList != null)
+      {
+        redisKey += $"?services={string.Join(",", query.ServiceList)}";
+      }
+
       var cached = await _cacheService.Get<InvoiceResp>(redisKey);
       if (cached != null)
       {
@@ -161,7 +176,8 @@ public class InvoiceController : ControllerBase
         StudioId = studioId,
         Page = query.Page,
         PageSize = query.PageSize,
-        SearchKeyword = query.SearchKeyword
+        SearchKeyword = query.SearchKeyword,
+        ServiceList = query.ServiceList
       };
 
       var invoices = _invoiceRepository.GetAllAsync(q);
@@ -320,6 +336,20 @@ public class InvoiceController : ControllerBase
         }
       }
 
+      if (req.ServiceId != null)
+      {
+        var service = _studioServiceRepo.GetById(req.ServiceId.Value);
+        if (service == null)
+        {
+          return ErrorResp.NotFound("Service not found");
+        }
+
+        if (service.StudioId != studioId)
+        {
+          return ErrorResp.Forbidden("You don't have permission to create invoice for this service");
+        }
+      }
+
       if (req.UserId != null)
       {
         var user = _userRepo.GetUserById(req.UserId.Value);
@@ -338,6 +368,7 @@ public class InvoiceController : ControllerBase
         PayMethod = req.PayMethod,
         Notes = req.Notes,
         AppointmentId = req.AppointmentId,
+        ServiceId = req.ServiceId,
       };
 
       if (req.IsGuest)
