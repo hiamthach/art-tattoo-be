@@ -90,7 +90,7 @@ public class StudioRepository : IStudioRepository
     return studioUser != null ? studioUser.StudioId : Guid.Empty;
   }
 
-  public StudioList GetStudioPages(GetStudioQuery req)
+  public StudioList GetStudioPages(StudioQuery req)
   {
     // Init maximum north, east, south, west
     double north = Coordinates.MAX_NORTH;
@@ -110,16 +110,15 @@ public class StudioRepository : IStudioRepository
     }
 
     var query = _dbContext.Studios
-    // .Where(stu => stu.Status == StudioStatusEnum.Active)
+    .Where(stu => req.IsAdmin || stu.Status == StudioStatusEnum.Active)
     .Where(stu => stu.Latitude <= north && stu.Latitude >= south && stu.Longitude <= east && stu.Longitude >= west)
-    .Where(stu => stu.Name.Contains(searchKeyword));
-
-    // var query = _dbContext.Studios
-    //  .FromSqlRaw("SELECT * FROM Studios WHERE Latitude <= {0} AND Latitude >= {1} AND Longitude <= {2} AND Longitude >= {3} AND Name COLLATE SQL_Latin1_General_CP1_CI_AI LIKE {4}", north, south, east, west, $"%{unidecodedKeyword}%");
+    .Where(stu => stu.Name.Contains(searchKeyword))
+    .Where(stu => req.CategoryId == null || stu.Services.Any(s => s.CategoryId == req.CategoryId));
 
     int totalCount = query.Count();
 
     var studios = query
+        .Include(stu => stu.Services)
         .Include(stu => stu.WorkingTimes)
         .Include(stu => stu.ListMedia)
         .Select(stu => new Studio

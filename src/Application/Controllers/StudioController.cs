@@ -86,6 +86,11 @@ public class StudioController : ControllerBase
         redisKey += $"?search={req.SearchKeyword}";
       }
 
+      if (req.CategoryId != null)
+      {
+        redisKey += $"?category={req.CategoryId}";
+      }
+
       var studiosCache = await _cacheService.Get<StudioResp>(redisKey);
 
       if (studiosCache != null)
@@ -99,7 +104,82 @@ public class StudioController : ControllerBase
         PageSize = req.PageSize,
       };
 
-      var studios = _studioRepo.GetStudioPages(req);
+      var query = new StudioQuery
+      {
+        Page = req.Page,
+        PageSize = req.PageSize,
+        ViewPortNE = req.ViewPortNE,
+        ViewPortSW = req.ViewPortSW,
+        SearchKeyword = req.SearchKeyword,
+        CategoryId = req.CategoryId,
+        IsAdmin = false
+      };
+
+      var studios = _studioRepo.GetStudioPages(query);
+      resp.Total = studios.TotalCount;
+      resp.Data = _mapper.Map<List<StudioDto>>(studios.Studios);
+
+      // set to cache
+      await _cacheService.Set(redisKey, resp);
+
+      return Ok(resp);
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
+
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_STUDIO)]
+  [HttpPost("admin")]
+  public async Task<IActionResult> GetStudiosAdmin([FromBody] GetStudioQuery req)
+  {
+    _logger.LogInformation("Get Studio");
+
+    try
+    {
+      var redisKey = $"studios:admin:{req.Page}:{req.PageSize}";
+      if (req.ViewPortNE != null && req.ViewPortSW != null)
+      {
+        redisKey += $"?ne=[{req.ViewPortNE.Lat},{req.ViewPortNE.Lng}]&sw=[{req.ViewPortSW.Lat},{req.ViewPortSW.Lng}]";
+      }
+
+      if (req.SearchKeyword != null)
+      {
+        redisKey += $"?search={req.SearchKeyword}";
+      }
+
+      if (req.CategoryId != null)
+      {
+        redisKey += $"?category={req.CategoryId}";
+      }
+
+      var studiosCache = await _cacheService.Get<StudioResp>(redisKey);
+
+      if (studiosCache != null)
+      {
+        return Ok(studiosCache);
+      }
+
+      StudioResp resp = new()
+      {
+        Page = req.Page,
+        PageSize = req.PageSize,
+      };
+
+      var query = new StudioQuery
+      {
+        Page = req.Page,
+        PageSize = req.PageSize,
+        ViewPortNE = req.ViewPortNE,
+        ViewPortSW = req.ViewPortSW,
+        SearchKeyword = req.SearchKeyword,
+        CategoryId = req.CategoryId,
+        IsAdmin = true
+      };
+
+      var studios = _studioRepo.GetStudioPages(query);
       resp.Total = studios.TotalCount;
       resp.Data = _mapper.Map<List<StudioDto>>(studios.Studios);
 

@@ -13,6 +13,12 @@ public class GetStudioQuery : PaginationReq
   public ViewPort? ViewPortNE { get; set; }
   public ViewPort? ViewPortSW { get; set; }
   public string? SearchKeyword { get; set; } = null!;
+  public int? CategoryId { get; set; }
+}
+
+public class StudioQuery : GetStudioQuery
+{
+  public bool IsAdmin { get; set; }
 }
 
 public class GetStudioUserQuery : PaginationReq
