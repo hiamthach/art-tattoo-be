@@ -70,6 +70,35 @@ public class UserRepository : IUserRepository
     };
   }
 
+  public UserList SearchUsers(GetUserQuery req)
+  {
+    string searchKeyword = req.SearchKeyword ?? "";
+    var query = _dbContext.Users
+      .Select(u => new User
+      {
+        Id = u.Id,
+        Email = u.Email,
+        FullName = u.FullName,
+        Phone = u.Phone,
+        Avatar = u.Avatar,
+      })
+      .Where(u => u.Email.Contains(searchKeyword) || u.FullName.Contains(searchKeyword) || u.Phone != null && u.Phone.Contains(searchKeyword));
+
+    int totalCount = query.Count();
+
+    var users = query
+      .OrderByDescending(user => user.FullName)
+      .Skip(req.Page * req.PageSize)
+      .Take(req.PageSize)
+      .ToList();
+
+    return new UserList
+    {
+      Users = users,
+      TotalCount = totalCount
+    };
+  }
+
   public int UpdateUser(User user)
   {
     _dbContext.Users.Update(user);

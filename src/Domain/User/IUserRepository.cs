@@ -6,6 +6,7 @@ namespace art_tattoo_be.Domain.User;
 public interface IUserRepository
 {
   UserList GetUsers(GetUserQuery req);
+  UserList SearchUsers(GetUserQuery req);
   User? GetUserById(Guid id);
   Task<User?> GetUserByIdAsync(Guid id);
   User? GetUserByEmail(string email);

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using art_tattoo_be.Infrastructure.Database;
 
@@ -11,9 +12,11 @@ using art_tattoo_be.Infrastructure.Database;
 namespace art_tattoo_be.Migrations
 {
     [DbContext(typeof(ArtTattooDbContext))]
-    partial class ArtTattooDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231109230507_GuestUser")]
+    partial class GuestUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -496,9 +499,6 @@ namespace art_tattoo_be.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("ServiceId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("StudioId")
                         .HasColumnType("uniqueidentifier");
 
@@ -516,8 +516,6 @@ namespace art_tattoo_be.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AppointmentId");
-
-                    b.HasIndex("ServiceId");
 
                     b.HasIndex("StudioId");
 
@@ -1080,7 +1078,7 @@ namespace art_tattoo_be.Migrations
                             Email = "arttattoolover@gmail.com",
                             FullName = "Admin Art Tattoo Lover",
                             LastLoginAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Password = "$2a$11$2gwPR4FXuO7SyJHyONmLAenUL0OHmKNOSLXX5k2jC135D6JKuINiK",
+                            Password = "$2a$11$GTEKkpt9CDxMydnm2g.zvOLmTnQFIeuD19md2kT.ZX9hlZkUnQDL.",
                             RoleId = 1,
                             Status = "Inactive",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
@@ -1323,10 +1321,6 @@ namespace art_tattoo_be.Migrations
                         .WithMany("ListInvoice")
                         .HasForeignKey("AppointmentId");
 
-                    b.HasOne("art_tattoo_be.Domain.Studio.StudioService", "Service")
-                        .WithMany("Invoices")
-                        .HasForeignKey("ServiceId");
-
                     b.HasOne("art_tattoo_be.Domain.Studio.Studio", "Studio")
                         .WithMany("Invoices")
                         .HasForeignKey("StudioId")
@@ -1340,8 +1334,6 @@ namespace art_tattoo_be.Migrations
                         .IsRequired();
 
                     b.Navigation("Appointment");
-
-                    b.Navigation("Service");
 
                     b.Navigation("Studio");
 
@@ -1473,8 +1465,6 @@ namespace art_tattoo_be.Migrations
             modelBuilder.Entity("art_tattoo_be.Domain.Studio.StudioService", b =>
                 {
                     b.Navigation("Appointments");
-
-                    b.Navigation("Invoices");
                 });
 
             modelBuilder.Entity("art_tattoo_be.Domain.Studio.StudioUser", b =>

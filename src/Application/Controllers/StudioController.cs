@@ -3,7 +3,6 @@ namespace art_tattoo_be.Application.Controllers;
 using art_tattoo_be.Application.DTOs.Studio;
 using art_tattoo_be.Application.Middlewares;
 using art_tattoo_be.Application.Shared;
-using art_tattoo_be.Application.Shared.Constant;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Application.Shared.Handler;
 using art_tattoo_be.Core.Jwt;
@@ -268,6 +267,9 @@ public class StudioController : ControllerBase
         return ErrorResp.NotFound("Studio Not found");
       }
 
+      req.Latitude ??= studio.Latitude;
+      req.Longitude ??= studio.Longitude;
+
       var studioMapped = _mapper.Map(req, studio);
 
       if (req.WorkingTimes != null)
@@ -408,14 +410,14 @@ public class StudioController : ControllerBase
   }
 
   [Protected]
-  [Permission(PermissionSlugConst.MANAGE_STUDIO, PermissionSlugConst.MANAGE_OWNED_STUDIO)]
+  [Permission(PermissionSlugConst.MANAGE_STUDIO, PermissionSlugConst.MANAGE_OWNED_STUDIO, PermissionSlugConst.VIEW_STUDIO_ARTISTS)]
   [HttpGet("user")]
   public async Task<IActionResult> GetStudioUsers([FromQuery] GetStudioUserQuery query)
   {
     _logger.LogInformation("Get Studio Users @req", query.StudioId);
     try
     {
-      if (HttpContext.Items["permission"] is string permission && permission == PermissionSlugConst.MANAGE_OWNED_STUDIO && HttpContext.Items["payload"] is Payload payload)
+      if (HttpContext.Items["permission"] is string permission && (permission == PermissionSlugConst.MANAGE_OWNED_STUDIO || permission == PermissionSlugConst.VIEW_STUDIO_ARTISTS) && HttpContext.Items["payload"] is Payload payload)
       {
         var isFromStudio = _studioRepo.IsStudioUserExist(payload.UserId, query.StudioId);
 
@@ -466,14 +468,14 @@ public class StudioController : ControllerBase
   }
 
   [Protected]
-  [Permission(PermissionSlugConst.MANAGE_STUDIO, PermissionSlugConst.MANAGE_OWNED_STUDIO)]
+  [Permission(PermissionSlugConst.MANAGE_STUDIO, PermissionSlugConst.MANAGE_OWNED_STUDIO, PermissionSlugConst.VIEW_STUDIO_ARTISTS)]
   [HttpGet("user/{id}")]
   public async Task<IActionResult> GetStudioUserById([FromRoute] Guid id)
   {
     _logger.LogInformation("Get Studio User @req", id);
     try
     {
-      if (HttpContext.Items["permission"] is string permission && permission == PermissionSlugConst.MANAGE_OWNED_STUDIO && HttpContext.Items["payload"] is Payload payload)
+      if (HttpContext.Items["permission"] is string permission && (permission == PermissionSlugConst.MANAGE_OWNED_STUDIO || permission == PermissionSlugConst.VIEW_STUDIO_ARTISTS) && HttpContext.Items["payload"] is Payload payload)
       {
         var studioId = _studioRepo.GetStudioIdByUserId(payload.UserId);
         var isFromStudio = _studioRepo.IsStudioUserExist(payload.UserId, studioId);
