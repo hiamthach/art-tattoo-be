@@ -6,13 +6,18 @@ namespace art_tattoo_be.Application.DTOs.Invoice;
 public class CreateInvoiceReq
 {
   [Required]
-  [Range(0, double.MaxValue, ErrorMessage = "Total must larger than 0")]
-  public double Total { get; set; }
-  [Required]
   public PayMethodEnum PayMethod { get; set; }
   public string? Notes { get; set; }
   public Guid? AppointmentId { get; set; }
-  public Guid? ServiceId { get; set; }
   public Guid? UserId { get; set; }
   public bool IsGuest { get; set; }
+  public List<CreateInvoiceService> Services { get; set; } = new();
+}
+
+public class CreateInvoiceService
+{
+  public Guid ServiceId { get; set; }
+  public int Quantity { get; set; }
+  public double Price { get; set; }
+  public double Discount { get; set; }
 }
