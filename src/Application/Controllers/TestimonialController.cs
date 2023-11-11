@@ -75,7 +75,7 @@ namespace art_tattoo_be.src.Application.Controllers
         }
         [Protected]
         [HttpPost("user")]
-        public async Task<IActionResult> GetAllFromUser([FromBody] GetTestimonialQuery req)
+        public async Task<IActionResult> GetAllByUser([FromBody] GetTestimonialQuery req)
         {
             if (HttpContext.Items["payload"] is not Payload payload)
             {
