@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using art_tattoo_be.Application.Middlewares;
 using art_tattoo_be.Application.Shared;
 using art_tattoo_be.Application.Shared.Handler;
+using art_tattoo_be.Core.Jwt;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Domain.Testimonial;
 using art_tattoo_be.Domain.User;
@@ -71,19 +73,64 @@ namespace art_tattoo_be.src.Application.Controllers
                 return ErrorResp.SomethingWrong(e.Message);
             }
         }
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById([FromRoute] Guid id)
+        [Protected]
+        [HttpPost("user")]
+        public async Task<IActionResult> GetAllFromUser([FromBody] GetTestimonialQuery req)
         {
-            _logger.LogInformation("Get Testimonial by @id", id);
+            if (HttpContext.Items["payload"] is not Payload payload)
+            {
+                return ErrorResp.Unauthorized("Unauthorized");
+            }
+
+            _logger.LogInformation($"Get All Testimonial by User {payload.UserId}");
             try
             {
-                var redisKey = $"testimonial{id}";
+                var redisKey = $"testimonials{payload.UserId}:{req.StudioId}:{req.Page}:{req.PageSize}";
+                var testimonialCache = await _cacheService.Get<TestimonialResp>(redisKey);
+
+                if (testimonialCache != null)
+                {
+                    return Ok(testimonialCache);
+                }
+                TestimonialResp resp = new()
+                {
+                    Page = req.Page,
+                    PageSize = req.PageSize
+                };
+                var testimonial = _tesRepo.GetTestimonialPageByUser(req, payload!.UserId);
+
+                resp.Total = testimonial.TotalCount;
+
+                resp.Data = _mapper.Map<List<TestimonialDto>>(testimonial.Testimonials);
+
+                await _cacheService.Set(redisKey, resp);
+
+                return Ok(resp);
+            }
+            catch (Exception e)
+            {
+                return ErrorResp.SomethingWrong(e.Message);
+            }
+        }
+        [Protected]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            if (HttpContext.Items["payload"] is not Payload payload)
+            {
+                return ErrorResp.Unauthorized("Unauthorized");
+            }
+
+            _logger.LogInformation($"Get Testimonial by User {payload.UserId}, Id: @id", id);
+            try
+            {
+                var redisKey = $"testimonial{payload.UserId}:{id}";
                 var testimonialCache = await _cacheService.Get<TestimonialDto>(redisKey);
                 if (testimonialCache != null)
                 {
                     return Ok(testimonialCache);
                 }
-                var testimonialDto = _mapper.Map<TestimonialDto>(_tesRepo.GetById(id));
+                var testimonialDto = _mapper.Map<TestimonialDto>(_tesRepo.GetById(payload!.UserId, id));
                 if (testimonialDto == null)
                 {
                     return ErrorResp.NotFound("Testimonial not found");
@@ -100,14 +147,20 @@ namespace art_tattoo_be.src.Application.Controllers
                 return ErrorResp.SomethingWrong(e.Message);
             }
         }
-        [HttpPost("create")]
+        [Protected]
+        [HttpPost("create/user")]
         public async Task<IActionResult> CreateTestimonial([FromBody] CreateTestimonialReq body)
         {
-            _logger.LogInformation("Create Testimonial");
+            if (HttpContext.Items["payload"] is not Payload payload)
+            {
+                return ErrorResp.Unauthorized("Unauthorized");
+            }
+
+            _logger.LogInformation($"Create Testimonial by User {payload.UserId}");
             try
             {
                 var studio = await _stuRepo.GetAsync(body.StudioId);
-                var user = await _userRepo.GetUserByIdAsync(body.CreatedBy);
+                var user = await _userRepo.GetUserByIdAsync(payload!.UserId);
                 if (studio is not null && user is not null)
                 {
                     var testimonial = new Testimonial
@@ -117,14 +170,13 @@ namespace art_tattoo_be.src.Application.Controllers
                         Title = body.Title,
                         Content = body.Content,
                         Rating = body.Rating,
-                        CreatedBy = body.CreatedBy,
+                        CreatedBy = payload!.UserId
                     };
 
                     var result = _tesRepo.CreateTestimonial(testimonial);
                     if (result > 0)
                     {
                         await _cacheService.ClearWithPattern("testimonials");
-
                         return Ok(new BaseResp
                         {
                             Message = "Created succesfully",
@@ -149,13 +201,18 @@ namespace art_tattoo_be.src.Application.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTestimonial([FromRoute] Guid id)
         {
-            _logger.LogInformation("Delete Testimonial Id: @id", id);
+            if (HttpContext.Items["payload"] is not Payload payload)
+            {
+                return ErrorResp.Unauthorized("Unauthorized");
+            }
+
+            _logger.LogInformation($"Delete Testimonial by User{payload.UserId}, Id: @id", id);
             try
             {
                 var result = _tesRepo.DeleteTestimonial(id);
                 if (result > 0)
                 {
-                    var redisKey = $"testimonials:{id}";
+                    var redisKey = $"testimonials{payload.UserId}:{id}";
                     await _cacheService.Remove(redisKey);
                     await _cacheService.ClearWithPattern("testimonials");
 
@@ -178,10 +235,15 @@ namespace art_tattoo_be.src.Application.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTestimonial([FromBody] UpdateTestimonialReq req, [FromRoute] Guid id)
         {
-            _logger.LogInformation("Update Testimonial @id", id);
+            if (HttpContext.Items["payload"] is not Payload payload)
+            {
+                return ErrorResp.Unauthorized("Unauthorized");
+            }
+
+            _logger.LogInformation($"Update Testimonial by User {payload.UserId}, Id: @id", id);
             try
             {
-                var testimonial = _tesRepo.GetById(id);
+                var testimonial = _tesRepo.GetById(payload!.UserId, id);
                 if (testimonial == null)
                 {
                     return ErrorResp.NotFound("Testimonial not found");
@@ -190,7 +252,7 @@ namespace art_tattoo_be.src.Application.Controllers
                 var result = _tesRepo.UpdateTestimonial(testimonialMapped);
                 if (result > 0)
                 {
-                    var redisKey = $"testimoial:{id}";
+                    var redisKey = $"testimoial{payload.UserId}:{id}";
                     await _cacheService.Remove(redisKey);
                     await _cacheService.ClearWithPattern("testimonials");
                     return Ok(new BaseResp

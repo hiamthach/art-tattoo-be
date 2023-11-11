@@ -31,16 +31,13 @@ namespace art_tattoo_be.src.Infrastructure.Repository
       return _dbContext.SaveChanges();
     }
 
-    public IEnumerable<Testimonial> GetAll()
-    {
-      return _dbContext.Testimonials.ToList();
-    }
-
-    public Testimonial GetById(Guid id)
+    public Testimonial GetById(Guid userId, Guid id)
     {
       return _dbContext.Testimonials
+      .Where(tes => tes.CreatedBy == userId)
+      .Where(tes => tes.Id == id)
       .Include(tes => tes.User)
-      .FirstOrDefault(tes => tes.Id == id) ?? throw new Exception("Testimonial not found");
+      .FirstOrDefault() ?? throw new Exception("Testimonial not found");
     }
 
     public TestimonialList GetTestimonialPage(GetTestimonialQuery req)
@@ -73,11 +70,40 @@ namespace art_tattoo_be.src.Infrastructure.Repository
       };
     }
 
+    public TestimonialList GetTestimonialPageByUser(GetTestimonialQuery req, Guid userId)
+    {
+      var query = _dbContext.Testimonials
+      .Where(tes => tes.StudioId == req.StudioId)
+      .Where(tes => tes.CreatedBy == userId);
+      int totalCount = query.Count();
+      var testimonial = query
+      .Include(tes => tes.User)
+      .Select(tes => new Testimonial
+      {
+        Id = tes.Id,
+        StudioId = tes.StudioId,
+        Title = tes.Title,
+        Content = tes.Content,
+        Rating = tes.Rating,
+        CreatedBy = tes.CreatedBy,
+        CreatedAt = tes.CreatedAt,
+        UpdatedAt = tes.UpdatedAt,
+        User = tes.User
+      })
+      .OrderByDescending(tes => tes.CreatedAt)
+      .Skip(req.Page * req.PageSize)
+      .Take(req.PageSize)
+      .ToList();
+      return new TestimonialList
+      {
+        Testimonials = testimonial,
+        TotalCount = totalCount
+      };
+    }
+
     public int UpdateTestimonial(Testimonial testimonial)
     {
-      testimonial.UpdatedAt = DateTime.Now;
       _dbContext.Testimonials.Update(testimonial);
-      var test = testimonial.UpdatedAt;
       return _dbContext.SaveChanges();
     }
   }

@@ -14,6 +14,5 @@ namespace art_tattoo_be.src.Application.DTOs.Testimonial
         [Required]
         [Range(0, double.MaxValue, ErrorMessage = "Rating must larger than 0")]
         public double Rating { get; set; }
-        public Guid CreatedBy { get; set; }
     }
 }
