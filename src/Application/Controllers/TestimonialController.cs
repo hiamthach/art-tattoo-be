@@ -205,6 +205,11 @@ namespace art_tattoo_be.src.Application.Controllers
         return ErrorResp.Unauthorized("Unauthorized");
       }
 
+      if (HttpContext.Items["permission"] is not string permission)
+      {
+        return ErrorResp.Forbidden($"Forbidden, you don't have permission");
+      }
+
       _logger.LogInformation($"Delete Testimonial by User{payload.UserId}, Id: @id", id);
       try
       {
@@ -212,6 +217,11 @@ namespace art_tattoo_be.src.Application.Controllers
         if (testimonial == null)
         {
           return ErrorResp.NotFound("Testimonial not found");
+        }
+
+        if (testimonial.CreatedBy != payload.UserId && permission != PermissionSlugConst.MANAGE_TESTIMONIAL)
+        {
+          return ErrorResp.Forbidden("Forbidden, you don't have permission");
         }
 
         var result = _tesRepo.DeleteTestimonial(id);
@@ -256,6 +266,11 @@ namespace art_tattoo_be.src.Application.Controllers
         return ErrorResp.Unauthorized("Unauthorized");
       }
 
+      if (HttpContext.Items["permission"] is not string permission)
+      {
+        return ErrorResp.Forbidden($"Forbidden, you don't have permission");
+      }
+
       _logger.LogInformation($"Update Testimonial by User {payload.UserId}, Id: @id", id);
       try
       {
@@ -264,6 +279,11 @@ namespace art_tattoo_be.src.Application.Controllers
         {
           return ErrorResp.NotFound("Testimonial not found");
         }
+        if (testimonial.CreatedBy != payload.UserId && permission != PermissionSlugConst.MANAGE_TESTIMONIAL)
+        {
+          return ErrorResp.Forbidden("Forbidden, you don't have permission");
+        }
+
         var isRatingChanged = testimonial.Rating != req.Rating;
         var testimonialMapped = _mapper.Map(req, testimonial);
         var result = _tesRepo.UpdateTestimonial(testimonialMapped);
