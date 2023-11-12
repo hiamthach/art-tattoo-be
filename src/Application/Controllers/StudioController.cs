@@ -96,6 +96,11 @@ public class StudioController : ControllerBase
         redisKey += $"?category={req.CategoryId}";
       }
 
+      if (req.RatingList != null)
+      {
+        redisKey += $"?rating={string.Join(",", req.RatingList)}";
+      }
+
       var studiosCache = await _cacheService.Get<StudioResp>(redisKey);
 
       if (studiosCache != null)
@@ -117,6 +122,7 @@ public class StudioController : ControllerBase
         ViewPortSW = req.ViewPortSW,
         SearchKeyword = req.SearchKeyword,
         CategoryId = req.CategoryId,
+        RatingList = req.RatingList,
         IsAdmin = false
       };
 
@@ -165,6 +171,11 @@ public class StudioController : ControllerBase
         redisKey += $"?status={string.Join(",", req.StatusList)}";
       }
 
+      if (req.RatingList != null)
+      {
+        redisKey += $"?rating={string.Join(",", req.RatingList)}";
+      }
+
       var studiosCache = await _cacheService.Get<StudioResp>(redisKey);
 
       if (studiosCache != null)
@@ -187,6 +198,7 @@ public class StudioController : ControllerBase
         SearchKeyword = req.SearchKeyword,
         CategoryId = req.CategoryId,
         StatusList = req.StatusList,
+        RatingList = req.RatingList,
         IsAdmin = true
       };
 

@@ -179,6 +179,7 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Address).IsRequired().HasMaxLength(255);
       entity.Property(e => e.Latitude);
       entity.Property(e => e.Longitude);
+      entity.Property(e => e.Rating);
       entity.Property(e => e.Status).IsRequired().HasDefaultValue(StudioStatusEnum.Inactive).HasConversion(
         v => v.ToString(),
         v => (StudioStatusEnum)Enum.Parse(typeof(StudioStatusEnum), v)

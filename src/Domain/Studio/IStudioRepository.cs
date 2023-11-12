@@ -23,6 +23,7 @@ public interface IStudioRepository
   Task<int> CreateAsync(Studio studio);
   Task<int> CreateStudioUserAsync(StudioUser studioUser, int roleId);
   int Update(Studio studio, IEnumerable<Media> mediaList);
+  int Update(Studio studio);
   int UpdateStudioStatus(Guid id, StudioStatusEnum status);
   int UpdateStudioUser(Guid id, UpdateStudioUserData req);
   int DeleteStudio(Guid id);

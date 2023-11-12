@@ -15,6 +15,8 @@ public class GetStudioQuery : PaginationReq
   public ViewPort? ViewPortSW { get; set; }
   public string? SearchKeyword { get; set; } = null!;
   public int? CategoryId { get; set; }
+  // Rating must be 1, 2, 3, 4, 5
+  public List<int>? RatingList { get; set; }
 }
 
 public class StudioQuery : PaginationReq
@@ -24,6 +26,7 @@ public class StudioQuery : PaginationReq
   public string? SearchKeyword { get; set; } = null!;
   public int? CategoryId { get; set; }
   public List<StudioStatusEnum>? StatusList { get; set; }
+  public List<int>? RatingList { get; set; }
   public bool IsAdmin { get; set; }
 }
 
@@ -34,6 +37,7 @@ public class GetStudioAdminQuery : PaginationReq
   public string? SearchKeyword { get; set; } = null!;
   public int? CategoryId { get; set; }
   public List<StudioStatusEnum>? StatusList { get; set; }
+  public List<int>? RatingList { get; set; }
 }
 
 public class GetStudioUserQuery : PaginationReq

@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using art_tattoo_be.Domain.Testimonial;
 using art_tattoo_be.Infrastructure.Database;
 using art_tattoo_be.src.Application.DTOs.Testimonial;
-using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace art_tattoo_be.src.Infrastructure.Repository
@@ -38,6 +32,14 @@ namespace art_tattoo_be.src.Infrastructure.Repository
       .Where(tes => tes.Id == id)
       .Include(tes => tes.User)
       .FirstOrDefault() ?? throw new Exception("Testimonial not found");
+    }
+
+    public Testimonial? GetById(Guid id)
+    {
+      return _dbContext.Testimonials
+      .Where(tes => tes.Id == id)
+      .Include(tes => tes.User)
+      .FirstOrDefault();
     }
 
     public TestimonialList GetTestimonialPage(GetTestimonialQuery req)
@@ -110,6 +112,13 @@ namespace art_tattoo_be.src.Infrastructure.Repository
     public IEnumerable<Testimonial> GetAll()
     {
       return _dbContext.Testimonials.ToList();
+    }
+
+    public double GetRating(Guid studioId)
+    {
+      return _dbContext.Testimonials
+      .Where(tes => tes.StudioId == studioId)
+      .Average(tes => tes.Rating);
     }
   }
 }
