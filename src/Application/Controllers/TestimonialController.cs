@@ -274,7 +274,7 @@ namespace art_tattoo_be.src.Application.Controllers
         }
 
         [HttpGet("rating/{studioId}")]
-        public async Task<IActionResult> GetAverageRatingStudio([FromRoute] Guid studioId)
+        public IActionResult GetAverageRatingStudio([FromRoute] Guid studioId)
         {
             _logger.LogInformation("Get Average Rating for Studio @id", studioId);
             try
@@ -290,7 +290,7 @@ namespace art_tattoo_be.src.Application.Controllers
             }
         }
                 [HttpGet("rating")]
-        public async Task<IActionResult> GetAverageRating()
+        public IActionResult GetAverageRating()
         {
             _logger.LogInformation("Get Average Rating for All Studio");
             try
