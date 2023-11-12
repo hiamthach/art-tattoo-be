@@ -22,7 +22,7 @@ public class InvoiceDto
   public StudioDto Studio { get; set; } = null!;
   public UserDto User { get; set; } = null!;
   public AppointmentDto? Appointment { get; set; }
-  public StudioServiceDto? Service { get; set; }
+  public List<InvoiceServiceDto> InvoiceServices { get; set; } = new();
 }
 
 public class InvoiceResp : PaginationResp
@@ -37,7 +37,9 @@ public class InvoiceProfile : Profile
     CreateMap<Invoice, InvoiceDto>()
       .ForMember(dest => dest.Studio, opt => opt.MapFrom(src => src.Studio))
       .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User))
-      .ForMember(dest => dest.Appointment, opt => opt.MapFrom(src => src.Appointment))
+      .ForMember(dest => dest.Appointment, opt => opt.MapFrom(src => src.Appointment));
+
+    CreateMap<InvoiceService, InvoiceServiceDto>()
       .ForMember(dest => dest.Service, opt => opt.MapFrom(src => src.Service));
   }
 }

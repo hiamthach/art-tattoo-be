@@ -336,18 +336,34 @@ public class InvoiceController : ControllerBase
         }
       }
 
-      if (req.ServiceId != null)
+      var invoiceId = Guid.NewGuid();
+      double total = 0;
+      var serviceList = new List<InvoiceService>();
+      foreach (var service in req.Services)
       {
-        var service = _studioServiceRepo.GetById(req.ServiceId.Value);
-        if (service == null)
+        var studioService = _studioServiceRepo.GetById(service.ServiceId);
+        if (studioService == null)
         {
           return ErrorResp.NotFound("Service not found");
         }
 
-        if (service.StudioId != studioId)
+        if (studioService.StudioId != studioId)
         {
           return ErrorResp.Forbidden("You don't have permission to create invoice for this service");
         }
+
+        var invoiceService = new InvoiceService
+        {
+          InvoiceId = invoiceId,
+          ServiceId = service.ServiceId,
+          Quantity = service.Quantity,
+          Price = service.Price,
+          Discount = service.Discount
+        };
+
+        serviceList.Add(invoiceService);
+
+        total += service.Price * service.Quantity * (1 - service.Discount / 100);
       }
 
       if (req.UserId != null)
@@ -361,14 +377,14 @@ public class InvoiceController : ControllerBase
 
       var invoice = new Invoice
       {
-        Id = Guid.NewGuid(),
+        Id = invoiceId,
         StudioId = studioId,
         UserId = req.UserId != null ? req.UserId.Value : Guid.Parse(UserConst.USER_GUEST),
-        Total = req.Total,
+        Total = total,
         PayMethod = req.PayMethod,
         Notes = req.Notes,
         AppointmentId = req.AppointmentId,
-        ServiceId = req.ServiceId,
+        InvoiceServices = serviceList
       };
 
       if (req.IsGuest)

@@ -574,7 +574,7 @@ public class AppointmentController : ControllerBase
         Page = query.Page,
         PageSize = query.PageSize,
         StudioId = studioId,
-        UserId = null,
+        UserId = query.UserId,
         StartDate = query.StartDate,
         EndDate = query.EndDate,
         StatusList = query.StatusList,
@@ -825,7 +825,7 @@ public class AppointmentController : ControllerBase
           await _cacheService.Remove($"appointment:{id}");
           if (_mailService != null && appointment.User != null)
           {
-            await _mailService.SendEmailAsync(appointment.User.Email, "Lịch hẹn thay đổi", $"Lịch hẹn của bạn ở {appointment.Shift.Studio.Name} vừa cập nhật. Vui lòng kiểm tra lại lịch hẹn của bạn.");
+            _ = Task.Run(() => _mailService.SendEmailAsync(appointment.User.Email, "Lịch hẹn thay đổi", $"Lịch hẹn của bạn ở {appointment.Shift.Studio.Name} vừa cập nhật. Vui lòng kiểm tra lại lịch hẹn của bạn."));
           }
           return Ok(new BaseResp
           {

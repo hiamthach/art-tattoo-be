@@ -25,7 +25,7 @@ public class StudioService
   public Category Category { get; set; } = null!;
   public List<Media> ListMedia { get; set; } = new();
   public List<Appointment> Appointments { get; set; } = new();
-  public List<Invoice> Invoices { get; set; } = new();
+  public List<InvoiceService> InvoiceServices { get; set; } = new();
 }
 public class StudioServiceList
 {

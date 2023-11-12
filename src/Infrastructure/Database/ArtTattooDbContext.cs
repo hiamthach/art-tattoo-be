@@ -32,6 +32,7 @@ public class ArtTattooDbContext : IdentityDbContext
   public DbSet<ShiftUser> ShiftUsers { get; set; } = null!;
   public DbSet<Appointment> Appointments { get; set; } = null!;
   public DbSet<Invoice> Invoices { get; set; } = null!;
+  public DbSet<InvoiceService> InvoiceServices { get; set; } = null!;
   public DbSet<Media> Medias { get; set; } = null!;
 
   private readonly string COLLATION = "SQL_Latin1_General_CP1_CI_AI";
@@ -288,7 +289,6 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.HasKey(e => e.Id);
       entity.HasOne(e => e.Studio).WithMany(e => e.Invoices).HasForeignKey(e => e.StudioId).IsRequired();
       entity.HasOne(e => e.User).WithMany(e => e.Invoices).HasForeignKey(e => e.UserId).IsRequired();
-      entity.HasOne(e => e.Service).WithMany(e => e.Invoices).HasForeignKey(e => e.ServiceId).IsRequired(false);
       entity.HasOne(e => e.Appointment).WithMany(e => e.ListInvoice).HasForeignKey(e => e.AppointmentId).IsRequired(false);
       entity.Property(e => e.Id).ValueGeneratedOnAdd();
       entity.Property(e => e.StudioId).IsRequired();
@@ -301,6 +301,19 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Notes).IsRequired(false).HasMaxLength(500);
       entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
       entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
+    });
+
+    builder.Entity<InvoiceService>(entity =>
+    {
+      entity.ToTable("invoice_services");
+      entity.HasKey(e => new { e.ServiceId, e.InvoiceId });
+      entity.HasOne(e => e.Service).WithMany(e => e.InvoiceServices).HasForeignKey(e => e.ServiceId).OnDelete(DeleteBehavior.Restrict).IsRequired();
+      entity.HasOne(e => e.Invoice).WithMany(e => e.InvoiceServices).HasForeignKey(e => e.InvoiceId).IsRequired();
+      entity.Property(e => e.ServiceId).IsRequired();
+      entity.Property(e => e.InvoiceId).IsRequired();
+      entity.Property(e => e.Quantity).IsRequired();
+      entity.Property(e => e.Price).IsRequired();
+      entity.Property(e => e.Discount).IsRequired();
     });
 
     builder.Entity<Testimonial>(entity =>
