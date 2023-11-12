@@ -44,6 +44,12 @@ public class StudioProfile : Profile
       .ForMember(dest => dest.Id, opt => opt.Ignore())
       .ForMember(dest => dest.ListMedia, opt => opt.Ignore())
       .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+    CreateMap<BecomeStudioReq, Studio>()
+      .ForMember(dest => dest.Id, opt => opt.Ignore())
+      .ForMember(dest => dest.ListMedia, opt => opt.Ignore())
+      .ForMember(dest => dest.WorkingTimes, opt => opt.Ignore())
+      .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
   }
 }
 

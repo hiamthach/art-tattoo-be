@@ -3,9 +3,12 @@ namespace art_tattoo_be.Application.Controllers;
 using art_tattoo_be.Application.DTOs.Studio;
 using art_tattoo_be.Application.Middlewares;
 using art_tattoo_be.Application.Shared;
+using art_tattoo_be.Application.Shared.Constant;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Application.Shared.Handler;
+using art_tattoo_be.Application.Template;
 using art_tattoo_be.Core.Jwt;
+using art_tattoo_be.Core.Mail;
 using art_tattoo_be.Domain.Media;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Domain.User;
@@ -25,14 +28,16 @@ public class StudioController : ControllerBase
   private readonly IStudioRepository _studioRepo;
   private readonly IUserRepository _userRepo;
   private readonly IMapper _mapper;
+  private readonly IMailService _mailService;
 
-  public StudioController(ILogger<StudioController> logger, ArtTattooDbContext dbContext, ICacheService cacheService, IMapper mapper)
+  public StudioController(ILogger<StudioController> logger, ArtTattooDbContext dbContext, ICacheService cacheService, IMapper mapper, IMailService mailService)
   {
     _logger = logger;
     _cacheService = cacheService;
     _studioRepo = new StudioRepository(dbContext);
     _userRepo = new UserRepository(dbContext);
     _mapper = mapper;
+    _mailService = mailService;
   }
 
   [HttpGet("status")]
@@ -86,6 +91,11 @@ public class StudioController : ControllerBase
         redisKey += $"?search={req.SearchKeyword}";
       }
 
+      if (req.CategoryId != null)
+      {
+        redisKey += $"?category={req.CategoryId}";
+      }
+
       var studiosCache = await _cacheService.Get<StudioResp>(redisKey);
 
       if (studiosCache != null)
@@ -99,7 +109,88 @@ public class StudioController : ControllerBase
         PageSize = req.PageSize,
       };
 
-      var studios = _studioRepo.GetStudioPages(req);
+      var query = new StudioQuery
+      {
+        Page = req.Page,
+        PageSize = req.PageSize,
+        ViewPortNE = req.ViewPortNE,
+        ViewPortSW = req.ViewPortSW,
+        SearchKeyword = req.SearchKeyword,
+        CategoryId = req.CategoryId,
+        IsAdmin = false
+      };
+
+      var studios = _studioRepo.GetStudioPages(query);
+      resp.Total = studios.TotalCount;
+      resp.Data = _mapper.Map<List<StudioDto>>(studios.Studios);
+
+      // set to cache
+      await _cacheService.Set(redisKey, resp);
+
+      return Ok(resp);
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
+
+  [Protected]
+  [Permission(PermissionSlugConst.MANAGE_STUDIO)]
+  [HttpPost("admin")]
+  public async Task<IActionResult> GetStudiosAdmin([FromBody] GetStudioAdminQuery req)
+  {
+    _logger.LogInformation("Get Studio");
+
+    try
+    {
+      var redisKey = $"studios:admin:{req.Page}:{req.PageSize}";
+      if (req.ViewPortNE != null && req.ViewPortSW != null)
+      {
+        redisKey += $"?ne=[{req.ViewPortNE.Lat},{req.ViewPortNE.Lng}]&sw=[{req.ViewPortSW.Lat},{req.ViewPortSW.Lng}]";
+      }
+
+      if (req.SearchKeyword != null)
+      {
+        redisKey += $"?search={req.SearchKeyword}";
+      }
+
+      if (req.CategoryId != null)
+      {
+        redisKey += $"?category={req.CategoryId}";
+      }
+
+      if (req.StatusList != null)
+      {
+        redisKey += $"?status={string.Join(",", req.StatusList)}";
+      }
+
+      var studiosCache = await _cacheService.Get<StudioResp>(redisKey);
+
+      if (studiosCache != null)
+      {
+        return Ok(studiosCache);
+      }
+
+      StudioResp resp = new()
+      {
+        Page = req.Page,
+        PageSize = req.PageSize,
+      };
+
+      var query = new StudioQuery
+      {
+        Page = req.Page,
+        PageSize = req.PageSize,
+        ViewPortNE = req.ViewPortNE,
+        ViewPortSW = req.ViewPortSW,
+        SearchKeyword = req.SearchKeyword,
+        CategoryId = req.CategoryId,
+        StatusList = req.StatusList,
+        IsAdmin = true
+      };
+
+      var studios = _studioRepo.GetStudioPages(query);
       resp.Total = studios.TotalCount;
       resp.Data = _mapper.Map<List<StudioDto>>(studios.Studios);
 
@@ -203,6 +294,66 @@ public class StudioController : ControllerBase
       {
         return ErrorResp.BadRequest("Studio Create Fail");
       }
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
+
+  [Protected]
+  [HttpPost("become-studio")]
+  public async Task<IActionResult> BecomeStudio([FromBody] BecomeStudioReq req)
+  {
+    _logger.LogInformation("Become Studio");
+
+    if (HttpContext.Items["payload"] is not Payload payload)
+    {
+      return ErrorResp.Unauthorized("Unauthorized");
+    }
+
+    try
+    {
+      // var studio = new Studio
+      // {
+      //   Id = Guid.NewGuid(),
+      //   Status = StudioStatusEnum.Inactive,
+      // };
+      // studio = _mapper.Map(req, studio);
+
+      // var result = await _studioRepo.CreateAsync(studio);
+
+      // if (result > 0)
+      // {
+      //   // clear cache
+      //   await _cacheService.ClearWithPattern("studios");
+
+      //   _ = Task.Run(() =>
+      //   {
+      //     _mailService.SendEmailAsync(UserConst.ADMIN_EMAIL, "Yêu cầu trở thành studio mới", BecomeStudioTemplate.HtmlEmailTemplate(req));
+      //   });
+
+      //   return CreatedAtAction(nameof(CreateStudio), new BaseResp
+      //   {
+      //     Success = true,
+      //     Message = "Studio Created"
+      //   });
+      // }
+      // else
+      // {
+      //   return ErrorResp.BadRequest("Studio Create Fail");
+      // }
+
+      _ = Task.Run(() =>
+        {
+          _mailService.SendEmailAsync(UserConst.ADMIN_EMAIL, "Yêu cầu trở thành studio mới", BecomeStudioTemplate.HtmlEmailTemplate(req));
+        });
+
+      return Ok(new BaseResp
+      {
+        Success = true,
+        Message = "Your request has been sent. We will contact you soon."
+      });
     }
     catch (Exception e)
     {
@@ -402,6 +553,40 @@ public class StudioController : ControllerBase
       await _cacheService.Set(redisKey, studioArtistsDto);
 
       return Ok(studioArtistsDto);
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
+
+  [HttpGet("artists/{id}")]
+  public async Task<IActionResult> GetStudioArtistDetail([FromRoute] Guid id)
+  {
+    _logger.LogInformation("Get Studio Artists @req", id);
+    try
+    {
+      var redisKey = $"studio-users:artist:{id}";
+
+      var studioArtistsCache = await _cacheService.Get<StudioUserDto>(redisKey);
+
+      if (studioArtistsCache != null)
+      {
+        return Ok(studioArtistsCache);
+      }
+
+      var studioArtist = _studioRepo.GetStudioUser(id);
+
+      if (studioArtist == null)
+      {
+        return ErrorResp.NotFound("Studio Artists Not found");
+      }
+
+      var studioArtistDto = _mapper.Map<StudioUserDto>(studioArtist);
+
+      await _cacheService.Set(redisKey, studioArtistDto);
+
+      return Ok(studioArtistDto);
     }
     catch (Exception e)
     {
