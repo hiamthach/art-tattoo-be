@@ -114,7 +114,8 @@ public class StudioRepository : IStudioRepository
     .Where(stu => stu.Latitude <= north && stu.Latitude >= south && stu.Longitude <= east && stu.Longitude >= west)
     .Where(stu => stu.Name.Contains(searchKeyword))
     .Where(stu => req.CategoryId == null || stu.Services.Any(s => s.CategoryId == req.CategoryId))
-    .Where(stu => req.StatusList == null || req.StatusList.Contains(stu.Status));
+    .Where(stu => req.StatusList == null || req.StatusList.Contains(stu.Status))
+    .Where(stu => req.RatingList == null || req.RatingList.Contains((int)Math.Round(stu.Rating)));
 
     int totalCount = query.Count();
 
@@ -140,8 +141,10 @@ public class StudioRepository : IStudioRepository
           WorkingTimes = stu.WorkingTimes,
           ListMedia = stu.ListMedia,
           Status = stu.Status,
+          Rating = stu.Rating,
         })
-        .OrderByDescending(stu => stu.Name)
+        .OrderByDescending(stu => stu.Rating)
+        .OrderBy(stu => stu.Name)
         .Skip(req.Page * req.PageSize)
         .Take(req.PageSize)
         .ToList();
