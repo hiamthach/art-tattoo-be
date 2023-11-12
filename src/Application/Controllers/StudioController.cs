@@ -314,36 +314,6 @@ public class StudioController : ControllerBase
 
     try
     {
-      // var studio = new Studio
-      // {
-      //   Id = Guid.NewGuid(),
-      //   Status = StudioStatusEnum.Inactive,
-      // };
-      // studio = _mapper.Map(req, studio);
-
-      // var result = await _studioRepo.CreateAsync(studio);
-
-      // if (result > 0)
-      // {
-      //   // clear cache
-      //   await _cacheService.ClearWithPattern("studios");
-
-      //   _ = Task.Run(() =>
-      //   {
-      //     _mailService.SendEmailAsync(UserConst.ADMIN_EMAIL, "Yêu cầu trở thành studio mới", BecomeStudioTemplate.HtmlEmailTemplate(req));
-      //   });
-
-      //   return CreatedAtAction(nameof(CreateStudio), new BaseResp
-      //   {
-      //     Success = true,
-      //     Message = "Studio Created"
-      //   });
-      // }
-      // else
-      // {
-      //   return ErrorResp.BadRequest("Studio Create Fail");
-      // }
-
       _ = Task.Run(() =>
         {
           _mailService.SendEmailAsync(UserConst.ADMIN_EMAIL, "Yêu cầu trở thành studio mới", BecomeStudioTemplate.HtmlEmailTemplate(req));
