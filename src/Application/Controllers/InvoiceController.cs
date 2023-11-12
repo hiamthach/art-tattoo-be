@@ -9,6 +9,7 @@ using art_tattoo_be.Application.Shared.Handler;
 using art_tattoo_be.Core.Jwt;
 using art_tattoo_be.Domain.Booking;
 using art_tattoo_be.Domain.Invoice;
+using art_tattoo_be.Domain.Media;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Domain.User;
 using art_tattoo_be.Infrastructure.Cache;

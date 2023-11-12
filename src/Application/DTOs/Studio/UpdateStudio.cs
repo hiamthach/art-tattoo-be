@@ -22,6 +22,6 @@ public class UpdateStudioReq
   public StudioStatusEnum? Status { get; set; }
 
   public IEnumerable<string>? ListRemoveMedia { get; set; }
-  public IEnumerable<StudioWorkingTimeCreate>? WorkingTimes { get; set; }
   public IEnumerable<MediaCreate>? ListNewMedia { get; set; }
+  public IEnumerable<StudioWorkingTimeCreate>? WorkingTimes { get; set; }
 }
