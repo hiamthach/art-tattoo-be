@@ -191,7 +191,7 @@ public class AuthController : ControllerBase
       _ = _cacheService.Set(redisKey, code, TimeSpan.FromSeconds(60 * 5));
 
       // Send email to user
-      await _mailService.SendEmailAsync(req.Email, "Verify Email Code", $"Your verify email code is: {code}, it will expire in 5 minutes");
+      await _mailService.SendEmailAsync(req.Email, "Mã xác thực", $"Mã xác thực của bạn là: {code}, mã sẽ hết hạn trong 5 phút");
 
       return Ok(new BaseResp { Message = "Send email successfully", Success = true });
     }
@@ -343,7 +343,7 @@ public class AuthController : ControllerBase
       _ = _cacheService.Set(redisKey, code, TimeSpan.FromSeconds(60 * 5));
 
       // Send email to user
-      await _mailService.SendEmailAsync(req.Email, "Reset Password Code", $"Your reset password code is: {code}, it will expire in 5 minutes");
+      await _mailService.SendEmailAsync(req.Email, "Mã xác nhận đổi mật khẩu", $"Mã xác nhận đổi mật khẩu của bạn là: {code}, mã sẽ hết hạn trong 5 phút");
 
       return Ok(new BaseResp { Message = "Send email successfully", Success = true });
     }

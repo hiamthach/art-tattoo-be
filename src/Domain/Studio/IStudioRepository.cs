@@ -19,7 +19,7 @@ public interface IStudioRepository
   IEnumerable<Studio> GetStudios();
   IEnumerable<StudioUser> GetStudioArtist(Guid studioId);
   StudioUserList GetStudioUsers(GetStudioUserQuery req);
-  StudioList GetStudioPages(GetStudioQuery req);
+  StudioList GetStudioPages(StudioQuery req);
   Task<int> CreateAsync(Studio studio);
   Task<int> CreateStudioUserAsync(StudioUser studioUser, int roleId);
   int Update(Studio studio, IEnumerable<Media> mediaList);

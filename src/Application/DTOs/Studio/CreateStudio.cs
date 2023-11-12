@@ -7,7 +7,6 @@ namespace art_tattoo_be.Application.DTOs.Studio;
 public class CreateStudioReq
 {
   public string Name { get; set; } = null!;
-
   public string? Slogan { get; set; }
   public string? Introduction { get; set; }
   public string? Detail { get; set; }
@@ -29,4 +28,31 @@ public class CreateStudioReq
 
   public IEnumerable<StudioWorkingTimeCreate> WorkingTimes { get; set; } = new List<StudioWorkingTimeCreate>();
   public IEnumerable<MediaCreate> ListMedia { get; set; } = new List<MediaCreate>();
+}
+
+public class BecomeStudioReq
+{
+  public string Name { get; set; } = null!;
+  public string? Detail { get; set; }
+  public string? Logo { get; set; }
+  [Required]
+  [StringLength(15, ErrorMessage = "Phone number must be 0-15 characters")]
+  [RegularExpression(RegexConst.PHONE_NUMBER, ErrorMessage = "Invalid phone number")]
+  public string Phone { get; set; } = null!;
+  [Required]
+  [StringLength(30, ErrorMessage = "Email too long")]
+  [RegularExpression(RegexConst.EMAIL, ErrorMessage = "Invalid email address")]
+  public string Email { get; set; } = null!;
+  public string? Website { get; set; }
+  public string? Facebook { get; set; }
+  public string? Instagram { get; set; }
+  public string Address { get; set; } = null!;
+  public double Latitude { get; set; }
+  public double Longitude { get; set; }
+
+  public string ContactName { get; set; } = null!;
+  public string ContactPhone { get; set; } = null!;
+  public string ContactEmail { get; set; } = null!;
+
+  public string RedirectUrl { get; set; } = null!;
 }

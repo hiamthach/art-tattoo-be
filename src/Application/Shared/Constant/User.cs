@@ -4,4 +4,5 @@ public static class UserConst
 {
   public const string USER_DELETED = "00000000-0000-0000-0000-000000000404";
   public const string USER_GUEST = "00000000-0000-0000-0000-000000000888";
+  public const string ADMIN_EMAIL = "arttattoolover@gmail.com";
 }
