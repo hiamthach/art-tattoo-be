@@ -274,6 +274,13 @@ public class StudioRepository : IStudioRepository
     return _dbContext.SaveChanges();
   }
 
+  public int Update(Studio studio)
+  {
+    _dbContext.Studios.Update(studio);
+
+    return _dbContext.SaveChanges();
+  }
+
   public int UpdateStudioStatus(Guid id, StudioStatusEnum status)
   {
     var studio = _dbContext.Studios.Find(id) ?? throw new Exception("Studio not found");

@@ -21,6 +21,7 @@ public class StudioDto
   public string Address { get; set; } = null!;
   public double Latitude { get; set; }
   public double Longitude { get; set; }
+  public double Rating { get; set; }
   public StudioStatusEnum Status { get; set; }
   public List<StudioWorkingTimeDto> WorkingTimes { get; set; } = new();
   public List<MediaDto> ListMedia { get; set; } = new();

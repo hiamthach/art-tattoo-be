@@ -23,6 +23,7 @@ public class Studio
   public string Address { get; set; } = null!;
   public double Latitude { get; set; }
   public double Longitude { get; set; }
+  public double Rating { get; set; }
   public StudioStatusEnum Status { get; set; }
   public DateTime CreatedAt { get; set; }
   public DateTime UpdatedAt { get; set; }
