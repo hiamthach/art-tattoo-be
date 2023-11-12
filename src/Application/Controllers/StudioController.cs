@@ -549,6 +549,40 @@ public class StudioController : ControllerBase
     }
   }
 
+  [HttpGet("artists/{id}")]
+  public async Task<IActionResult> GetStudioArtistDetail([FromRoute] Guid id)
+  {
+    _logger.LogInformation("Get Studio Artists @req", id);
+    try
+    {
+      var redisKey = $"studio-users:artist:{id}";
+
+      var studioArtistsCache = await _cacheService.Get<StudioUserDto>(redisKey);
+
+      if (studioArtistsCache != null)
+      {
+        return Ok(studioArtistsCache);
+      }
+
+      var studioArtist = _studioRepo.GetStudioUser(id);
+
+      if (studioArtist == null)
+      {
+        return ErrorResp.NotFound("Studio Artists Not found");
+      }
+
+      var studioArtistDto = _mapper.Map<StudioUserDto>(studioArtist);
+
+      await _cacheService.Set(redisKey, studioArtistDto);
+
+      return Ok(studioArtistDto);
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
+
   [Protected]
   [Permission(PermissionSlugConst.MANAGE_STUDIO, PermissionSlugConst.MANAGE_OWNED_STUDIO, PermissionSlugConst.VIEW_STUDIO_ARTISTS)]
   [HttpGet("user")]

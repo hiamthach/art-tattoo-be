@@ -2,6 +2,7 @@ namespace art_tattoo_be.Infrastructure.Repository;
 
 using art_tattoo_be.Application.DTOs.Invoice;
 using art_tattoo_be.Domain.Invoice;
+using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,7 +19,7 @@ public class InvoiceRepository : IInvoiceRepository
   {
     var q = _dbContext.Invoices
       .Include(i => i.User)
-      // .Include(i => i.Studio)
+      .Include(i => i.Studio)
       .Include(i => i.Appointment).ThenInclude(a => a.Shift)
       // .Include(i => i.InvoiceServices).ThenInclude(i => i.Service)
       .Where(app =>
@@ -26,7 +27,31 @@ public class InvoiceRepository : IInvoiceRepository
         (query.StudioId == null || app.StudioId == query.StudioId) &&
         (query.UserId == null || app.UserId == query.UserId) &&
         (query.ServiceList == null || app.InvoiceServices.Any(i => query.ServiceList.Contains(i.ServiceId.ToString())))
-      );
+      )
+      .Select(i => new Invoice
+      {
+        Id = i.Id,
+        UserId = i.UserId,
+        StudioId = i.StudioId,
+        AppointmentId = i.AppointmentId,
+        CreatedAt = i.CreatedAt,
+        UpdatedAt = i.UpdatedAt,
+        User = i.User,
+        Total = i.Total,
+        PayMethod = i.PayMethod,
+        Notes = i.Notes,
+        Studio = new Studio
+        {
+          Id = i.Studio.Id,
+          Name = i.Studio.Name,
+          Address = i.Studio.Address,
+          Phone = i.Studio.Phone,
+          Email = i.Studio.Email,
+          Logo = i.Studio.Logo,
+        },
+        Appointment = i.Appointment,
+      })
+      ;
 
     var totalCount = q.Count();
 
@@ -50,6 +75,30 @@ public class InvoiceRepository : IInvoiceRepository
       .Include(i => i.Studio)
       .Include(i => i.Appointment).ThenInclude(a => a.Shift)
       .Include(i => i.InvoiceServices).ThenInclude(i => i.Service)
+      .Select(i => new Invoice
+      {
+        Id = i.Id,
+        UserId = i.UserId,
+        StudioId = i.StudioId,
+        AppointmentId = i.AppointmentId,
+        CreatedAt = i.CreatedAt,
+        UpdatedAt = i.UpdatedAt,
+        User = i.User,
+        Total = i.Total,
+        PayMethod = i.PayMethod,
+        Notes = i.Notes,
+        Studio = new Studio
+        {
+          Id = i.Studio.Id,
+          Name = i.Studio.Name,
+          Address = i.Studio.Address,
+          Phone = i.Studio.Phone,
+          Email = i.Studio.Email,
+          Logo = i.Studio.Logo,
+        },
+        Appointment = i.Appointment,
+        InvoiceServices = i.InvoiceServices
+      })
       .FirstOrDefault(i => i.Id == id);
   }
 
