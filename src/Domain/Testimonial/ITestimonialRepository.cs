@@ -9,4 +9,5 @@ using art_tattoo_be.src.Application.DTOs.Testimonial;
         int DeleteTestimonial(Guid id);
         TestimonialList GetTestimonialPage(GetTestimonialQuery req);
         int UpdateTestimonial(Testimonial testimonial);
+        IEnumerable<Testimonial> GetAll();
     }

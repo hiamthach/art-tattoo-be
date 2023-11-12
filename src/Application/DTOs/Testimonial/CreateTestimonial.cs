@@ -12,7 +12,7 @@ namespace art_tattoo_be.src.Application.DTOs.Testimonial
         public string Title { get; set; } = null!;
         public string Content { get; set; } = null!;
         [Required]
-        [Range(0, double.MaxValue, ErrorMessage = "Rating must larger than 0")]
+        [Range(0, 5, ErrorMessage = "Rating must between 0 and 5")]
         public double Rating { get; set; }
     }
 }

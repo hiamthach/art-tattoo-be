@@ -43,7 +43,7 @@ namespace art_tattoo_be.src.Infrastructure.Repository
     public TestimonialList GetTestimonialPage(GetTestimonialQuery req)
     {
       var query = _dbContext.Testimonials
-      .Where(tes => tes.StudioId == req.StudioId);
+      .Where(tes => req.StudioId == null || tes.StudioId == req.StudioId);
       int totalCount = query.Count();
       var testimonial = query
       .Include(tes => tes.User)
@@ -105,6 +105,11 @@ namespace art_tattoo_be.src.Infrastructure.Repository
     {
       _dbContext.Testimonials.Update(testimonial);
       return _dbContext.SaveChanges();
+    }
+
+    public IEnumerable<Testimonial> GetAll()
+    {
+      return _dbContext.Testimonials.ToList();
     }
   }
 }

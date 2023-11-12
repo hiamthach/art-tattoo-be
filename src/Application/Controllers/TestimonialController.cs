@@ -16,6 +16,7 @@ using art_tattoo_be.src.Application.DTOs.Testimonial;
 using art_tattoo_be.src.Infrastructure.Repository;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Org.BouncyCastle.Ocsp;
 
 namespace art_tattoo_be.src.Application.Controllers
@@ -271,5 +272,38 @@ namespace art_tattoo_be.src.Application.Controllers
                 return ErrorResp.SomethingWrong(e.Message);
             }
         }
+
+        [HttpGet("rating/{studioId}")]
+        public async Task<IActionResult> GetAverageRatingStudio([FromRoute] Guid studioId)
+        {
+            _logger.LogInformation("Get Average Rating for Studio @id", studioId);
+            try
+            {  
+                double average = _tesRepo.GetAll()
+                .Where(tes => tes.StudioId == studioId)
+                .Average(tes => tes.Rating);
+                return Ok(new {rating = average});
+            }
+            catch (Exception e)
+            {
+                return ErrorResp.SomethingWrong(e.Message);
+            }
+        }
+                [HttpGet("rating")]
+        public async Task<IActionResult> GetAverageRating()
+        {
+            _logger.LogInformation("Get Average Rating for All Studio");
+            try
+            {  
+                double average = _tesRepo.GetAll().Average(tes => tes.Rating);
+                return Ok(new {rating = average});
+            }
+            catch (Exception e)
+            {
+                return ErrorResp.SomethingWrong(e.Message);
+            }
+        }
+
+
     }
 }
