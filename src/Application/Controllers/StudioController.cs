@@ -316,7 +316,7 @@ public class StudioController : ControllerBase
     {
       _ = Task.Run(() =>
         {
-          _mailService.SendEmailAsync(UserConst.ADMIN_EMAIL, "Yêu cầu trở thành studio mới", BecomeStudioTemplate.HtmlEmailTemplate(req));
+          _mailService.SendEmailAsync(UserConst.ADMIN_EMAIL, "Yêu cầu trở thành studio mới", HtmlTemplate.HtmlEmailTemplate(req));
         });
 
       return Ok(new BaseResp

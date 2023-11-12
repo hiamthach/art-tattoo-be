@@ -1,8 +1,9 @@
 using art_tattoo_be.Application.DTOs.Studio;
+using art_tattoo_be.Application.DTOs.User;
 
 namespace art_tattoo_be.Application.Template;
 
-public class BecomeStudioTemplate
+public class HtmlTemplate
 {
   public static string HtmlEmailTemplate(BecomeStudioReq studio)
   {
@@ -48,4 +49,36 @@ public class BecomeStudioTemplate
     return htmlContent;
   }
 
+
+  public static string HtmlEmailReportUserTemplate(UserReport userReport)
+  {
+    string htmlContent = $@"
+      <!DOCTYPE html>
+      <html>
+      <head>
+          <title>Báo cáo người dùng không phù hợp</title>
+      </head>
+
+      <body>
+          <p>
+              Xin chào, chúng tôi muốn báo cáo người dùng không phù hợp.
+          </p>
+          <p>
+              Dưới đây là thông tin của người dùng:
+          </p>
+          <ul>
+              <li>Id: {userReport.Id}</li>
+              <li>Tên: {userReport.FullName}</li>
+              <li>Email: {userReport.Email}</li>
+              <li>Số điện thoại: {userReport.PhoneNumber}</li>
+          </ul>
+
+          <p>
+              Xin cảm ơn.
+          </p>
+          <a href='{userReport.RedirectUrl}'>Xem thêm</p>
+      </html>";
+
+    return htmlContent;
+  }
 }
