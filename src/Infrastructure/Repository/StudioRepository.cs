@@ -113,7 +113,8 @@ public class StudioRepository : IStudioRepository
     .Where(stu => req.IsAdmin || stu.Status == StudioStatusEnum.Active)
     .Where(stu => stu.Latitude <= north && stu.Latitude >= south && stu.Longitude <= east && stu.Longitude >= west)
     .Where(stu => stu.Name.Contains(searchKeyword))
-    .Where(stu => req.CategoryId == null || stu.Services.Any(s => s.CategoryId == req.CategoryId));
+    .Where(stu => req.CategoryId == null || stu.Services.Any(s => s.CategoryId == req.CategoryId))
+    .Where(stu => req.StatusList == null || req.StatusList.Contains(stu.Status));
 
     int totalCount = query.Count();
 

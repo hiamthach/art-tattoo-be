@@ -3,9 +3,12 @@ namespace art_tattoo_be.Application.Controllers;
 using art_tattoo_be.Application.DTOs.Studio;
 using art_tattoo_be.Application.Middlewares;
 using art_tattoo_be.Application.Shared;
+using art_tattoo_be.Application.Shared.Constant;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Application.Shared.Handler;
+using art_tattoo_be.Application.Template;
 using art_tattoo_be.Core.Jwt;
+using art_tattoo_be.Core.Mail;
 using art_tattoo_be.Domain.Media;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Domain.User;
@@ -25,14 +28,16 @@ public class StudioController : ControllerBase
   private readonly IStudioRepository _studioRepo;
   private readonly IUserRepository _userRepo;
   private readonly IMapper _mapper;
+  private readonly IMailService _mailService;
 
-  public StudioController(ILogger<StudioController> logger, ArtTattooDbContext dbContext, ICacheService cacheService, IMapper mapper)
+  public StudioController(ILogger<StudioController> logger, ArtTattooDbContext dbContext, ICacheService cacheService, IMapper mapper, IMailService mailService)
   {
     _logger = logger;
     _cacheService = cacheService;
     _studioRepo = new StudioRepository(dbContext);
     _userRepo = new UserRepository(dbContext);
     _mapper = mapper;
+    _mailService = mailService;
   }
 
   [HttpGet("status")]
@@ -133,7 +138,7 @@ public class StudioController : ControllerBase
   [Protected]
   [Permission(PermissionSlugConst.MANAGE_STUDIO)]
   [HttpPost("admin")]
-  public async Task<IActionResult> GetStudiosAdmin([FromBody] GetStudioQuery req)
+  public async Task<IActionResult> GetStudiosAdmin([FromBody] GetStudioAdminQuery req)
   {
     _logger.LogInformation("Get Studio");
 
@@ -153,6 +158,11 @@ public class StudioController : ControllerBase
       if (req.CategoryId != null)
       {
         redisKey += $"?category={req.CategoryId}";
+      }
+
+      if (req.StatusList != null)
+      {
+        redisKey += $"?status={string.Join(",", req.StatusList)}";
       }
 
       var studiosCache = await _cacheService.Get<StudioResp>(redisKey);
@@ -176,6 +186,7 @@ public class StudioController : ControllerBase
         ViewPortSW = req.ViewPortSW,
         SearchKeyword = req.SearchKeyword,
         CategoryId = req.CategoryId,
+        StatusList = req.StatusList,
         IsAdmin = true
       };
 
@@ -273,6 +284,55 @@ public class StudioController : ControllerBase
       {
         // clear cache
         await _cacheService.ClearWithPattern("studios");
+        return CreatedAtAction(nameof(CreateStudio), new BaseResp
+        {
+          Success = true,
+          Message = "Studio Created"
+        });
+      }
+      else
+      {
+        return ErrorResp.BadRequest("Studio Create Fail");
+      }
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
+
+  [Protected]
+  [HttpPost("become-studio")]
+  public async Task<IActionResult> BecomeStudio([FromBody] BecomeStudioReq req)
+  {
+    _logger.LogInformation("Become Studio");
+
+    if (HttpContext.Items["payload"] is not Payload payload)
+    {
+      return ErrorResp.Unauthorized("Unauthorized");
+    }
+
+    try
+    {
+      var studio = new Studio
+      {
+        Id = Guid.NewGuid(),
+        Status = StudioStatusEnum.Inactive,
+      };
+      studio = _mapper.Map(req, studio);
+
+      var result = await _studioRepo.CreateAsync(studio);
+
+      if (result > 0)
+      {
+        // clear cache
+        await _cacheService.ClearWithPattern("studios");
+
+        _ = Task.Run(() =>
+        {
+          _mailService.SendEmailAsync(UserConst.ADMIN_EMAIL, "Yêu cầu trở thành studio mới", BecomeStudioTemplate.HtmlEmailTemplate(req));
+        });
+
         return CreatedAtAction(nameof(CreateStudio), new BaseResp
         {
           Success = true,
