@@ -139,6 +139,7 @@ public class StudioRepository : IStudioRepository
           Longitude = stu.Longitude,
           WorkingTimes = stu.WorkingTimes,
           ListMedia = stu.ListMedia,
+          Status = stu.Status,
         })
         .OrderByDescending(stu => stu.Name)
         .Skip(req.Page * req.PageSize)
