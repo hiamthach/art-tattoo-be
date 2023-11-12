@@ -3,10 +3,14 @@ namespace art_tattoo_be.Application.Controllers;
 using art_tattoo_be.Application.DTOs.User;
 using art_tattoo_be.Application.Middlewares;
 using art_tattoo_be.Application.Shared;
+using art_tattoo_be.Application.Shared.Constant;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Application.Shared.Handler;
+using art_tattoo_be.Application.Template;
 using art_tattoo_be.Core.Crypto;
 using art_tattoo_be.Core.Jwt;
+using art_tattoo_be.Core.Mail;
+using art_tattoo_be.Domain.Media;
 using art_tattoo_be.Domain.User;
 using art_tattoo_be.Infrastructure.Cache;
 using art_tattoo_be.Infrastructure.Database;
@@ -23,13 +27,15 @@ public class UserController : ControllerBase
   private readonly IMapper _mapper;
   private readonly IUserRepository _userRepo;
   private readonly ICacheService _cacheService;
+  private readonly IMailService _mailService;
 
-  public UserController(ILogger<UserController> logger, ArtTattooDbContext dbContext, IMapper mapper, ICacheService cacheService)
+  public UserController(ILogger<UserController> logger, ArtTattooDbContext dbContext, IMapper mapper, ICacheService cacheService, IMailService mailService)
   {
     _logger = logger;
     _userRepo = new UserRepository(dbContext);
     _mapper = mapper;
     _cacheService = cacheService;
+    _mailService = mailService;
   }
 
   [HttpGet("status")]
@@ -303,12 +309,37 @@ public class UserController : ControllerBase
 
       var userMapped = _mapper.Map(req, user);
 
-      var result = _userRepo.UpdateUser(userMapped);
+      var mediaList = new List<Media>();
+      mediaList.AddRange(user.ListMedia);
+
+      if (req.ListNewMedia != null)
+      {
+        var newMedia = req.ListNewMedia.Select(m =>
+        {
+          return new Media
+          {
+            Id = Guid.NewGuid(),
+            Url = m.Url,
+            Type = m.Type
+          };
+        }).ToList();
+
+        mediaList.AddRange(newMedia);
+      }
+
+      if (req.ListRemoveMedia != null)
+      {
+        var removeMedia = userMapped.ListMedia.Where(m => req.ListRemoveMedia.Contains(m.Id.ToString())).ToList();
+        mediaList.RemoveAll(m => removeMedia.Select(m => m.Id).Contains(m.Id));
+      }
+
+      var result = _userRepo.UpdateUser(userMapped, mediaList);
 
       if (result > 0)
       {
         var redisKey = $"user:{payload.UserId}";
         await _cacheService.Remove(redisKey);
+        await _cacheService.ClearWithPattern("studio-users:artist");
 
         return Ok(new BaseResp { Message = "Update user success", Success = true });
       }
@@ -372,4 +403,29 @@ public class UserController : ControllerBase
     }
   }
 
+
+  [Protected]
+  [HttpPost("report")]
+  public async Task<IActionResult> ReportUser([FromBody] UserReport req)
+  {
+    _logger.LogInformation($"Report User {req.Id}");
+
+    try
+    {
+      var user = _userRepo.GetUserById(req.Id);
+      if (user == null)
+      {
+        return ErrorResp.NotFound("User not found");
+      }
+
+      await _mailService.SendEmailAsync(UserConst.ADMIN_EMAIL, "Báo cáo người dùng không phù hợp", HtmlTemplate.HtmlEmailReportUserTemplate(req));
+
+      return Ok(new BaseResp { Message = "Report user success", Success = true });
+    }
+    catch (Exception e)
+    {
+      _logger.LogError(e.Message);
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
 }

@@ -161,7 +161,7 @@ public class StudioRepository : IStudioRepository
   public StudioUser? GetStudioUser(Guid id)
   {
     return _dbContext.StudioUsers
-    .Include(stu => stu.User)
+    .Include(stu => stu.User).ThenInclude(u => u.ListMedia)
     .FirstOrDefault(stu => stu.Id == id);
   }
 

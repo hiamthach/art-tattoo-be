@@ -3,6 +3,7 @@ namespace art_tattoo_be.Infrastructure.Repository;
 using art_tattoo_be.Application.DTOs.Appointment;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Domain.Booking;
+using art_tattoo_be.Domain.Media;
 using art_tattoo_be.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 
@@ -55,6 +56,7 @@ public class AppointmentRepository : IAppointmentRepository
       .Include(app => app.User)
       .Include(app => app.Artist).ThenInclude(a => a.User)
       .Include(app => app.Service)
+      .Include(app => app.ListMedia)
       .FirstOrDefault(a => a.Id == id);
   }
 
@@ -63,6 +65,26 @@ public class AppointmentRepository : IAppointmentRepository
     await _dbContext.AddAsync(appointment);
     return await _dbContext.SaveChangesAsync();
   }
+
+  public Task<int> UpdateAsync(Appointment appointment, IEnumerable<Media> mediaList)
+  {
+    // clear old media
+    var removeMedia = appointment.ListMedia.Where(m => !mediaList.Select(m => m.Id).Contains(m.Id)).ToList();
+    var newMedia = mediaList.Where(m => !appointment.ListMedia.Select(m => m.Id).Contains(m.Id)).ToList();
+
+    if (removeMedia.Count > 0)
+    {
+      _dbContext.Medias.RemoveRange(removeMedia);
+      appointment.ListMedia.RemoveAll(m => removeMedia.Select(m => m.Id).Contains(m.Id));
+    }
+
+    _dbContext.Medias.AddRange(newMedia);
+    appointment.ListMedia.AddRange(newMedia);
+
+    _dbContext.Update(appointment);
+    return _dbContext.SaveChangesAsync();
+  }
+
 
   public Task<int> UpdateAsync(Appointment appointment)
   {
@@ -82,4 +104,5 @@ public class AppointmentRepository : IAppointmentRepository
   {
     return _dbContext.Appointments.Any(app => app.ShiftId == shiftId && app.UserId == userId);
   }
+
 }

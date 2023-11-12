@@ -19,6 +19,7 @@ using art_tattoo_be.Application.DTOs.Shift;
 using art_tattoo_be.Core.Mail;
 using art_tattoo_be.src.Domain.Studio;
 using art_tattoo_be.src.Infrastructure.Repository;
+using art_tattoo_be.Domain.Media;
 
 [ApiController]
 [Route("api/appointment")]
@@ -374,13 +375,16 @@ public class AppointmentController : ControllerBase
           }
         }
 
+        var mediaList = new List<Media>();
+        mediaList.AddRange(appointment.ListMedia);
+
         appointment.ShiftId = body.ShiftId;
         appointment.Notes = body.Notes ?? appointment.Notes;
         appointment.DoneBy = body.ArtistId ?? appointment.DoneBy;
         appointment.Status = AppointmentStatusEnum.Reschedule;
         appointment.ServiceId = body.ServiceId ?? appointment.ServiceId;
 
-        var result = await _appointmentRepo.UpdateAsync(appointment);
+        var result = await _appointmentRepo.UpdateAsync(appointment, mediaList);
 
         if (result > 0)
         {
@@ -709,13 +713,35 @@ public class AppointmentController : ControllerBase
           }
         }
 
-
         appointment.ShiftId = body.ShiftId ?? appointment.ShiftId;
         appointment.Notes = body.Notes ?? appointment.Notes;
         appointment.DoneBy = body.ArtistId ?? appointment.DoneBy;
         appointment.Status = body.Status ?? appointment.Status;
         appointment.Duration = body.Duration ?? appointment.Duration;
         appointment.ServiceId = body.ServiceId ?? appointment.ServiceId;
+
+        var mediaList = new List<Media>();
+        mediaList.AddRange(appointment.ListMedia);
+        if (body.ListNewMedia != null)
+        {
+          var newMedia = body.ListNewMedia.Select(m =>
+          {
+            return new Media
+            {
+              Id = Guid.NewGuid(),
+              Url = m.Url,
+              Type = m.Type
+            };
+          }).ToList();
+
+          mediaList.AddRange(newMedia);
+        }
+
+        if (body.ListRemoveMedia != null)
+        {
+          var removeMedia = appointment.ListMedia.Where(m => body.ListRemoveMedia.Contains(m.Id.ToString())).ToList();
+          mediaList.RemoveAll(m => removeMedia.Select(m => m.Id).Contains(m.Id));
+        }
 
         // Confirmation or Reschedule appointment
         if (body.Status != AppointmentStatusEnum.Pending && appointment.DoneBy != null)
@@ -816,7 +842,7 @@ public class AppointmentController : ControllerBase
           }
         }
 
-        var result = await _appointmentRepo.UpdateAsync(appointment);
+        var result = await _appointmentRepo.UpdateAsync(appointment, mediaList);
 
         if (result > 0)
         {

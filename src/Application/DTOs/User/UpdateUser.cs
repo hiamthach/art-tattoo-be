@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using art_tattoo_be.Application.DTOs.Media;
 using art_tattoo_be.Application.Shared.Constant;
 using art_tattoo_be.Application.Shared.Enum;
 
@@ -11,6 +12,8 @@ public class UpdateUserProfileReq
   public string? Address { get; set; }
   public string? Avatar { get; set; }
   public DateTime? Birthday { get; set; }
+  public IEnumerable<string>? ListRemoveMedia { get; set; }
+  public IEnumerable<MediaCreate>? ListNewMedia { get; set; }
 }
 
 public class UpdateUserReq

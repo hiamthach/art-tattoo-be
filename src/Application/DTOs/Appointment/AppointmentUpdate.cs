@@ -1,5 +1,6 @@
 namespace art_tattoo_be.Application.DTOs.Appointment;
 
+using art_tattoo_be.Application.DTOs.Media;
 using art_tattoo_be.Application.Shared.Enum;
 
 public class AppointmentUpdate
@@ -10,4 +11,6 @@ public class AppointmentUpdate
   public Guid? ServiceId { get; set; }
   public AppointmentStatusEnum? Status { get; set; }
   public TimeSpan? Duration { get; set; }
+  public IEnumerable<string>? ListRemoveMedia { get; set; }
+  public IEnumerable<MediaCreate>? ListNewMedia { get; set; }
 }
