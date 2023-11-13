@@ -1,9 +1,12 @@
 namespace art_tattoo_be.Infrastructure.Repository;
 
+using System.Collections.Generic;
+using art_tattoo_be.Application.DTOs.Analytics;
 using art_tattoo_be.Application.DTOs.Appointment;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Domain.Booking;
 using art_tattoo_be.Domain.Media;
+using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 
@@ -105,4 +108,91 @@ public class AppointmentRepository : IAppointmentRepository
     return _dbContext.Appointments.Any(app => app.ShiftId == shiftId && app.UserId == userId);
   }
 
+  public BookingAdminDashboard GetBookingAdminDashboard()
+  {
+    var totalAppointment = _dbContext.Appointments.Count();
+    var totalAppointmentThisMonth = _dbContext.Appointments.Count(app => app.Shift.Start.Month == DateTime.Now.Month);
+    var totalAppointmentLastMonth = _dbContext.Appointments.Count(app => app.Shift.Start.Month == DateTime.Now.AddMonths(-1).Month);
+
+    return new BookingAdminDashboard
+    {
+      TotalBooking = totalAppointment,
+      TotalBookingThisMonth = totalAppointmentThisMonth,
+      TotalBookingLastMonth = totalAppointmentLastMonth,
+    };
+  }
+
+  public List<AdminBookingDaily> GetBookingDaily()
+  {
+    // get data of last 5 days not include today
+    var last5Days = Enumerable.Range(1, 5).Select(i => DateTime.Now.AddDays(-i)).ToList();
+
+    // if not return 0 for that day
+
+    var bookingDaily = _dbContext.Appointments
+      .Where(app => last5Days.Contains(app.Shift.Start.Date))
+      .GroupBy(app => app.Shift.Start.Date)
+      .Select(g => new AdminBookingDaily
+      {
+        Times = g.Count(),
+        Date = g.Key.ToString("yyyy-MM-dd")
+      })
+      .ToList();
+
+    // fill missing date
+    foreach (var day in last5Days)
+    {
+      if (!bookingDaily.Any(b => b.Date == day.ToString("yyyy-MM-dd")))
+      {
+        bookingDaily.Add(new AdminBookingDaily
+        {
+          Times = 0,
+          Date = day.ToString("yyyy-MM-dd")
+        });
+      }
+    }
+
+    // sort by date
+    bookingDaily = bookingDaily.OrderBy(b => b.Date).ToList();
+
+    return bookingDaily;
+  }
+
+  public AdminMostPopularStudio? GetMostPopularStudio()
+  {
+    var mostPopularStudio = _dbContext.Appointments
+      .Include(app => app.Shift)
+      .Where(app => app.Shift.Start.Month == DateTime.Now.Month)
+      .GroupBy(app => app.Shift.StudioId)
+      .Select(g => new AdminMostPopularStudio
+      {
+        StudioId = g.Key,
+        TotalBooking = g.Count(),
+      })
+      .OrderByDescending(g => g.TotalBooking)
+      .FirstOrDefault();
+
+    if (mostPopularStudio != null)
+    {
+      // get total revenue in this month
+      mostPopularStudio.TotalRevenue = _dbContext.Invoices
+        .Where(i => i.StudioId == mostPopularStudio.StudioId && i.CreatedAt.Month == DateTime.Now.Month)
+        .Sum(i => i.Total);
+
+      // get studio info
+      mostPopularStudio.Studio = _dbContext.Studios
+        .Where(stu => stu.Id == mostPopularStudio.StudioId)
+        .Select(stu => new Studio
+        {
+          Id = stu.Id,
+          Name = stu.Name,
+          Logo = stu.Logo,
+          Slogan = stu.Slogan,
+          Rating = stu.Rating,
+        })
+        .FirstOrDefault();
+    }
+
+    return mostPopularStudio;
+  }
 }

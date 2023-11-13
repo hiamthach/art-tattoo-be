@@ -1,5 +1,6 @@
 namespace art_tattoo_be.Domain.User;
 
+using art_tattoo_be.Application.DTOs.Analytics;
 using art_tattoo_be.Application.DTOs.User;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Domain.Media;
@@ -9,6 +10,7 @@ public interface IUserRepository
 {
   UserList GetUsers(GetUserQuery req);
   UserList SearchUsers(GetUserQuery req);
+  UserAdminDashboard GetUserAdminDashboard();
   User? GetUserById(Guid id);
   Task<User?> GetUserByIdAsync(Guid id);
   User? GetUserByEmail(string email);
