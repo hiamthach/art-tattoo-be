@@ -9,7 +9,11 @@ public interface IAppointmentRepository
 {
   AdminMostPopularStudio? GetMostPopularStudio();
   BookingAdminDashboard GetBookingAdminDashboard();
+  BookingAdminDashboard GetBookingStudioDashboard(Guid studioId);
+  UserAdminDashboard GetUserBookingDashboard(Guid studioId);
+  StudioMostPopularArtist? GetMostPopularArtist(Guid studioId);
   List<AdminBookingDaily> GetBookingDaily();
+  List<AdminBookingDaily> GetBookingDaily(Guid studioId);
   AppointmentList GetAllAsync(AppointmentQuery query);
   Appointment? GetByIdAsync(Guid id);
   bool IsBooked(Guid shiftId, Guid userId);

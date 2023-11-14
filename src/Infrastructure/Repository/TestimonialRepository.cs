@@ -131,5 +131,20 @@ namespace art_tattoo_be.src.Infrastructure.Repository
       };
       return testimonialData;
     }
+
+    public TestimonialAdminDashboard GetTestimonialStudioDashboard(Guid studioId)
+    {
+      var testimonials = _dbContext.Testimonials
+        .Where(tes => tes.StudioId == studioId)
+        .Select(tes => tes.Rating)
+        .ToList();
+
+      var testimonialData = new TestimonialAdminDashboard
+      {
+        AvgTestimonial = testimonials.DefaultIfEmpty(0).Average(),
+        TotalTestimonial = testimonials.Count
+      };
+      return testimonialData;
+    }
   }
 }

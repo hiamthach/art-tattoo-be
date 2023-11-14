@@ -26,13 +26,13 @@ public class PingController : ControllerBase
     return Ok(new { message = "pong pong", appVersion = appVer });
   }
 
-  [HttpDelete("clear-cache")]
-  public IActionResult ClearCache()
-  {
-    _logger.LogInformation("Clear cache");
+  // [HttpDelete("clear-cache")]
+  // public IActionResult ClearCache()
+  // {
+  //   _logger.LogInformation("Clear cache");
 
-    _cacheService.Clear();
+  //   _cacheService.Clear();
 
-    return Ok(new { message = "clear cache" });
-  }
+  //   return Ok(new { message = "clear cache" });
+  // }
 }

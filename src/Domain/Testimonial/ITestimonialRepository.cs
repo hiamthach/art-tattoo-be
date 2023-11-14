@@ -6,6 +6,7 @@ using art_tattoo_be.src.Application.DTOs.Testimonial;
 public interface ITestimonialRepository
 {
   TestimonialAdminDashboard GetTestimonialAdminDashboard();
+  TestimonialAdminDashboard GetTestimonialStudioDashboard(Guid studioId);
   TestimonialList GetTestimonialPageByUser(GetTestimonialQuery req, Guid userId);
   Testimonial GetById(Guid userId, Guid id);
   Testimonial? GetById(Guid id);

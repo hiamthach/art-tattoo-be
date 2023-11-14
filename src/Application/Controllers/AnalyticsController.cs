@@ -14,6 +14,7 @@ using art_tattoo_be.src.Infrastructure.Repository;
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 using art_tattoo_be.Application.Shared.Handler;
+using art_tattoo_be.Domain.Invoice;
 
 [Produces("application/json")]
 [ApiController]
@@ -27,6 +28,7 @@ public class AnalyticsController : ControllerBase
   private readonly IUserRepository _userRepo;
   private readonly ITestimonialRepository _testimonialRepo;
   private readonly IAppointmentRepository _appointmentRepo;
+  private readonly IInvoiceRepository _invoiceRepo;
 
   public AnalyticsController(
     ILogger<AnalyticsController> logger,
@@ -42,6 +44,7 @@ public class AnalyticsController : ControllerBase
     _userRepo = new UserRepository(dbContext);
     _testimonialRepo = new TestimonialRepository(dbContext);
     _appointmentRepo = new AppointmentRepository(dbContext);
+    _invoiceRepo = new InvoiceRepository(dbContext);
   }
 
   [Protected]
@@ -75,16 +78,85 @@ public class AnalyticsController : ControllerBase
   }
 
   [Protected]
+  [HttpGet("studio-dashboard/{id}")]
+  public async Task<IActionResult> GetStudioDashboard([FromRoute] Guid id)
+  {
+    _logger.LogInformation("GetStudioDashboard");
+    try
+    {
+      var studio = await _studioRepository.GetAsync(id);
+      if (studio == null)
+      {
+        return ErrorResp.NotFound("Studio not found");
+      }
+
+      var userData = _appointmentRepo.GetUserBookingDashboard(id);
+      var testimonialData = _testimonialRepo.GetTestimonialStudioDashboard(id);
+      var bookingData = _appointmentRepo.GetBookingStudioDashboard(id);
+      var revenueData = _invoiceRepo.GetRevenueStudioDashboard(id);
+
+      var adminDashboard = new StudioDashboard
+      {
+        UserData = userData,
+        TestimonialData = testimonialData,
+        BookingData = bookingData,
+        RevenueData = revenueData
+      };
+
+      return Ok(adminDashboard);
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
+
+
+  [Protected]
   [Permission(PermissionSlugConst.MANAGE_STUDIO, PermissionSlugConst.MANAGE_USERS, PermissionSlugConst.MANAGE_TESTIMONIAL)]
   [HttpGet("admin-dashboard/booking-daily")]
-  public IActionResult GetAdminDashboardBookingDaily()
+  public async Task<IActionResult> GetAdminDashboardBookingDaily([FromQuery] Guid studioId)
   {
     _logger.LogInformation("GetAdminDashboardBookingDaily");
     try
     {
+      if (studioId != Guid.Empty)
+      {
+        var studio = await _studioRepository.GetAsync(studioId);
+        if (studio == null)
+        {
+          return ErrorResp.NotFound("Studio not found");
+        }
+        var bookingStudioDaily = _appointmentRepo.GetBookingDaily(studioId);
+
+        return Ok(bookingStudioDaily);
+      }
+
       var bookingDaily = _appointmentRepo.GetBookingDaily();
 
       return Ok(bookingDaily);
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
+
+  [Protected]
+  [HttpGet("studio-dashboard/booking-daily/{id}")]
+  public async Task<IActionResult> GetStudioDashboardBookingDaily([FromRoute] Guid id)
+  {
+    _logger.LogInformation("GetAdminDashboardBookingDaily");
+    try
+    {
+      var studio = await _studioRepository.GetAsync(id);
+      if (studio == null)
+      {
+        return ErrorResp.NotFound("Studio not found");
+      }
+      var bookingStudioDaily = _appointmentRepo.GetBookingDaily(id);
+
+      return Ok(bookingStudioDaily);
     }
     catch (Exception e)
     {
@@ -103,6 +175,28 @@ public class AnalyticsController : ControllerBase
       var mostPopularStudio = _appointmentRepo.GetMostPopularStudio();
 
       return Ok(mostPopularStudio);
+    }
+    catch (Exception e)
+    {
+      return ErrorResp.SomethingWrong(e.Message);
+    }
+  }
+
+  [Protected]
+  [HttpGet("studio-dashboard/most-popular-artist/{id}")]
+  public async Task<IActionResult> GetStudioDashboardPopularArtist([FromRoute] Guid id)
+  {
+    _logger.LogInformation("GetStudioDashboardPopularArtist");
+    try
+    {
+      var studio = await _studioRepository.GetAsync(id);
+      if (studio == null)
+      {
+        return ErrorResp.NotFound("Studio not found");
+      }
+      var mostPopularArtist = _appointmentRepo.GetMostPopularArtist(id);
+
+      return Ok(mostPopularArtist);
     }
     catch (Exception e)
     {
