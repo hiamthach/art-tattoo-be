@@ -1,4 +1,6 @@
 namespace art_tattoo_be.Domain.Studio;
+
+using art_tattoo_be.Application.DTOs.Analytics;
 using art_tattoo_be.Application.DTOs.Studio;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Domain.Media;
@@ -10,6 +12,7 @@ public interface IStudioRepository
   bool IsExist(Guid id);
   bool IsStudioUserExist(Guid userId);
   bool IsStudioUserExist(Guid userId, Guid studioId);
+  StudioAdminDashboard GetStudioAdminDashboard();
   Task<Studio?> GetAsync(Guid id);
   StudioUser? GetStudioUser(Guid id);
   StudioUser? GetStudioUserByUserId(Guid userId);

@@ -1,5 +1,6 @@
 namespace art_tattoo_be.Infrastructure.Repository;
 
+using art_tattoo_be.Application.DTOs.Analytics;
 using art_tattoo_be.Application.DTOs.Invoice;
 using art_tattoo_be.Domain.Invoice;
 using art_tattoo_be.Domain.Studio;
@@ -95,6 +96,7 @@ public class InvoiceRepository : IInvoiceRepository
           Phone = i.Studio.Phone,
           Email = i.Studio.Email,
           Logo = i.Studio.Logo,
+          Rating = i.Studio.Rating,
         },
         Appointment = i.Appointment,
         InvoiceServices = i.InvoiceServices
@@ -112,5 +114,27 @@ public class InvoiceRepository : IInvoiceRepository
   {
     _dbContext.Invoices.Update(invoice);
     return await _dbContext.SaveChangesAsync();
+  }
+
+  public RevenueStudioDashboard GetRevenueStudioDashboard(Guid studioId)
+  {
+    var q = _dbContext.Invoices
+      .Where(i => i.StudioId == studioId)
+      .Select(i => new
+      {
+        i.CreatedAt,
+        i.Total
+      });
+
+    var totalRevenue = q.Sum(i => i.Total);
+    var totalRevenueThisMonth = q.Where(i => i.CreatedAt.Month == DateTime.Now.Month).Sum(i => i.Total);
+    var totalRevenueLastMonth = q.Where(i => i.CreatedAt.Month == DateTime.Now.AddMonths(-1).Month).Sum(i => i.Total);
+
+    return new RevenueStudioDashboard
+    {
+      TotalRevenue = totalRevenue,
+      TotalRevenueThisMonth = totalRevenueThisMonth,
+      TotalRevenueLastMonth = totalRevenueLastMonth
+    };
   }
 }

@@ -1,3 +1,4 @@
+using art_tattoo_be.Application.DTOs.Analytics;
 using art_tattoo_be.Domain.Testimonial;
 using art_tattoo_be.Infrastructure.Database;
 using art_tattoo_be.src.Application.DTOs.Testimonial;
@@ -119,6 +120,31 @@ namespace art_tattoo_be.src.Infrastructure.Repository
       return _dbContext.Testimonials
       .Where(tes => tes.StudioId == studioId)
       .Average(tes => tes.Rating);
+    }
+
+    public TestimonialAdminDashboard GetTestimonialAdminDashboard()
+    {
+      var testimonialData = new TestimonialAdminDashboard
+      {
+        AvgTestimonial = _dbContext.Testimonials.Average(tes => tes.Rating),
+        TotalTestimonial = _dbContext.Testimonials.Count()
+      };
+      return testimonialData;
+    }
+
+    public TestimonialAdminDashboard GetTestimonialStudioDashboard(Guid studioId)
+    {
+      var testimonials = _dbContext.Testimonials
+        .Where(tes => tes.StudioId == studioId)
+        .Select(tes => tes.Rating)
+        .ToList();
+
+      var testimonialData = new TestimonialAdminDashboard
+      {
+        AvgTestimonial = testimonials.DefaultIfEmpty(0).Average(),
+        TotalTestimonial = testimonials.Count
+      };
+      return testimonialData;
     }
   }
 }

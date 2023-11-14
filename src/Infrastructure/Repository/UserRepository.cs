@@ -2,6 +2,7 @@ namespace art_tattoo_be.Infrastructure.Repository;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using art_tattoo_be.Application.DTOs.Analytics;
 using art_tattoo_be.Application.DTOs.User;
 using art_tattoo_be.Application.Shared.Enum;
 using art_tattoo_be.Domain.Media;
@@ -29,6 +30,18 @@ public class UserRepository : IUserRepository
     var user = _dbContext.Users.Find(id) ?? throw new Exception("User not found");
     _dbContext.Remove(user);
     return _dbContext.SaveChanges();
+  }
+
+  public UserAdminDashboard GetUserAdminDashboard()
+  {
+    var userAdminDashboard = new UserAdminDashboard
+    {
+      TotalUser = _dbContext.Users.Count(),
+      TotalUserThisMonth = _dbContext.Users.Count(u => u.CreatedAt.Month == DateTime.Now.Month),
+      TotalUserLastMonth = _dbContext.Users.Count(u => u.CreatedAt.Month == DateTime.Now.AddMonths(-1).Month),
+    };
+
+    return userAdminDashboard;
   }
 
   public User? GetUserByEmail(string email)

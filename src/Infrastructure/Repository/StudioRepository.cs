@@ -1,4 +1,6 @@
 namespace art_tattoo_be.Infrastructure.Repository;
+
+using art_tattoo_be.Application.DTOs.Analytics;
 using art_tattoo_be.Application.DTOs.Studio;
 using art_tattoo_be.Application.Shared.Constant;
 using art_tattoo_be.Application.Shared.Enum;
@@ -70,6 +72,20 @@ public class StudioRepository : IStudioRepository
     .Include(stu => stu.ListMedia)
     .Include(stu => stu.WorkingTimes)
     .FirstOrDefaultAsync(stu => stu.Id == id);
+  }
+
+  public StudioAdminDashboard GetStudioAdminDashboard()
+  {
+    var totalStudio = _dbContext.Studios.Where(stu => stu.Status == StudioStatusEnum.Active).Count();
+    var totalStudioThisMonth = _dbContext.Studios.Where(stu => stu.CreatedAt.Month == DateTime.Now.Month && stu.Status == StudioStatusEnum.Active).Count();
+    var totalStudioLastMonth = _dbContext.Studios.Where(stu => stu.CreatedAt.Month == DateTime.Now.AddMonths(-1).Month && stu.Status == StudioStatusEnum.Active).Count();
+
+    return new StudioAdminDashboard
+    {
+      TotalStudio = totalStudio,
+      TotalStudioThisMonth = totalStudioThisMonth,
+      TotalStudioLastMonth = totalStudioLastMonth
+    };
   }
 
   public IEnumerable<StudioUser> GetStudioArtist(Guid studioId)
