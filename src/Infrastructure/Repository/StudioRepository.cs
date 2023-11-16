@@ -71,6 +71,7 @@ public class StudioRepository : IStudioRepository
     return _dbContext.Studios
     .Include(stu => stu.ListMedia)
     .Include(stu => stu.WorkingTimes)
+    .Include(stu => stu.Services)
     .FirstOrDefaultAsync(stu => stu.Id == id);
   }
 
