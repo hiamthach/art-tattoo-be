@@ -45,6 +45,7 @@ public class ShiftRepository : IShiftRepository
   public Task<Shift?> GetByIdAsync(Guid id)
   {
     return _dbContext.Shifts
+      .Include(s => s.Appointments)
       .Include(s => s.ShiftUsers).ThenInclude(su => su.StudioUser).ThenInclude(su => su.User)
       .FirstOrDefaultAsync(s => s.Id == id);
   }

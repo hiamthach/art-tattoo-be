@@ -201,7 +201,8 @@ public class ShiftController : ControllerBase
         Start = query.Start,
         End = query.End,
         StudioId = studioId,
-        ArtistId = studioUserId
+        ArtistId = studioUserId,
+        IsStudio = true,
       };
 
       var cachedShifts = await _cacheService.Get<List<ShiftDto>>(redisKey);

@@ -29,6 +29,7 @@ public class AppointmentRepository : IAppointmentRepository
     .Include(app => app.Service)
     .Where(app =>
         (query.StudioId == null || app.Shift.StudioId == query.StudioId) &&
+        (query.ArtistId == null || app.DoneBy == query.ArtistId) &&
         (query.UserId == null || app.UserId == query.UserId) &&
         (query.StatusList == null || query.StatusList.Contains(app.Status)) &&
         (query.StartDate == null || app.Shift.Start >= query.StartDate) &&
@@ -66,7 +67,7 @@ public class AppointmentRepository : IAppointmentRepository
 
   public async Task<int> CreateAsync(Appointment appointment)
   {
-    await _dbContext.AddAsync(appointment);
+    await _dbContext.Appointments.AddAsync(appointment);
     return await _dbContext.SaveChangesAsync();
   }
 

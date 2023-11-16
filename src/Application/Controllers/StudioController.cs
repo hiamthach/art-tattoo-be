@@ -315,7 +315,7 @@ public class StudioController : ControllerBase
 
   [Protected]
   [HttpPost("become-studio")]
-  public async Task<IActionResult> BecomeStudio([FromBody] BecomeStudioReq req)
+  public IActionResult BecomeStudio([FromBody] BecomeStudioReq req)
   {
     _logger.LogInformation("Become Studio");
 

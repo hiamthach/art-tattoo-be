@@ -71,6 +71,7 @@ public class StudioRepository : IStudioRepository
     return _dbContext.Studios
     .Include(stu => stu.ListMedia)
     .Include(stu => stu.WorkingTimes)
+    .Include(stu => stu.Services)
     .FirstOrDefaultAsync(stu => stu.Id == id);
   }
 
@@ -160,7 +161,7 @@ public class StudioRepository : IStudioRepository
           Rating = stu.Rating,
         })
         .OrderByDescending(stu => stu.Rating)
-        .OrderBy(stu => stu.Name)
+        .ThenBy(stu => stu.Name)
         .Skip(req.Page * req.PageSize)
         .Take(req.PageSize)
         .ToList();
