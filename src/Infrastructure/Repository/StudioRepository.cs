@@ -161,7 +161,7 @@ public class StudioRepository : IStudioRepository
           Rating = stu.Rating,
         })
         .OrderByDescending(stu => stu.Rating)
-        .OrderBy(stu => stu.Name)
+        .ThenBy(stu => stu.Name)
         .Skip(req.Page * req.PageSize)
         .Take(req.PageSize)
         .ToList();
