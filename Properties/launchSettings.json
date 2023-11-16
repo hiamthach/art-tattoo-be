@@ -17,14 +17,11 @@
       "applicationUrl": "http://localhost:8080",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "APP_VERSION": "0.0.1",
+        "APP_VERSION": "1.1.2",
         "JWT_SECRET": "ArtTattooSecret@@",
         "REDIS_CONNECTION": "localhost:6379,password=ArtTattooRedis,abortConnect=false,ssl=true,sslprotocols=tls12",
         "SMTP_EMAIL": "arttattoolover@gmail.com",
-        "SMTP_PASSWORD": "zoxeglocinfzmnei",
-        "PUBNUB_PUBLISH_KEY": "pub-c-04babef8-6634-4268-a876-229b87d21056",
-        "PUBNUB_SUBCRIBE_KEY": "sub-c-eecc6e5e-ab63-4241-9168-9173a63bd997",
-        "PUBNUB_USER_ID": "arttattoolover"
+        "SMTP_PASSWORD": "zoxeglocinfzmnei"
       }
     }
   }
