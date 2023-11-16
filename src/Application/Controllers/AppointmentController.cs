@@ -366,7 +366,7 @@ public class AppointmentController : ControllerBase
           return ErrorResp.BadRequest("Appointment already Late");
       }
 
-      if (appointment.Status == AppointmentStatusEnum.Pending || appointment.Status == AppointmentStatusEnum.Confirmed || appointment.Status == AppointmentStatusEnum.Reschedule)
+      if (appointment.Status == AppointmentStatusEnum.Pending || appointment.Status == AppointmentStatusEnum.Confirmed || appointment.Status == AppointmentStatusEnum.Reschedule || appointment.Status == AppointmentStatusEnum.Busy)
       {
         if (body.ServiceId != null && body.ServiceId != appointment.ServiceId)
         {
