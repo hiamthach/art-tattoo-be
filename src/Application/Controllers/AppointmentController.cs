@@ -233,6 +233,14 @@ public class AppointmentController : ControllerBase
       {
         return ErrorResp.NotFound("Shift not found");
       }
+
+      var capacity = shift.Appointments.Count;
+
+      if (capacity >= shift.ShiftUsers.Count + BookConst.MaxBookCapacity)
+      {
+        return ErrorResp.BadRequest("Shift is full");
+      }
+
       if (body.ArtistId != null)
       {
         var su = shift.ShiftUsers.FirstOrDefault(su => su.ShiftId == shift.Id && su.StuUserId == body.ArtistId);
@@ -333,6 +341,19 @@ public class AppointmentController : ControllerBase
       if (appointment.UserId != payload.UserId)
       {
         return ErrorResp.Unauthorized("Unauthorized");
+      }
+
+      var shift = await _shiftRepo.GetByIdAsync(body.ShiftId);
+      if (shift == null)
+      {
+        return ErrorResp.NotFound("Shift not found");
+      }
+
+      var capacity = shift.Appointments.Count;
+
+      if (capacity >= shift.ShiftUsers.Count + BookConst.MaxBookCapacity)
+      {
+        return ErrorResp.BadRequest("Shift is full");
       }
 
       switch (appointment.Status)

@@ -67,7 +67,7 @@ public class AppointmentRepository : IAppointmentRepository
 
   public async Task<int> CreateAsync(Appointment appointment)
   {
-    await _dbContext.AddAsync(appointment);
+    await _dbContext.Appointments.AddAsync(appointment);
     return await _dbContext.SaveChangesAsync();
   }
 
