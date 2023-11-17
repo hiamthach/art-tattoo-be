@@ -417,9 +417,9 @@ public class AppointmentController : ControllerBase
 
             if (shiftsOfUser != null)
             {
-              for (int i = 0; i < shiftsOfUser.Count(); i++)
+              foreach (var s in shiftsOfUser)
               {
-                var su = shiftsOfUser.ElementAt(i).ShiftUsers.FirstOrDefault(su => su.StuUserId == appointment.DoneBy);
+                var su = s.ShiftUsers.FirstOrDefault(su => su.StuUserId == appointment.DoneBy);
                 if (su != null)
                 {
                   su.IsBooked = false;
@@ -524,9 +524,9 @@ public class AppointmentController : ControllerBase
 
             if (shiftsOfUser != null)
             {
-              for (int i = 0; i < shiftsOfUser.Count(); i++)
+              foreach (var s in shiftsOfUser)
               {
-                var su = shiftsOfUser.ElementAt(i).ShiftUsers.FirstOrDefault(su => su.StuUserId == appointment.DoneBy);
+                var su = s.ShiftUsers.FirstOrDefault(su => su.StuUserId == appointment.DoneBy);
                 if (su != null)
                 {
                   su.IsBooked = false;
@@ -868,7 +868,6 @@ public class AppointmentController : ControllerBase
         appointment.Notes = body.Notes ?? appointment.Notes;
         appointment.DoneBy = body.ArtistId ?? appointment.DoneBy;
         appointment.Status = body.Status ?? appointment.Status;
-        appointment.Duration = body.Duration ?? appointment.Duration;
         appointment.ServiceId = body.ServiceId ?? appointment.ServiceId;
 
         // change media
@@ -925,11 +924,11 @@ public class AppointmentController : ControllerBase
               {
                 foreach (var s in shiftsOfUser)
                 {
-                  var su = s.ShiftUsers.FirstOrDefault(su => su.StuUserId == appointment.DoneBy);
-                  if (su != null)
+                  var suConfirm = s.ShiftUsers.FirstOrDefault(su => su.StuUserId == appointment.DoneBy);
+                  if (suConfirm != null)
                   {
-                    su.IsBooked = true;
-                    await _shiftRepo.UpdateShiftUserAsync(su);
+                    suConfirm.IsBooked = true;
+                    await _shiftRepo.UpdateShiftUserAsync(suConfirm);
                   }
                 }
               }
@@ -988,6 +987,9 @@ public class AppointmentController : ControllerBase
             }
           }
         }
+
+        // update after cancel or reschedule old shift
+        appointment.Duration = body.Duration ?? appointment.Duration;
 
         // Reschedule appointment -> check if artist is available at new time
         if (body.Status == AppointmentStatusEnum.Reschedule && body.ShiftId != null)
