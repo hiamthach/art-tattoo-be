@@ -113,7 +113,7 @@ app.UseSwaggerUI();
 DbInitializer.UseInitializeDatabase(app);
 
 app.UseRateLimiter();
-app.UseCors();
+app.UseCors("AllowAllOrigins");
 
 app.UseHttpsRedirection();
 
