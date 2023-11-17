@@ -409,6 +409,7 @@ public class StudioServiceController : ControllerBase
       {
         var redisKey = $"studioService:{id}";
         await _cacheService.Remove(redisKey);
+        await _cacheService.Remove($"studio:{studioId}");
         await _cacheService.ClearWithPattern("studioServices");
 
         return Ok(new BaseResp
