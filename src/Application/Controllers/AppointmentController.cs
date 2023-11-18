@@ -386,7 +386,6 @@ public class AppointmentController : ControllerBase
         var mediaList = new List<Media>();
         mediaList.AddRange(appointment.ListMedia);
 
-        appointment.ShiftId = body.ShiftId;
         appointment.Notes = body.Notes ?? appointment.Notes;
         appointment.DoneBy = body.ArtistId ?? appointment.DoneBy;
         appointment.Status = AppointmentStatusEnum.Pending;
@@ -423,7 +422,7 @@ public class AppointmentController : ControllerBase
                 if (su != null)
                 {
                   su.IsBooked = false;
-                  await _shiftRepo.UpdateShiftUserAsync(su);
+                  var _ = await _shiftRepo.UpdateShiftUserAsync(su);
                 }
               }
             }
@@ -434,11 +433,14 @@ public class AppointmentController : ControllerBase
           }
         }
 
+        appointment.Duration = null;
+        appointment.ShiftId = body.ShiftId;
         var result = await _appointmentRepo.UpdateAsync(appointment, mediaList);
 
         if (result > 0)
         {
           await _cacheService.ClearWithPattern($"appointments");
+          await _cacheService.ClearWithPattern($"shifts");
           await _cacheService.Remove($"appointment:{id}");
           return Ok(new BaseResp
           {
@@ -497,7 +499,7 @@ public class AppointmentController : ControllerBase
           return ErrorResp.BadRequest("Appointment already Late");
       }
 
-      if (appointment.Status == AppointmentStatusEnum.Pending || appointment.Status == AppointmentStatusEnum.Confirmed || appointment.Status == AppointmentStatusEnum.Reschedule)
+      if (appointment.Status == AppointmentStatusEnum.Pending || appointment.Status == AppointmentStatusEnum.Confirmed || appointment.Status == AppointmentStatusEnum.Reschedule || appointment.Status == AppointmentStatusEnum.Busy)
       {
         if (appointment.Shift.ShiftUsers != null && appointment.DoneBy != null)
         {
@@ -864,7 +866,6 @@ public class AppointmentController : ControllerBase
           }
         }
 
-        appointment.ShiftId = body.ShiftId ?? appointment.ShiftId;
         appointment.Notes = body.Notes ?? appointment.Notes;
         appointment.DoneBy = body.ArtistId ?? appointment.DoneBy;
         appointment.Status = body.Status ?? appointment.Status;
@@ -900,16 +901,11 @@ public class AppointmentController : ControllerBase
           if (appointment.Shift.ShiftUsers != null && appointment.DoneBy != null)
           {
             var shiftUser = appointment.Shift.ShiftUsers.FirstOrDefault(su => su.StuUserId == appointment.DoneBy);
-            if (shiftUser != null && shiftUser.IsBooked == false)
-            {
-              shiftUser.IsBooked = true;
-              await _shiftRepo.UpdateShiftUserAsync(shiftUser);
-            }
 
-            if (appointment.Duration != null)
+            if (body.Duration != null)
             {
               var startTime = appointment.Shift.Start;
-              var endTime = startTime.AddHours(appointment.Duration.Value.TotalHours);
+              var endTime = startTime.AddHours(body.Duration.Value.TotalHours);
 
               var shiftsOfUser = _shiftRepo.GetAllAsync(new ShiftQuery
               {
@@ -922,6 +918,11 @@ public class AppointmentController : ControllerBase
 
               if (shiftsOfUser != null)
               {
+                if (shiftsOfUser.Any(s => s.ShiftUsers.Any(su => su.StuUserId == appointment.DoneBy && su.IsBooked)))
+                {
+                  return ErrorResp.BadRequest("Artist is not available at this time");
+                }
+
                 foreach (var s in shiftsOfUser)
                 {
                   var suConfirm = s.ShiftUsers.FirstOrDefault(su => su.StuUserId == appointment.DoneBy);
@@ -937,11 +938,19 @@ public class AppointmentController : ControllerBase
                 return ErrorResp.BadRequest("Artist is not available at this time");
               }
             }
+            else
+            {
+              if (shiftUser != null && shiftUser.IsBooked == false)
+              {
+                shiftUser.IsBooked = true;
+                await _shiftRepo.UpdateShiftUserAsync(shiftUser);
+              }
+            }
           }
         }
 
         // Cancel appointment or Reschedule appointment -> remove booked status
-        if (body.Status == AppointmentStatusEnum.Canceled || body.Status == AppointmentStatusEnum.Reschedule)
+        if (body.Status == AppointmentStatusEnum.Canceled)
         {
           if (appointment.Shift.ShiftUsers != null && appointment.DoneBy != null)
           {
@@ -988,9 +997,6 @@ public class AppointmentController : ControllerBase
           }
         }
 
-        // update after cancel or reschedule old shift
-        appointment.Duration = body.Duration ?? appointment.Duration;
-
         // Reschedule appointment -> check if artist is available at new time
         if (body.Status == AppointmentStatusEnum.Reschedule && body.ShiftId != null)
         {
@@ -1002,6 +1008,36 @@ public class AppointmentController : ControllerBase
 
           if (appointment.DoneBy != null)
           {
+            IEnumerable<Shift>? shiftsOfUser = null;
+            IEnumerable<Shift>? oldShiftsOfUser = null;
+
+            if (appointment.Duration != null)
+            {
+              var startTime = appointment.Shift.Start;
+              var endTime = startTime.AddHours(appointment.Duration.Value.TotalHours);
+
+              oldShiftsOfUser = _shiftRepo.GetAllAsync(new ShiftQuery
+              {
+                ArtistId = appointment.DoneBy,
+                Start = startTime,
+                End = endTime,
+                IsStudio = true,
+                StudioId = shift.StudioId,
+              });
+
+              if (oldShiftsOfUser != null)
+              {
+                foreach (var s in oldShiftsOfUser)
+                {
+                  var su2 = s.ShiftUsers.FirstOrDefault(su => su.StuUserId == appointment.DoneBy);
+                  if (su2 != null)
+                  {
+                    su2.IsBooked = false;
+                  }
+                }
+              }
+            }
+
             var su = shift.ShiftUsers.FirstOrDefault(su => su.ShiftId == shift.Id && su.StuUserId == appointment.DoneBy);
 
             if (su == null)
@@ -1009,17 +1045,29 @@ public class AppointmentController : ControllerBase
               return ErrorResp.NotFound("Shift not found");
             }
 
-            if (su.IsBooked)
+            if (oldShiftsOfUser != null)
             {
-              return ErrorResp.BadRequest("Artist is not available at this time");
+              if (!oldShiftsOfUser.Any(o => o.Id == shift.Id) && su.IsBooked)
+              {
+                return ErrorResp.BadRequest("Artist is not available at this time");
+              }
+            }
+            else
+            {
+              if (su.IsBooked)
+              {
+                return ErrorResp.BadRequest("Artist is not available at this time");
+              }
             }
 
-            if (body.Duration != null)
+            appointment.Duration = body.Duration ?? appointment.Duration;
+
+            if (appointment.Duration != null)
             {
               var startTime = shift.Start;
-              var endTime = startTime.AddHours(body.Duration.Value.TotalHours);
+              var endTime = startTime.AddHours(appointment.Duration.Value.TotalHours);
 
-              var shiftsOfUser = _shiftRepo.GetAllAsync(new ShiftQuery
+              shiftsOfUser = _shiftRepo.GetAllAsync(new ShiftQuery
               {
                 ArtistId = appointment.DoneBy,
                 Start = startTime,
@@ -1030,13 +1078,18 @@ public class AppointmentController : ControllerBase
 
               if (shiftsOfUser != null)
               {
-                foreach (var s in shiftsOfUser)
+                if (oldShiftsOfUser != null)
                 {
-                  var su2 = s.ShiftUsers.FirstOrDefault(su => su.StuUserId == appointment.DoneBy);
-                  if (su2 != null)
+                  if (shiftsOfUser.Any(s => s.ShiftUsers.Any(su => su.StuUserId == appointment.DoneBy && su.IsBooked && !oldShiftsOfUser.Any(o => o.Id == s.Id))))
                   {
-                    su2.IsBooked = true;
-                    var _ = await _shiftRepo.UpdateShiftUserAsync(su2);
+                    return ErrorResp.BadRequest("Artist is not available at this time");
+                  }
+                }
+                else
+                {
+                  if (shiftsOfUser.Any(s => s.ShiftUsers.Any(su => su.StuUserId == appointment.DoneBy && su.IsBooked)))
+                  {
+                    return ErrorResp.BadRequest("Artist is not available at this time");
                   }
                 }
               }
@@ -1045,8 +1098,38 @@ public class AppointmentController : ControllerBase
                 return ErrorResp.BadRequest("Artist is not available at this time");
               }
             }
+
+            if (oldShiftsOfUser != null)
+            {
+              foreach (var s in oldShiftsOfUser)
+              {
+                var su2 = s.ShiftUsers.FirstOrDefault(su => su.StuUserId == appointment.DoneBy);
+                if (su2 != null)
+                {
+                  su2.IsBooked = false;
+                  var _ = await _shiftRepo.UpdateShiftUserAsync(su2);
+                }
+              }
+            }
+
+            if (shiftsOfUser != null)
+            {
+              // mark booked for new shift
+              foreach (var s in shiftsOfUser)
+              {
+                var su2 = s.ShiftUsers.FirstOrDefault(su => su.StuUserId == appointment.DoneBy);
+                if (su2 != null)
+                {
+                  su2.IsBooked = true;
+                  var _ = await _shiftRepo.UpdateShiftUserAsync(su2);
+                }
+              }
+            }
           }
         }
+
+        appointment.ShiftId = body.ShiftId ?? appointment.ShiftId;
+        appointment.Duration = body.Duration ?? appointment.Duration;
 
         var result = await _appointmentRepo.UpdateAsync(appointment, mediaList);
 

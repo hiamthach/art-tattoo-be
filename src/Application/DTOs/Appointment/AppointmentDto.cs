@@ -17,6 +17,7 @@ public class AppointmentDto
   public Guid ShiftId { get; set; }
   public Guid? DoneBy { get; set; }
   public string? Notes { get; set; }
+  public TimeSpan Duration { get; set; }
   public AppointmentStatusEnum Status { get; set; }
   public List<MediaDto> ListMedia { get; set; } = new();
   public StudioUserDto? Artist { get; set; }
