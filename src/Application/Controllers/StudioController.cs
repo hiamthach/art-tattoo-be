@@ -850,6 +850,7 @@ public class StudioController : ControllerBase
       {
         // clear cache
         await _cacheService.ClearWithPattern("studio-users");
+        await _cacheService.Remove($"studio-user:{studioUser.UserId}:studio");
         return Ok(new BaseResp
         {
           Message = "Delete studio user successfully",
