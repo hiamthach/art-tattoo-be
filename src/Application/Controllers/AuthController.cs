@@ -89,6 +89,7 @@ public class AuthController : ControllerBase
             RoleId = payload.RoleId,
             SessionId = payload.SessionId,
             Permissions = permissions,
+            Status = payload.Status,
             StudioId = studioId
           });
         }
@@ -100,6 +101,7 @@ public class AuthController : ControllerBase
         RoleId = payload.RoleId,
         SessionId = payload.SessionId,
         Permissions = permissions,
+        Status = payload.Status
       });
     }
     catch (Exception e)

@@ -49,6 +49,7 @@ public class InvoiceRepository : IInvoiceRepository
           Phone = i.Studio.Phone,
           Email = i.Studio.Email,
           Logo = i.Studio.Logo,
+          Rating = i.Studio.Rating,
         },
         Appointment = i.Appointment,
       })
