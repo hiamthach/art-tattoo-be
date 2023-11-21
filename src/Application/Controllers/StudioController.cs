@@ -835,6 +835,7 @@ public class StudioController : ControllerBase
       {
         return ErrorResp.NotFound("Studio User Not found");
       }
+      var userId = studioUser.UserId;
       if (HttpContext.Items["permission"] is string permission && permission == PermissionSlugConst.MANAGE_OWNED_STUDIO && HttpContext.Items["payload"] is Payload payload)
       {
         var isFromStudio = _studioRepo.IsStudioUserExist(payload.UserId, studioUser.StudioId);
@@ -850,6 +851,7 @@ public class StudioController : ControllerBase
       {
         // clear cache
         await _cacheService.ClearWithPattern("studio-users");
+        await _cacheService.Remove($"studio-user:{userId}:studio");
         return Ok(new BaseResp
         {
           Message = "Delete studio user successfully",
