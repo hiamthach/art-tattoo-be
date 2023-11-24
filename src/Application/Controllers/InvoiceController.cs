@@ -151,6 +151,10 @@ public class InvoiceController : ControllerBase
     }
 
     var studioId = _studioRepo.GetStudioIdByUserId(payload.UserId);
+    if (studioId == Guid.Empty)
+    {
+      return ErrorResp.Forbidden("You don't have permission to view this invoice");
+    }
 
     try
     {

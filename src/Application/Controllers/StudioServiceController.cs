@@ -131,9 +131,21 @@ public class StudioServiceController : ControllerBase
   public async Task<IActionResult> GetAllOwnServices([FromQuery] GetStudioServiceQuery query)
   {
     _logger.LogInformation("Get All Studio Service");
+    if (HttpContext.Items["payload"] is not Payload payload || HttpContext.Items["permission"] is not string permission)
+    {
+      return ErrorResp.Forbidden("You don't have permission to access this studio");
+    }
+
+    var studioId = _studioRepo.GetStudioIdByUserId(payload.UserId);
+
+    if (studioId == Guid.Empty || studioId != query.StudioId)
+    {
+      return ErrorResp.Forbidden("You don't have permission to access this studio");
+    }
+
     try
     {
-      var redisKey = $"studioServices:owned:{query.StudioId}:{query.Page}:{query.PageSize}";
+      var redisKey = $"studioServices:owned:{studioId}:{query.Page}:{query.PageSize}";
       if (query.SearchKeyword != null)
       {
         redisKey += $"?search={query.SearchKeyword}";
@@ -152,7 +164,7 @@ public class StudioServiceController : ControllerBase
 
       var req = new GetStudioServiceReq
       {
-        StudioId = query.StudioId,
+        StudioId = studioId,
         SearchKeyword = query.SearchKeyword ?? "",
         IsStudio = true,
         Page = query.Page,
