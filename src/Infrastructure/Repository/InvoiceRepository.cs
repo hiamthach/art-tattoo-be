@@ -76,6 +76,7 @@ public class InvoiceRepository : IInvoiceRepository
       .Include(i => i.User)
       .Include(i => i.Studio)
       .Include(i => i.Appointment).ThenInclude(a => a.Shift)
+      .Include(i => i.Appointment).ThenInclude(a => a.ListMedia)
       .Include(i => i.InvoiceServices).ThenInclude(i => i.Service)
       .Select(i => new Invoice
       {
