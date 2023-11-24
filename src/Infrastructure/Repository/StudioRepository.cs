@@ -92,7 +92,7 @@ public class StudioRepository : IStudioRepository
   public IEnumerable<StudioUser> GetStudioArtist(Guid studioId)
   {
     return _dbContext.StudioUsers
-    .Include(user => user.User)
+    .Include(user => user.User).ThenInclude(u => u.ListMedia)
     .Where(user => user.StudioId == studioId)
     .Where(user => user.User.RoleId == RoleConst.ARTIST_ID)
     .Where(user => user.UserId != Guid.Parse(UserConst.USER_DELETED))

@@ -340,6 +340,7 @@ public class UserController : ControllerBase
         var redisKey = $"user:{payload.UserId}";
         await _cacheService.Remove(redisKey);
         await _cacheService.ClearWithPattern("studio-users:artist");
+        await _cacheService.ClearWithPattern("studio-users:artists");
 
         return Ok(new BaseResp { Message = "Update user success", Success = true });
       }

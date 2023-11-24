@@ -23,6 +23,7 @@ public class AppointmentRepository : IAppointmentRepository
   public AppointmentList GetAllAsync(AppointmentQuery query)
   {
     var q = _dbContext.Appointments
+    .Include(app => app.ListMedia)
     .Include(app => app.Shift)
     .Include(app => app.User)
     .Include(app => app.Artist).ThenInclude(a => a.User)
