@@ -15,3 +15,4 @@ The art-tattoo-be repository serves as the backend component for the Art Tattoo 
 - **Logout** Log out of their account, ending their current session on the website.
 - **Change Information** Changing a user's information on the system.
 - **Change Password** Changing password.
+- **Search by Address** Searching for studio on the system using address.
