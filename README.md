@@ -39,3 +39,4 @@ The art-tattoo-be repository serves as the backend component for the Art Tattoo 
 - **Create Account** Steps involved in creating new account.
 - **Show List Account** Steps involved in viewing list account. 
 - **Update Account** Steps involved in viewing the list of all accounts.
+- **Show List Feedback** Steps of viewing list feedback.
