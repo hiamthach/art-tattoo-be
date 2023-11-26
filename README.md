@@ -60,3 +60,7 @@ To access the dashboard, visit [Art Tattoo Lover Dashboard](https://dashboard-ar
 ## Forgot Password?
 
 If you forget your password, you can reset it by clicking on the "Forgot Password?" link on the login page.
+
+## Contributing
+
+We welcome contributions! If you encounter issues or have suggestions, please follow our [contribution guidelines](CONTRIBUTING.md).
