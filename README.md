@@ -47,3 +47,9 @@ Art Tattoo Backend is the server-side component of the Art Tattoo project, respo
 ## Access the Dashboard
 
 To access the dashboard, visit [Art Tattoo Lover Dashboard](https://dashboard-art-tattoo-lover.vercel.app/system/dashboard). Make sure you are logged in to your account.
+
+## Getting Started
+
+1. Log in to your Art Tattoo Lover account.
+2. Navigate to the [Dashboard System](https://dashboard-art-tattoo-lover.vercel.app/system/dashboard).
+3. Explore the available features and tools.
