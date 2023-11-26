@@ -39,4 +39,5 @@ Art Tattoo Backend is the server-side component of the Art Tattoo project, respo
 - **Create Account** Steps involved in creating new acount.
 - **Show List Account** Steps involved in viewing list account. 
 - **Update Account** Steps involved in viewing the list of all accounts.
-- **Show List Feedback**  Steps of viewing list feedback.
+- **Show List Feedback** Steps of viewing list feedback.
+- **Show List Booking** Steps involved in displaying the list of booking.
