@@ -21,3 +21,4 @@ Art Tattoo Backend is the server-side component of the Art Tattoo project, respo
 - **View Product** Viewing product
 - **Edit Product** Editing a product to the customer's cart on the system.
 - **View Studio** Viewing Studio on the system.
+- **Add Studio** Removing an item from the user's cart on the system.
