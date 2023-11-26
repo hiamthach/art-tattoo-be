@@ -8,4 +8,5 @@ public enum AppointmentStatusEnum
   Canceled,
   Completed,
   Late,
+  Busy
 }

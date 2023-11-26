@@ -17,3 +17,8 @@ public class Testimonial
   public virtual Studio Studio { get; set; } = null!;
   public User User { get; set; } = null!;
 }
+public class TestimonialList
+{
+  public IEnumerable<Testimonial> Testimonials { get; set; } = new List<Testimonial>();
+  public int TotalCount { get; set; }
+}

@@ -5,7 +5,6 @@ using art_tattoo_be.Domain.Booking;
 using art_tattoo_be.Domain.Studio;
 using art_tattoo_be.Domain.User;
 
-
 public class Invoice
 {
   public Guid Id { get; set; }
@@ -20,5 +19,12 @@ public class Invoice
 
   public virtual Studio Studio { get; set; } = null!;
   public virtual User User { get; set; } = null!;
+  public virtual List<InvoiceService> InvoiceServices { get; set; } = new();
   public virtual Appointment Appointment { get; set; } = null!;
+}
+
+public class InvoiceList
+{
+  public List<Invoice> Invoices { get; set; } = null!;
+  public int Total { get; set; }
 }

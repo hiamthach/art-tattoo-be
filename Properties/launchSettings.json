@@ -17,11 +17,11 @@
       "applicationUrl": "http://localhost:8080",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "APP_VERSION": "0.0.1",
+        "APP_VERSION": "1.1.2",
         "JWT_SECRET": "ArtTattooSecret@@",
         "REDIS_CONNECTION": "localhost:6379,password=ArtTattooRedis,abortConnect=false,ssl=true,sslprotocols=tls12",
         "SMTP_EMAIL": "arttattoolover@gmail.com",
-        "SMTP_PASSWORD": "zoxeglocinfzmnei",
+        "SMTP_PASSWORD": "zoxeglocinfzmnei"
       }
     }
   }

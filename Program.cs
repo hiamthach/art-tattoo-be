@@ -7,18 +7,40 @@ using StackExchange.Redis;
 using Microsoft.OpenApi.Models;
 using art_tattoo_be.Core.Mail;
 using art_tattoo_be.Core.GCS;
+using art_tattoo_be.Domain.RoleBase;
+using art_tattoo_be.Infrastructure.Repository;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+builder.Services.AddRateLimiter(_ => _
+    .AddFixedWindowLimiter(policyName: "fixed", options =>
+    {
+      options.PermitLimit = 4;
+      options.Window = TimeSpan.FromSeconds(12);
+      options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+      options.QueueLimit = 2;
+    }));
+
 builder.Services.AddCors(options =>
 {
+  options.AddPolicy("AllowAllOrigins",
+    builder =>
+    {
+      builder.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
   options.AddDefaultPolicy(
-  builder =>
-  {
-    builder.WithOrigins().AllowAnyHeader().AllowAnyMethod();
-  });
+    builder =>
+    {
+      builder.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
 });
 
 builder.Services.AddAuthorization();
@@ -71,14 +93,17 @@ builder.Services.AddDbContext<ArtTattooDbContext>(options =>
 Console.WriteLine($"Redis connection string: {builder.Configuration.GetConnectionString("RedisConnection")}");
 builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("RedisConnection")));
 
+// Mail Service
 var smtpUsername = Environment.GetEnvironmentVariable("SMTP_EMAIL") ?? "default_username";
 var smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? "default_password";
 builder.Services.AddSingleton<IMailService>(new MailService("smtp.gmail.com", 587, smtpUsername, smtpPassword));
+// Google Cloud Storage Service
 builder.Services.AddSingleton<IGCSService, GCSService>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IRoleBaseRepository, RoleBaseRepository>();
 
 var app = builder.Build();
 
@@ -87,7 +112,9 @@ app.UseSwaggerUI();
 
 DbInitializer.UseInitializeDatabase(app);
 
-app.UseCors();
+app.UseRateLimiter();
+app.UseCors("AllowAllOrigins");
+
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
