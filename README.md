@@ -68,3 +68,7 @@ We welcome contributions! If you encounter issues or have suggestions, please fo
 ## Contact
 
 For support or inquiries, you can reach out to us at [arttatoolover@gmail.com].
+
+## License
+
+This project is licensed under the [MIT License](https://opensource.org/license/mit/).
