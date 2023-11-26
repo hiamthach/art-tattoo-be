@@ -18,3 +18,4 @@ The art-tattoo-be repository serves as the backend component for the Art Tattoo 
 - **Search by Address** Searching for studio on the system using address.
 - **Shows Product** View the available products.
 - **Add Product** Displays the next or previous page of products.
+- **View Product** Viewing product
