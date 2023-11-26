@@ -46,3 +46,7 @@ The art-tattoo-be repository serves as the backend component for the Art Tattoo 
   
 ## Entity Relationship Diagram
 ![ERD](<Screenshot 2023-11-26 220715.png>)
+
+## Access the Dashboard
+
+To access the dashboard, visit [Art Tattoo Lover Dashboard](https://dashboard-art-tattoo-lover.vercel.app/system/dashboard). Make sure you are logged in to your account.
