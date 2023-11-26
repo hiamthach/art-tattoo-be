@@ -32,3 +32,4 @@ The art-tattoo-be repository serves as the backend component for the Art Tattoo 
 - **View History Transaction** Steps involved in update a product.
 - **View Booking Calendar** Steps involved in booking calendar.
 - **Booking** Steps involved in booking.
+- **Show List Product** Steps involved in viewing the list of all brands in.
