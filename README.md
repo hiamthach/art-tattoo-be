@@ -28,3 +28,4 @@ Art Tattoo Backend is the server-side component of the Art Tattoo project, respo
 - **Update Booking** Updating booking.
 - **Add Service** Allowing the customer to leave feedback on a specific product or the overall service provided.
 - **View Bill** Steps involved in creating a new product in.
+- **Add Bills** Steps involved in viewing the list of all products in.
