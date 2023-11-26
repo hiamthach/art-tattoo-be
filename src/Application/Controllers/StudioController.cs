@@ -713,6 +713,11 @@ public class StudioController : ControllerBase
         return ErrorResp.NotFound("User Not found");
       }
 
+      if (user.RoleId == RoleConst.ADMIN_ID || user.RoleId == RoleConst.SYSTEM_STAFF_ID)
+      {
+        return ErrorResp.Forbidden("You don't have permission to add this user");
+      }
+
       // check studio user exist
       var studioUserExist = _studioRepo.IsStudioUserExist(user.Id);
       if (studioUserExist)
