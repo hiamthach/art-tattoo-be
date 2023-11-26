@@ -26,3 +26,4 @@ The art-tattoo-be repository serves as the backend component for the Art Tattoo 
 - **Role Picker** Displaying the customer's account information on the system.
 - **Show List Booking** Show list booking
 - **Update Booking** Updating booking.
+- **Add Service** Allowing the customer to leave feedback on a specific product or the overall service provided.
