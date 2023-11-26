@@ -72,3 +72,9 @@ For support or inquiries, you can reach out to us at [arttatoolover@gmail.com].
 ## License
 
 This project is licensed under the [MIT License](https://opensource.org/license/mit/).
+
+## Acknowledgement
+
+Art Tattoo Lover Dashboard System is made possible by the passionate community of tattoo enthusiasts and developers.
+
+Enjoy the enhanced features on the dashboard!
