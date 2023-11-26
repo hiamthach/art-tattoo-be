@@ -19,3 +19,4 @@ The art-tattoo-be repository serves as the backend component for the Art Tattoo 
 - **Shows Product** View the available products.
 - **Add Product** Displays the next or previous page of products.
 - **View Product** Viewing product
+- **Edit Product** Editing a product to the customer's cart on the system.
