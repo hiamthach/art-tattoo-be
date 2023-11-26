@@ -64,3 +64,7 @@ If you forget your password, you can reset it by clicking on the "Forgot Passwor
 ## Contributing
 
 We welcome contributions! If you encounter issues or have suggestions, please follow our [contribution guidelines](CONTRIBUTING.md).
+
+## Contact
+
+For support or inquiries, you can reach out to us at [arttatoolover@gmail.com].
