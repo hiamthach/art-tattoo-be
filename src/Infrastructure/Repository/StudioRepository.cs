@@ -68,11 +68,18 @@ public class StudioRepository : IStudioRepository
 
   public Task<Studio?> GetAsync(Guid id)
   {
-    return _dbContext.Studios
+    var studio = _dbContext.Studios
     .Include(stu => stu.ListMedia)
     .Include(stu => stu.WorkingTimes)
-    .Include(stu => stu.Services)
     .FirstOrDefaultAsync(stu => stu.Id == id);
+
+    if (studio.Result != null)
+    {
+      var services = _dbContext.StudioServices.Where(s => s.StudioId == id).Where(s => !s.IsDisabled).ToList();
+      studio.Result.Services = services;
+    }
+
+    return studio;
   }
 
   public StudioAdminDashboard GetStudioAdminDashboard()
