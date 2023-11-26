@@ -22,3 +22,4 @@ The art-tattoo-be repository serves as the backend component for the Art Tattoo 
 - **Edit Product** Editing a product to the customer's cart on the system.
 - **View Studio** Viewing Studio on the system.
 - **Add Studio** Removing an item from the user's cart on the system.
+- **Edit Studio** Enter their shipping and payment information and complete the purchase of the products in their cart.
