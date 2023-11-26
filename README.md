@@ -43,3 +43,7 @@ Art Tattoo Backend is the server-side component of the Art Tattoo project, respo
 - **Show List Booking** Steps involved in displaying the list of booking.
 - **Update Booking** Steps involved in delete feedback in the studio.
 - **Dashboard** Steps involved in displaying the list of studio, account, booking.
+
+## Access the Dashboard
+
+To access the dashboard, visit [Art Tattoo Lover Dashboard](https://dashboard-art-tattoo-lover.vercel.app/system/dashboard). Make sure you are logged in to your account.
