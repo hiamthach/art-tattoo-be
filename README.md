@@ -9,4 +9,4 @@ Art Tattoo Backend is the server-side component of the Art Tattoo project, respo
 ## Features
 
 - **User Authentication:** Secure user authentication system.
-- **Dashboard:** Overview of your profile and personalized content.
+- **Register:** Registering a new account on  system.
