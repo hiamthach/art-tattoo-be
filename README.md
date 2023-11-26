@@ -13,3 +13,4 @@ Art Tattoo Backend is the server-side component of the Art Tattoo project, respo
 - **Login** Access the website and perform an action that requires authentication.
 - **Add Information** Adding personal information in website.
 - **Logout** Log out of their account, ending their current session on the website.
+- **Change Information** Changing a user's information on the system.
