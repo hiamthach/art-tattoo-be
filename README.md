@@ -41,3 +41,4 @@ The art-tattoo-be repository serves as the backend component for the Art Tattoo 
 - **Update Account** Steps involved in viewing the list of all accounts.
 - **Show List Feedback** Steps of viewing list feedback.
 - **Show List Booking** Steps involved in displaying the list of booking.
+- **Update Booking** Steps involved in delete feedback in the studio.
