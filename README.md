@@ -28,3 +28,4 @@ The art-tattoo-be repository serves as the backend component for the Art Tattoo 
 - **Update Booking** Updating booking.
 - **Add Service** Allowing the customer to leave feedback on a specific product or the overall service provided.
 - **View Bill** Steps involved in creating a new product in.
+- **Add Bills** Steps involved in viewing the list of all products in.
