@@ -38,3 +38,4 @@ The art-tattoo-be repository serves as the backend component for the Art Tattoo 
 - **Delete Service** Steps involved in deleting account.
 - **Create Account** Steps involved in creating new account.
 - **Show List Account** Steps involved in viewing list account. 
+- **Update Account** Steps involved in viewing the list of all accounts.
