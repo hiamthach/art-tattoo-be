@@ -10,3 +10,5 @@ The art-tattoo-be repository serves as the backend component for the Art Tattoo 
 
 - **User Authentication:** Secure user authentication system.
 - **Register:** Registering a new account on  system.
+- **Login** Access the website and perform an action that requires authentication.
+- **Add Information** Adding personal information in website.
