@@ -16,3 +16,4 @@ Art Tattoo Backend is the server-side component of the Art Tattoo project, respo
 - **Change Information** Changing a user's information on the system.
 - **Change Password** Changing password.
 - **Search by Address** Searching for studio on the system using address.
+- **Shows Product** View the available products.
