@@ -11,6 +11,7 @@ The art-tattoo-be repository serves as the backend component for the Art Tattoo 
 - **Find Tattoo Studios:** Provides a list of Tattoo Studios featuring artistic designs, making it easy for users to search and connect with high-quality studios.
   ![Alt text](<Screenshot 2023-11-27 104145.png>)
 - **Discussion and Interaction:** Forums or discussion features facilitate community engagement, exchange of experiences, and seeking opinions and reviews about tattoo artists.
+  ![Alt text](<Screenshot 2023-11-27 104336.png>)
 
 
 ## API Endpoints
