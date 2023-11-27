@@ -8,13 +8,9 @@ The art-tattoo-be repository serves as the backend component for the Art Tattoo 
 
 ## Features
 - **Community Connection:** Enables users to create personal profiles, connect with like-minded individuals, and share their favorite tattoo designs.
-  ![Alt text](<Screenshot 2023-11-27 104619.png>)
 - **Find Tattoo Studios:** Provides a list of Tattoo Studios featuring artistic designs, making it easy for users to search and connect with high-quality studios.
-  ![Alt text](<Screenshot 2023-11-27 104145.png>)
 - **Booking Tatoo Services:** Get Tatoo Service by your favorite artist, time flexible
-  ![Alt text](<Screenshot 2023-11-27 105101.png>)
 - **Discussion and Interaction:** Forums or discussion features facilitate community engagement, exchange of experiences, and seeking opinions and reviews about tattoo artists.
-  ![Alt text](<Screenshot 2023-11-27 104452.png>)
 
 
 ## API Endpoints
@@ -54,9 +50,7 @@ The art-tattoo-be repository serves as the backend component for the Art Tattoo 
 - **Show List Booking** Steps involved in displaying the list of booking.
 - **Update Booking** Steps involved in delete feedback in the studio.
 - **Dashboard** Steps involved in displaying the list of studio, account, booking.
-  
-## Entity Relationship Diagram
-![ERD](<Screenshot 2023-11-26 220715.png>)
+  ![ERD](<Screenshot 2023-11-26 220715.png>)
 
 ## Access the Dashboard
 
