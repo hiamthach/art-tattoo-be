@@ -7,11 +7,14 @@ Welcome to the backend repository for the Art Tattoo project.
 The art-tattoo-be repository serves as the backend component for the Art Tattoo application, an innovative platform dedicated to managing and showcasing tattoo art. This backend system plays a crucial role in handling data, business logic, and interfacing with the frontend to create a seamless experience for users and artists alike.
 
 ## Features
+- **Community Connection:** Enables users to create personal profiles, connect with like-minded individuals, and share their favorite tattoo designs.
+- **Find Tattoo Studios:** Provides a list of Tattoo Studios featuring artistic designs, making it easy for users to search and connect with high-quality studios.
+- 
+
 
 ## API Endpoints
 
 - **User Authentication:** Secure user authentication system.
-  ![Alt text](<Screenshot 2023-11-27 102843.png>)
 - **Register:** Registering a new account on  system.
 - **Login** Access the website and perform an action that requires authentication.
 - **Add Information** Adding personal information in website.
