@@ -349,6 +349,11 @@ public class AppointmentController : ControllerBase
         return ErrorResp.NotFound("Shift not found");
       }
 
+      if (_appointmentRepo.IsBooked(body.ShiftId, payload.UserId))
+      {
+        return ErrorResp.BadRequest("You have already booked appointment at this time");
+      }
+
       var capacity = shift.Appointments.Count;
 
       if (capacity >= shift.ShiftUsers.Count + BookConst.MaxBookCapacity)
