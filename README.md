@@ -8,7 +8,10 @@ The art-tattoo-be repository serves as the backend component for the Art Tattoo 
 
 ## Features
 
+## API Endpoints
+
 - **User Authentication:** Secure user authentication system.
+  ![Alt text](<Screenshot 2023-11-27 102843.png>)
 - **Register:** Registering a new account on  system.
 - **Login** Access the website and perform an action that requires authentication.
 - **Add Information** Adding personal information in website.
