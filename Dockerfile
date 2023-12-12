@@ -16,7 +16,6 @@ WORKDIR /App
 # Set environment
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Development
-ENV ConnectionStrings__DatabaseConnection=Server=sqlserver;Database=tattoodb;User=sa;Password=ArtTattoo@@;MultipleActiveResultSets=true;TrustServerCertificate=true;
 
 EXPOSE 8080
 

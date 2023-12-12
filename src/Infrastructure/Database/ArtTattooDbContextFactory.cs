@@ -14,7 +14,7 @@ public class ArtTattooDbContextFactory : IDesignTimeDbContextFactory<ArtTattooDb
     Console.WriteLine($"Using ConnectionString: {configuration.GetConnectionString("DatabaseConnection")}");
 
     var optionsBuilder = new DbContextOptionsBuilder<ArtTattooDbContext>();
-    optionsBuilder.UseSqlServer(configuration.GetConnectionString("DatabaseConnection"));
+    optionsBuilder.UseMySQL(configuration.GetConnectionString("DatabaseConnection") ?? "");
 
     return new ArtTattooDbContext(optionsBuilder.Options);
   }

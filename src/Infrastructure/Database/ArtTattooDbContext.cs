@@ -114,11 +114,11 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Address).IsRequired(false).HasMaxLength(255);
       entity.Property(e => e.Avatar).IsRequired(false).HasMaxLength(255);
       entity.Property(e => e.RoleId).IsRequired();
-      entity.Property(e => e.Status).IsRequired().HasDefaultValue(UserStatusEnum.Active).HasConversion(
+      entity.Property(e => e.Status).IsRequired().HasConversion(
         v => v.ToString(),
         v => (UserStatusEnum)Enum.Parse(typeof(UserStatusEnum), v));
-      entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
-      entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.CreatedAt).HasColumnType("datetime").ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.UpdatedAt).HasColumnType("datetime").ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
       entity.HasData(
         new User
         {
@@ -180,12 +180,12 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Latitude);
       entity.Property(e => e.Longitude);
       entity.Property(e => e.Rating);
-      entity.Property(e => e.Status).IsRequired().HasDefaultValue(StudioStatusEnum.Inactive).HasConversion(
+      entity.Property(e => e.Status).IsRequired().HasConversion(
         v => v.ToString(),
         v => (StudioStatusEnum)Enum.Parse(typeof(StudioStatusEnum), v)
       );
-      entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
-      entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.CreatedAt).HasColumnType("datetime").ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.UpdatedAt).HasColumnType("datetime").ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
       entity.HasIndex(e => e.Name);
     });
 
@@ -207,8 +207,8 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.IsDisabled).IsRequired();
       entity.Property(e => e.Thumbnail).IsRequired().HasMaxLength(1000);
       entity.Property(e => e.ExpectDuration).IsRequired(false);
-      entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
-      entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.CreatedAt).HasColumnType("datetime").ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.UpdatedAt).HasColumnType("datetime").ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
     });
 
     builder.Entity<StudioWorkingTime>(entity =>
@@ -233,8 +233,8 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.StudioId).IsRequired();
       entity.Property(e => e.UserId).IsRequired();
       entity.Property(e => e.IsDisabled).IsRequired(false);
-      entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
-      entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.CreatedAt).HasColumnType("datetime").ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.UpdatedAt).HasColumnType("datetime").ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
     });
 
     builder.Entity<ShiftUser>(entity =>
@@ -257,8 +257,8 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.StudioId).IsRequired();
       entity.Property(e => e.Start).IsRequired();
       entity.Property(e => e.End).IsRequired();
-      entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
-      entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.CreatedAt).HasColumnType("datetime").ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.UpdatedAt).HasColumnType("datetime").ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
     });
 
     builder.Entity<Appointment>(entity =>
@@ -277,11 +277,11 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.DoneBy).IsRequired(false);
       entity.Property(e => e.Notes).IsRequired(false).HasMaxLength(500);
       entity.Property(e => e.Duration).IsRequired(false);
-      entity.Property(e => e.Status).IsRequired().HasDefaultValue(AppointmentStatusEnum.Pending).HasConversion(
+      entity.Property(e => e.Status).IsRequired().HasConversion(
         v => v.ToString(),
         v => (AppointmentStatusEnum)Enum.Parse(typeof(AppointmentStatusEnum), v));
-      entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
-      entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.CreatedAt).HasColumnType("datetime").ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.UpdatedAt).HasColumnType("datetime").ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
     });
 
     builder.Entity<Invoice>(entity =>
@@ -300,8 +300,8 @@ public class ArtTattooDbContext : IdentityDbContext
         v => v.ToString(),
         v => (PayMethodEnum)Enum.Parse(typeof(PayMethodEnum), v));
       entity.Property(e => e.Notes).IsRequired(false).HasMaxLength(500);
-      entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
-      entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.CreatedAt).HasColumnType("datetime").ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.UpdatedAt).HasColumnType("datetime").ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
     });
 
     builder.Entity<InvoiceService>(entity =>
@@ -329,8 +329,8 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Content).IsRequired().HasMaxLength(1000);
       entity.Property(e => e.Rating).IsRequired();
       entity.Property(e => e.CreatedBy).IsRequired();
-      entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
-      entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.CreatedAt).HasColumnType("datetime").ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.UpdatedAt).HasColumnType("datetime").ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
     });
 
     builder.Entity<Media>(entity =>
@@ -342,8 +342,8 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Type).IsRequired().HasConversion(
         v => v.ToString(),
         v => (MediaTypeEnum)Enum.Parse(typeof(MediaTypeEnum), v));
-      entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
-      entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.CreatedAt).HasColumnType("datetime").ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.UpdatedAt).HasColumnType("datetime").ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
     });
 
     builder.Entity<Blog>(entity =>
@@ -356,8 +356,8 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Title).UseCollation(COLLATION).IsRequired(true).HasMaxLength(50);
       entity.Property(e => e.Slug).IsRequired(true).HasMaxLength(50);
       entity.Property(e => e.Content).IsRequired(true).HasMaxLength(2000);
-      entity.Property(e => e.CreatedAt).ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
-      entity.Property(e => e.UpdatedAt).ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.CreatedAt).HasColumnType("datetime").ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
+      entity.Property(e => e.UpdatedAt).HasColumnType("datetime").ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
     });
   }
 }

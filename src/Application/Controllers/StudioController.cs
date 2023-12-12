@@ -264,7 +264,7 @@ public class StudioController : ControllerBase
       var studio = new Studio
       {
         Id = Guid.NewGuid(),
-        Status = StudioStatusEnum.Active,
+        Status = StudioStatusEnum.Inactive,
       };
       studio = _mapper.Map(req, studio);
 

@@ -1,15 +1,18 @@
 version: '3.9'
 services:
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-preview-ubuntu-22.04
+  mysql:
+    image: mysql:8.0.34-debian
     environment:
-      SA_PASSWORD: "ArtTattoo@@"
-      ACCEPT_EULA: "Y"
-      MSSQL_PID: "Evaluation"
+      MYSQL_USER: tattoodb
+      MYSQL_PASSWORD: ArtTattoo@@
+      MYSQL_DB: tattoodb
+      MYSQL_ROOT_PASSWORD: ArtTattoo@@
+      PGDATA: /data/mysql
     ports:
-      - 1433:1433
+      - 3306:3306
     networks:
       - app-network
+    restart: always
 
   cache:
     image: redis:7.0-alpine
@@ -28,9 +31,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DatabaseConnection=Server=sqlserver;Database=tattoodb;User=sa;Password=ArtTattoo@@;MultipleActiveResultSets=true;TrustServerCertificate=true;
+      - ConnectionStrings__DatabaseConnection=Server=mysql;Database=tattoodb;User=root;Password=ArtTattoo@@;
       - ConnectionStrings__RedisConnection=cache:6379,password=ArtTattooRedis,abortConnect=false
-      - APP_VERSION=1.0.0
+      - APP_VERSION=2.0.0
       - JWT_SECRET=ArtTattooSecret@@
       - SMTP_EMAIL=arttattoolover@gmail.com
       - SMTP_PASSWORD=zoxeglocinfzmnei
@@ -38,7 +41,7 @@ services:
       - 8080:8080
     restart: on-failure
     depends_on:
-      - sqlserver
+      - mysql
       - cache
     networks:
       - app-network

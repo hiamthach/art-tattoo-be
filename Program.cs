@@ -87,7 +87,7 @@ builder.Services.AddDbContext<ArtTattooDbContext>(options =>
 {
   // log the connection string
   Console.WriteLine($"Connection string: {builder.Configuration.GetConnectionString("DatabaseConnection")}");
-  options.UseSqlServer(builder.Configuration.GetConnectionString("DatabaseConnection"));
+  options.UseMySQL(builder.Configuration.GetConnectionString("DatabaseConnection") ?? "");
 });
 
 Console.WriteLine($"Redis connection string: {builder.Configuration.GetConnectionString("RedisConnection")}");
