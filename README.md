@@ -12,7 +12,6 @@ The art-tattoo-be repository serves as the backend component for the Art Tattoo 
 - **Booking Tatoo Services:** Get Tatoo Service by your favorite artist, time flexible
 - **Discussion and Interaction:** Forums or discussion features facilitate community engagement, exchange of experiences, and seeking opinions and reviews about tattoo artists.
 
-
 ## API Endpoints
 
 - **User Authentication:** Secure user authentication system.
@@ -57,14 +56,10 @@ The art-tattoo-be repository serves as the backend component for the Art Tattoo 
 To access the dashboard, visit [Art Tattoo Lover Dashboard](https://dashboard-art-tattoo-lover.vercel.app/system/dashboard). Make sure you are logged in to your account.
 
 ## Getting Started
-
-1. Log in to your Art Tattoo Lover account.
-2. Navigate to the [Dashboard System](https://dashboard-art-tattoo-lover.vercel.app/system/dashboard).
-3. Explore the available features and tools.
-
-## Forgot Password?
-
-If you forget your password, you can reset it by clicking on the "Forgot Password?" link on the login page.
+1. Navigate to the [Website](https://art-tattoo-lover.vercel.app/).
+2. Log in to your Art Tattoo Lover account.
+3. Navigate to the [Dashboard System](https://dashboard-art-tattoo-lover.vercel.app/system/dashboard).
+4. Explore the available features and tools.
 
 ## Contributing
 
