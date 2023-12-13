@@ -206,7 +206,7 @@ public class ArtTattooDbContext : IdentityDbContext
       entity.Property(e => e.Discount).IsRequired();
       entity.Property(e => e.IsDisabled).IsRequired();
       entity.Property(e => e.Thumbnail).IsRequired().HasMaxLength(1000);
-      entity.Property(e => e.ExpectDuration).IsRequired(false);
+      entity.Property(e => e.ExpectDuration).HasColumnType("time").IsRequired(false);
       entity.Property(e => e.CreatedAt).HasColumnType("datetime").ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
       entity.Property(e => e.UpdatedAt).HasColumnType("datetime").ValueGeneratedOnUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
     });
