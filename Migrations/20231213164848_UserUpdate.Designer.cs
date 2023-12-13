@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using art_tattoo_be.Infrastructure.Database;
 
@@ -11,9 +12,11 @@ using art_tattoo_be.Infrastructure.Database;
 namespace art_tattoo_be.Migrations
 {
     [DbContext(typeof(ArtTattooDbContext))]
-    partial class ArtTattooDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231213164848_UserUpdate")]
+    partial class UserUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -324,7 +327,9 @@ namespace art_tattoo_be.Migrations
                         .UseCollation("SQL_Latin1_General_CP1_CI_AI");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime");
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.HasKey("Id");
 
@@ -367,7 +372,9 @@ namespace art_tattoo_be.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime");
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("char(36)");
@@ -406,7 +413,9 @@ namespace art_tattoo_be.Migrations
                         .HasColumnType("char(36)");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime");
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.HasKey("Id");
 
@@ -488,7 +497,9 @@ namespace art_tattoo_be.Migrations
                         .HasColumnType("double");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime");
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("char(36)");
@@ -544,7 +555,9 @@ namespace art_tattoo_be.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime");
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Url")
                         .IsRequired()
@@ -823,7 +836,9 @@ namespace art_tattoo_be.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime");
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Website")
                         .HasMaxLength(255)
@@ -883,7 +898,9 @@ namespace art_tattoo_be.Migrations
                         .HasColumnType("varchar(1000)");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime");
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.HasKey("Id");
 
@@ -912,7 +929,9 @@ namespace art_tattoo_be.Migrations
                         .HasColumnType("char(36)");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime");
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("char(36)");
@@ -982,7 +1001,9 @@ namespace art_tattoo_be.Migrations
                         .HasColumnType("varchar(50)");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime");
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid?>("UserId")
                         .HasColumnType("char(36)");
@@ -1051,6 +1072,7 @@ namespace art_tattoo_be.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnUpdate()
                         .HasColumnType("datetime");
 
                     b.HasKey("Id");
@@ -1070,7 +1092,7 @@ namespace art_tattoo_be.Migrations
                             Email = "arttattoolover@gmail.com",
                             FullName = "Admin Art Tattoo Lover",
                             LastLoginAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Password = "$2a$11$6Y/GnLIGePPL0jDI8QSlN.iLUkLkWSfgqJXwX1jZFpgfe2YthVLuC",
+                            Password = "$2a$11$uHcZjVzoTVVLRQZWqt7rpeYyASfKUhJRelAaX2RVuCP6EmGJQiUz6",
                             RoleId = 1,
                             Status = "Inactive",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
